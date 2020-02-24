@@ -20,4 +20,4 @@ $ ./riscv_emu ./bin/fuzz
 
 # Dose it done?
 
-No! I'm just starting!
+No! I'm just starting! There will be JIT and there will also be AOT.
