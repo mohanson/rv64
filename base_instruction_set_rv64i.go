@@ -13,6 +13,7 @@ func ExecuterRV64I(r *RegisterRV64I, data []byte) int {
 		_, rd, imm := UType(data)
 		DebuglnUType("AUIPC", rd, imm)
 		r.RG[rd] = r.PC + uint64(imm)
+		r.PC += 4
 		return 1
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_1111: // JAL
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0111: // JALR
@@ -34,6 +35,7 @@ func ExecuterRV64I(r *RegisterRV64I, data []byte) int {
 		_, rd, _, rs1, imm := IType(data)
 		DebuglnIType("ADDI", rd, rs1, imm)
 		r.RG[rd] = r.RG[rs1] + uint64(imm)
+		r.PC += 4
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0001_0011: // SLTI
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0001_0011: // SLTIU

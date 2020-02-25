@@ -29,6 +29,7 @@ func ExecuterC(r *RegisterRV64I, data []byte) int {
 		)
 		DebuglnRType("C.SUB", rdrs1+8, rdrs1+8, rs2)
 		r.RG[rdrs1+8] = r.RG[rdrs1+8] - r.RG[rs2+8]
+		r.PC += 2
 		return 1
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0010_0001: // C.XOR
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0100_0001: // C.OR

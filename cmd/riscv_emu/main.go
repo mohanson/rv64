@@ -36,11 +36,10 @@ func (c *CPU) FetchInstruction() []byte {
 	a := c.Mem[c.ModuleBase.PC : c.ModuleBase.PC+2]
 	b := riscv.InstructionLengthEncoding(a)
 	instructionBytes := c.Mem[c.ModuleBase.PC : c.ModuleBase.PC+uint64(b)]
-	c.ModuleBase.PC += uint64(b)
 	return instructionBytes
 }
 
-var cStep = flag.Int64("steps", 6, "")
+var cStep = flag.Int64("steps", 5, "")
 
 func (c *CPU) Run() {
 	flag.Parse()
@@ -59,11 +58,27 @@ func (c *CPU) Run() {
 			log.Panicln("")
 		}
 		if len(data) == 4 {
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[0], c.ModuleBase.RG[1], c.ModuleBase.RG[2], c.ModuleBase.RG[3])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[4], c.ModuleBase.RG[5], c.ModuleBase.RG[6], c.ModuleBase.RG[7])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[8], c.ModuleBase.RG[9], c.ModuleBase.RG[10], c.ModuleBase.RG[11])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[12], c.ModuleBase.RG[13], c.ModuleBase.RG[14], c.ModuleBase.RG[15])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[16], c.ModuleBase.RG[17], c.ModuleBase.RG[18], c.ModuleBase.RG[19])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[20], c.ModuleBase.RG[21], c.ModuleBase.RG[22], c.ModuleBase.RG[23])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[24], c.ModuleBase.RG[25], c.ModuleBase.RG[26], c.ModuleBase.RG[27])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[28], c.ModuleBase.RG[29], c.ModuleBase.RG[30], c.ModuleBase.RG[31])
 			if riscv.ExecuterRV64I(c.ModuleBase, data) != 0 {
 				continue
 			}
 		}
 		if riscv.ExecuterC(c.ModuleBase, data) != 0 {
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[0], c.ModuleBase.RG[1], c.ModuleBase.RG[2], c.ModuleBase.RG[3])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[4], c.ModuleBase.RG[5], c.ModuleBase.RG[6], c.ModuleBase.RG[7])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[8], c.ModuleBase.RG[9], c.ModuleBase.RG[10], c.ModuleBase.RG[11])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[12], c.ModuleBase.RG[13], c.ModuleBase.RG[14], c.ModuleBase.RG[15])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[16], c.ModuleBase.RG[17], c.ModuleBase.RG[18], c.ModuleBase.RG[19])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[20], c.ModuleBase.RG[21], c.ModuleBase.RG[22], c.ModuleBase.RG[23])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[24], c.ModuleBase.RG[25], c.ModuleBase.RG[26], c.ModuleBase.RG[27])
+			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[28], c.ModuleBase.RG[29], c.ModuleBase.RG[30], c.ModuleBase.RG[31])
 			continue
 		}
 
