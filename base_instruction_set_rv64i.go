@@ -34,7 +34,7 @@ func ExecuterRV64I(r *RegisterRV64I, data []byte) int {
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_0011: // ADDI
 		_, rd, _, rs1, imm := IType(data)
 		DebuglnIType("ADDI", rd, rs1, imm)
-		r.RG[rd] = r.RG[rs1] + uint64(imm)
+		r.RG[rd] = r.RG[rs1] + SignExtend(uint64(imm), 11)
 		r.PC += 4
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0001_0011: // SLTI
