@@ -25,9 +25,9 @@ func ExecuterC(r *RegisterRV64I, data []byte) int {
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0000_0001: // C.SUB
 		var (
 			rdrs1 = (i & 0b_0000_0011_1000_0000) >> 7
-			rs2   = (i & 0b_0000_0000_0001_1100) >> 7
+			rs2   = (i & 0b_0000_0000_0001_1100) >> 2
 		)
-		DebuglnRType("C.SUB", rdrs1+8, rdrs1+8, rs2)
+		DebuglnRType("C.SUB", rdrs1+8, rdrs1+8, rs2+8)
 		r.RG[rdrs1+8] = r.RG[rdrs1+8] - r.RG[rs2+8]
 		r.PC += 2
 		return 1

@@ -45,11 +45,11 @@ func (c *CPU) Run() {
 	flag.Parse()
 	i := 0
 	for {
-		i += 1
 		if i > int(*cStep) {
 			break
 		}
 		data := c.FetchInstruction()
+		log.Println("==========")
 		if len(data) == 2 {
 			log.Printf("%08b %08b\n", data[1], data[0])
 		} else if len(data) == 4 {
@@ -57,28 +57,35 @@ func (c *CPU) Run() {
 		} else {
 			log.Panicln("")
 		}
+		var s uint64 = 0
+		for i := 0; i < 32; i++ {
+			s += c.ModuleBase.RG[i]
+		}
+		log.Println(i, c.ModuleBase.PC, s)
 		if len(data) == 4 {
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[0], c.ModuleBase.RG[1], c.ModuleBase.RG[2], c.ModuleBase.RG[3])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[4], c.ModuleBase.RG[5], c.ModuleBase.RG[6], c.ModuleBase.RG[7])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[8], c.ModuleBase.RG[9], c.ModuleBase.RG[10], c.ModuleBase.RG[11])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[12], c.ModuleBase.RG[13], c.ModuleBase.RG[14], c.ModuleBase.RG[15])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[16], c.ModuleBase.RG[17], c.ModuleBase.RG[18], c.ModuleBase.RG[19])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[20], c.ModuleBase.RG[21], c.ModuleBase.RG[22], c.ModuleBase.RG[23])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[24], c.ModuleBase.RG[25], c.ModuleBase.RG[26], c.ModuleBase.RG[27])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[28], c.ModuleBase.RG[29], c.ModuleBase.RG[30], c.ModuleBase.RG[31])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[0], c.ModuleBase.RG[1], c.ModuleBase.RG[2], c.ModuleBase.RG[3])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[4], c.ModuleBase.RG[5], c.ModuleBase.RG[6], c.ModuleBase.RG[7])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[8], c.ModuleBase.RG[9], c.ModuleBase.RG[10], c.ModuleBase.RG[11])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[12], c.ModuleBase.RG[13], c.ModuleBase.RG[14], c.ModuleBase.RG[15])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[16], c.ModuleBase.RG[17], c.ModuleBase.RG[18], c.ModuleBase.RG[19])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[20], c.ModuleBase.RG[21], c.ModuleBase.RG[22], c.ModuleBase.RG[23])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[24], c.ModuleBase.RG[25], c.ModuleBase.RG[26], c.ModuleBase.RG[27])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[28], c.ModuleBase.RG[29], c.ModuleBase.RG[30], c.ModuleBase.RG[31])
 			if riscv.ExecuterRV64I(c.ModuleBase, data) != 0 {
+				i += 1
 				continue
 			}
 		}
 		if riscv.ExecuterC(c.ModuleBase, data) != 0 {
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[0], c.ModuleBase.RG[1], c.ModuleBase.RG[2], c.ModuleBase.RG[3])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[4], c.ModuleBase.RG[5], c.ModuleBase.RG[6], c.ModuleBase.RG[7])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[8], c.ModuleBase.RG[9], c.ModuleBase.RG[10], c.ModuleBase.RG[11])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[12], c.ModuleBase.RG[13], c.ModuleBase.RG[14], c.ModuleBase.RG[15])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[16], c.ModuleBase.RG[17], c.ModuleBase.RG[18], c.ModuleBase.RG[19])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[20], c.ModuleBase.RG[21], c.ModuleBase.RG[22], c.ModuleBase.RG[23])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[24], c.ModuleBase.RG[25], c.ModuleBase.RG[26], c.ModuleBase.RG[27])
-			log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[28], c.ModuleBase.RG[29], c.ModuleBase.RG[30], c.ModuleBase.RG[31])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[0], c.ModuleBase.RG[1], c.ModuleBase.RG[2], c.ModuleBase.RG[3])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[4], c.ModuleBase.RG[5], c.ModuleBase.RG[6], c.ModuleBase.RG[7])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[8], c.ModuleBase.RG[9], c.ModuleBase.RG[10], c.ModuleBase.RG[11])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[12], c.ModuleBase.RG[13], c.ModuleBase.RG[14], c.ModuleBase.RG[15])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[16], c.ModuleBase.RG[17], c.ModuleBase.RG[18], c.ModuleBase.RG[19])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[20], c.ModuleBase.RG[21], c.ModuleBase.RG[22], c.ModuleBase.RG[23])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[24], c.ModuleBase.RG[25], c.ModuleBase.RG[26], c.ModuleBase.RG[27])
+			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[28], c.ModuleBase.RG[29], c.ModuleBase.RG[30], c.ModuleBase.RG[31])
+			i += 1
 			continue
 		}
 
@@ -348,7 +355,7 @@ func main() {
 			RG: [32]uint64{},
 			PC: 0,
 		},
-		Mem: make([]byte, 8*1024*1024),
+		Mem: make([]byte, 4*1024*1024),
 	}
 
 	f, err := elf.Open(flag.Arg(0))
@@ -383,11 +390,11 @@ func main() {
 	// | argc        |
 
 	addr := []uint64{0}
-	for i := len(cEnvs) - 1; i >= 0; i-- {
-		cpu.pushString(cEnvs[i])
-		addr = append(addr, cpu.ModuleBase.RG[riscv.Rsp])
-	}
-	addr = append(addr, 0)
+	// for i := len(cEnvs) - 1; i >= 0; i-- {
+	// 	cpu.pushString(cEnvs[i])
+	// 	addr = append(addr, cpu.ModuleBase.RG[riscv.Rsp])
+	// }
+	// addr = append(addr, 0)
 	for i := len(cArgs) - 1; i >= 0; i-- {
 		cpu.pushString(cArgs[i])
 		addr = append(addr, cpu.ModuleBase.RG[riscv.Rsp])
