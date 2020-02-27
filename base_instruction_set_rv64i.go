@@ -32,7 +32,7 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0110_0011: // BNE
 		rs1, rs2, imm := BType(i)
-		DebuglnBType("BEQ", rs1, rs2, imm)
+		DebuglnBType("BNE", rs1, rs2, imm)
 		if r.RG[rs1] != r.RG[rs2] {
 			r.PC = r.PC + SignExtend(imm, 12)
 		} else {
@@ -41,7 +41,7 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0110_0011: // BLT
 		rs1, rs2, imm := BType(i)
-		DebuglnBType("BEQ", rs1, rs2, imm)
+		DebuglnBType("BLT", rs1, rs2, imm)
 		if r.RG[rs1] < r.RG[rs2] {
 			r.PC = r.PC + SignExtend(imm, 12)
 		} else {
@@ -50,7 +50,7 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0110_0011: // BGE
 		rs1, rs2, imm := BType(i)
-		DebuglnBType("BEQ", rs1, rs2, imm)
+		DebuglnBType("BGE", rs1, rs2, imm)
 		if r.RG[rs1] >= r.RG[rs2] {
 			r.PC = r.PC + SignExtend(imm, 12)
 		} else {
@@ -59,7 +59,7 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0110_0011: // BLTU
 		rs1, rs2, imm := BType(i)
-		DebuglnBType("BEQ", rs1, rs2, imm)
+		DebuglnBType("BLTU", rs1, rs2, imm)
 		if r.RG[rs1] < r.RG[rs2] {
 			r.PC = r.PC + imm
 		} else {
@@ -68,7 +68,7 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0111_0000_0110_0011: // BGEU
 		rs1, rs2, imm := BType(i)
-		DebuglnBType("BEQ", rs1, rs2, imm)
+		DebuglnBType("BGEU", rs1, rs2, imm)
 		if r.RG[rs1] >= r.RG[rs2] {
 			r.PC = r.PC + imm
 		} else {
