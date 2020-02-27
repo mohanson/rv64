@@ -16,43 +16,48 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 		return 1
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_1111: // JAL
 		rd, imm := JType(i)
-		DebuglnJType("JAL", rd, SignExtend(imm, 19))
+		imm = SignExtend(imm, 19)
+		DebuglnJType("JAL", rd, imm)
 		r.RG[rd] = r.PC + 4
-		r.PC = r.PC + SignExtend(imm, 19)
+		r.PC = r.PC + imm
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0111: // JALR
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0011: // BEQ
 		rs1, rs2, imm := BType(i)
+		imm = SignExtend(imm, 12)
 		DebuglnBType("BEQ", rs1, rs2, imm)
 		if r.RG[rs1] == r.RG[rs2] {
-			r.PC = r.PC + SignExtend(imm, 12)
+			r.PC = r.PC + imm
 		} else {
 			r.PC += 4
 		}
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0110_0011: // BNE
 		rs1, rs2, imm := BType(i)
+		SignExtend(imm, 12)
 		DebuglnBType("BNE", rs1, rs2, imm)
 		if r.RG[rs1] != r.RG[rs2] {
-			r.PC = r.PC + SignExtend(imm, 12)
+			r.PC = r.PC + imm
 		} else {
 			r.PC += 4
 		}
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0110_0011: // BLT
 		rs1, rs2, imm := BType(i)
+		imm = SignExtend(imm, 12)
 		DebuglnBType("BLT", rs1, rs2, imm)
 		if r.RG[rs1] < r.RG[rs2] {
-			r.PC = r.PC + SignExtend(imm, 12)
+			r.PC = r.PC + imm
 		} else {
 			r.PC += 4
 		}
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0110_0011: // BGE
 		rs1, rs2, imm := BType(i)
+		imm = SignExtend(imm, 12)
 		DebuglnBType("BGE", rs1, rs2, imm)
 		if r.RG[rs1] >= r.RG[rs2] {
-			r.PC = r.PC + SignExtend(imm, 12)
+			r.PC = r.PC + imm
 		} else {
 			r.PC += 4
 		}
@@ -85,14 +90,16 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0010_0011: // SW
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_0011: // ADDI
 		rd, rs1, imm := IType(i)
-		DebuglnIType("ADDI", rd, rs1, SignExtend(imm, 11))
-		r.RG[rd] = r.RG[rs1] + SignExtend(imm, 11)
+		imm = SignExtend(imm, 11)
+		DebuglnIType("ADDI", rd, rs1, imm)
+		r.RG[rd] = r.RG[rs1] + imm
 		r.PC += 4
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0001_0011: // SLTI
 		rd, rs1, imm := IType(i)
-		DebuglnIType("SLTI", rd, rs1, SignExtend(imm, 11))
-		if int64(r.RG[rs1]) < int64(SignExtend(imm, 11)) {
+		imm = SignExtend(imm, 11)
+		DebuglnIType("SLTI", rd, rs1, imm)
+		if int64(r.RG[rs1]) < int64(imm) {
 			r.RG[rd] = 1
 		} else {
 			r.RG[rd] = 0
@@ -111,20 +118,23 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0001_0011: // XORI
 		rd, rs1, imm := IType(i)
-		DebuglnIType("XORI", rd, rs1, SignExtend(imm, 11))
-		r.RG[rd] = r.RG[rs1] ^ SignExtend(imm, 11)
+		imm = SignExtend(imm, 11)
+		DebuglnIType("XORI", rd, rs1, imm)
+		r.RG[rd] = r.RG[rs1] ^ imm
 		r.PC += 4
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0001_0011: // ORI
 		rd, rs1, imm := IType(i)
-		DebuglnIType("ORI", rd, rs1, SignExtend(imm, 11))
-		r.RG[rd] = r.RG[rs1] | SignExtend(imm, 11)
+		imm = SignExtend(imm, 11)
+		DebuglnIType("ORI", rd, rs1, imm)
+		r.RG[rd] = r.RG[rs1] | imm
 		r.PC += 4
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0111_0000_0001_0011: // ANDI
 		rd, rs1, imm := IType(i)
-		DebuglnIType("ANDI", rd, rs1, SignExtend(imm, 11))
-		r.RG[rd] = r.RG[rs1] & SignExtend(imm, 11)
+		imm = SignExtend(imm, 11)
+		DebuglnIType("ANDI", rd, rs1, imm)
+		r.RG[rd] = r.RG[rs1] & imm
 		r.PC += 4
 		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0001_0011: // SLLI
