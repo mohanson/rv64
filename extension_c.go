@@ -1,5 +1,10 @@
 package riscv
 
+import (
+	"fmt"
+	"log"
+)
+
 func ExecuterC(r *RegisterRV64I, data []byte) int {
 	i := int(data[1])<<8 | int(data[0])
 	switch {
@@ -17,6 +22,17 @@ func ExecuterC(r *RegisterRV64I, data []byte) int {
 	case i&0b_1110_0000_0000_0011 == 0b_0000_0000_0000_0001: // C.ADDI
 	case i&0b_1110_0000_0000_0011 == 0b_0010_0000_0000_0001: // C.ADDIW
 	case i&0b_1110_0000_0000_0011 == 0b_0100_0000_0000_0001: // C.LI
+		var (
+			imm = ((i & 0b_0001_0000_0000_0000) >> 7) | ((i & 0b_0000_0000_0111_1100) >> 2)
+			rd  = (i & 0b_0000_1111_1000_0000) >> 7
+		)
+		if rd == 0 {
+			log.Println("")
+		}
+		Debugln(fmt.Sprintf("Instr: % 10s | rd: 0x%02x imm: 0x%02x", "C.LI", rd, imm))
+		r.RG[rd] = r.RG[rd] + SignExtend(uint64(imm), 5)
+		r.PC += 2
+		return 1
 	case i&0b_1110_1111_1000_0011 == 0b_0110_0001_0000_0001: // C.ADDI16SP
 	case i&0b_1110_0000_0000_0011 == 0b_0110_0000_0000_0001: // C.LUI
 	case i&0b_1111_1100_0111_1111 == 0b_1000_0000_0000_0001: // C.SRLI64
