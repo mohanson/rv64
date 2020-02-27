@@ -31,7 +31,9 @@ func SType(i uint64) (opcode int, imm uint64, funct3 int, rs1 int, rs2 int) {
 	return
 }
 
-func BType() {}
+func BType() (opcode int, funct3 int, rs1 int, rs2 int, imm uint64) {
+	return
+}
 
 func UType(i uint64) (opcode int, rd int, imm uint64) {
 	opcode = int(InstructionPart(i, 0, 6))
@@ -40,4 +42,9 @@ func UType(i uint64) (opcode int, rd int, imm uint64) {
 	return
 }
 
-func JType() {}
+func JType(i uint64) (opcode int, rd int, imm uint64) {
+	opcode = int(InstructionPart(i, 0, 6))
+	rd = int(InstructionPart(i, 7, 11))
+	imm = InstructionPart(i, 31, 31)<<20 | InstructionPart(i, 12, 19)<<12 | InstructionPart(i, 20, 20)<<11 | InstructionPart(i, 21, 30)
+	return
+}
