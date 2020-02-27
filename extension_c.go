@@ -1,10 +1,5 @@
 package riscv
 
-import (
-	"fmt"
-	"log"
-)
-
 func ExecuterC(r *RegisterRV64I, i uint64) int {
 	switch {
 	case i&0b_1111_1111_1111_1111 == 0b_0000_0000_0000_0000: // Illegal instruction
@@ -22,14 +17,11 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 	case i&0b_1110_0000_0000_0011 == 0b_0010_0000_0000_0001: // C.ADDIW
 	case i&0b_1110_0000_0000_0011 == 0b_0100_0000_0000_0001: // C.LI
 		var (
-			imm = ((i & 0b_0001_0000_0000_0000) >> 7) | ((i & 0b_0000_0000_0111_1100) >> 2)
-			rd  = (i & 0b_0000_1111_1000_0000) >> 7
+			imm = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
+			rd  = int(InstructionPart(i, 7, 11))
 		)
-		if rd == 0 {
-			log.Println("")
-		}
-		Debugln(fmt.Sprintf("Instr: % 10s | rd: 0x%02x imm: 0x%02x", "C.LI", rd, imm))
-		r.RG[rd] = r.RG[rd] + SignExtend(uint64(imm), 5)
+		DebuglnIType("C.LI", rd, rd, SignExtend(imm, 5))
+		r.RG[rd] = r.RG[rd] + SignExtend(imm, 5)
 		r.PC += 2
 		return 1
 	case i&0b_1110_1111_1000_0011 == 0b_0110_0001_0000_0001: // C.ADDI16SP
