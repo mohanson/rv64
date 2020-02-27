@@ -5,14 +5,13 @@ type RegisterRV64I struct {
 	PC uint64
 }
 
-func ExecuterRV64I(r *RegisterRV64I, data []byte) int {
-	i := (int(data[3]) << 24) | (int(data[2]) << 16) | (int(data[1]) << 8) | int(data[0])
+func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 	switch {
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_0111: // LUI
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_00010_111: // AUIPC
-		_, rd, imm := UType(data)
-		DebuglnUType("AUIPC", rd, imm)
-		r.RG[rd] = r.PC + uint64(imm)
+		_, rd, imm := UType(i)
+		DebuglnUType("AUIPC", rd, imm<<12)
+		r.RG[rd] = r.PC + imm<<12
 		r.PC += 4
 		return 1
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_1111: // JAL
@@ -32,9 +31,9 @@ func ExecuterRV64I(r *RegisterRV64I, data []byte) int {
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0010_0011: // SH
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0010_0011: // SW
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_0011: // ADDI
-		_, rd, _, rs1, imm := IType(data)
-		DebuglnIType("ADDI", rd, rs1, imm)
-		r.RG[rd] = r.RG[rs1] + SignExtend(uint64(imm), 11)
+		_, rd, _, rs1, imm := IType(i)
+		DebuglnIType("ADDI", rd, rs1, SignExtend(imm, 11))
+		r.RG[rd] = r.RG[rs1] + SignExtend(imm, 11)
 		r.PC += 4
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0001_0011: // SLTI

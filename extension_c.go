@@ -5,8 +5,7 @@ import (
 	"log"
 )
 
-func ExecuterC(r *RegisterRV64I, data []byte) int {
-	i := int(data[1])<<8 | int(data[0])
+func ExecuterC(r *RegisterRV64I, i uint64) int {
 	switch {
 	case i&0b_1111_1111_1111_1111 == 0b_0000_0000_0000_0000: // Illegal instruction
 	case i&0b_1110_0000_0000_0011 == 0b_0000_0000_0000_0000: // C.ADDI4SPN
@@ -40,8 +39,8 @@ func ExecuterC(r *RegisterRV64I, data []byte) int {
 	case i&0b_1110_1100_0000_0011 == 0b_1000_1000_0000_0001: // C.ANDI
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0000_0001: // C.SUB
 		var (
-			rdrs1 = (i & 0b_0000_0011_1000_0000) >> 7
-			rs2   = (i & 0b_0000_0000_0001_1100) >> 2
+			rdrs1 = int(InstructionPart(i, 7, 9))
+			rs2   = int(InstructionPart(i, 2, 4))
 		)
 		DebuglnRType("C.SUB", rdrs1+8, rdrs1+8, rs2+8)
 		r.RG[rdrs1+8] = r.RG[rdrs1+8] - r.RG[rs2+8]

@@ -63,6 +63,11 @@ func (c *CPU) Run() {
 		}
 		log.Println(i, c.ModuleBase.PC, s)
 		if len(data) == 4 {
+			var s uint64 = 0
+			for i := len(data) - 1; i >= 0; i-- {
+				s += uint64(data[i]) << (8 * i)
+			}
+
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[0], c.ModuleBase.RG[1], c.ModuleBase.RG[2], c.ModuleBase.RG[3])
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[4], c.ModuleBase.RG[5], c.ModuleBase.RG[6], c.ModuleBase.RG[7])
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[8], c.ModuleBase.RG[9], c.ModuleBase.RG[10], c.ModuleBase.RG[11])
@@ -71,12 +76,17 @@ func (c *CPU) Run() {
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[20], c.ModuleBase.RG[21], c.ModuleBase.RG[22], c.ModuleBase.RG[23])
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[24], c.ModuleBase.RG[25], c.ModuleBase.RG[26], c.ModuleBase.RG[27])
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[28], c.ModuleBase.RG[29], c.ModuleBase.RG[30], c.ModuleBase.RG[31])
-			if riscv.ExecuterRV64I(c.ModuleBase, data) != 0 {
+			if riscv.ExecuterRV64I(c.ModuleBase, s) != 0 {
 				i += 1
 				continue
 			}
 		}
-		if riscv.ExecuterC(c.ModuleBase, data) != 0 {
+
+		s = 0
+		for i := len(data) - 1; i >= 0; i-- {
+			s += uint64(data[i]) << (8 * i)
+		}
+		if riscv.ExecuterC(c.ModuleBase, s) != 0 {
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[0], c.ModuleBase.RG[1], c.ModuleBase.RG[2], c.ModuleBase.RG[3])
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[4], c.ModuleBase.RG[5], c.ModuleBase.RG[6], c.ModuleBase.RG[7])
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[8], c.ModuleBase.RG[9], c.ModuleBase.RG[10], c.ModuleBase.RG[11])
