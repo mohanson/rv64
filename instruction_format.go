@@ -39,6 +39,6 @@ func UType(i uint64) (rd int, imm uint64) {
 
 func JType(i uint64) (rd int, imm uint64) {
 	rd = int(InstructionPart(i, 7, 11))
-	imm = InstructionPart(i, 31, 31)<<20 | InstructionPart(i, 12, 19)<<12 | InstructionPart(i, 20, 20)<<11 | InstructionPart(i, 21, 30)
+	imm = InstructionPart(i, 31, 31)<<20 | InstructionPart(i, 12, 19)<<12 | InstructionPart(i, 20, 20)<<11 | InstructionPart(i, 21, 30)<<1
 	return
 }
