@@ -19,7 +19,7 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 		imm = SignExtend(imm, 19)
 		DebuglnJType("JAL", rd, imm)
 		r.RG[rd] = r.PC + 4
-		r.PC = r.PC + imm
+		r.PC += imm
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0111: // JALR
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0011: // BEQ
@@ -27,17 +27,17 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 		imm = SignExtend(imm, 12)
 		DebuglnBType("BEQ", rs1, rs2, imm)
 		if r.RG[rs1] == r.RG[rs2] {
-			r.PC = r.PC + imm
+			r.PC += imm
 		} else {
 			r.PC += 4
 		}
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0110_0011: // BNE
 		rs1, rs2, imm := BType(i)
-		SignExtend(imm, 12)
+		imm = SignExtend(imm, 12)
 		DebuglnBType("BNE", rs1, rs2, imm)
 		if r.RG[rs1] != r.RG[rs2] {
-			r.PC = r.PC + imm
+			r.PC += imm
 		} else {
 			r.PC += 4
 		}
@@ -46,8 +46,8 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 		rs1, rs2, imm := BType(i)
 		imm = SignExtend(imm, 12)
 		DebuglnBType("BLT", rs1, rs2, imm)
-		if r.RG[rs1] < r.RG[rs2] {
-			r.PC = r.PC + imm
+		if int64(r.RG[rs1]) < int64(r.RG[rs2]) {
+			r.PC += imm
 		} else {
 			r.PC += 4
 		}
@@ -56,26 +56,28 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 		rs1, rs2, imm := BType(i)
 		imm = SignExtend(imm, 12)
 		DebuglnBType("BGE", rs1, rs2, imm)
-		if r.RG[rs1] >= r.RG[rs2] {
-			r.PC = r.PC + imm
+		if int64(r.RG[rs1]) >= int64(r.RG[rs2]) {
+			r.PC += imm
 		} else {
 			r.PC += 4
 		}
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0110_0011: // BLTU
 		rs1, rs2, imm := BType(i)
+		imm = SignExtend(imm, 12)
 		DebuglnBType("BLTU", rs1, rs2, imm)
 		if r.RG[rs1] < r.RG[rs2] {
-			r.PC = r.PC + imm
+			r.PC += imm
 		} else {
 			r.PC += 4
 		}
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0111_0000_0110_0011: // BGEU
 		rs1, rs2, imm := BType(i)
+		imm = SignExtend(imm, 12)
 		DebuglnBType("BGEU", rs1, rs2, imm)
 		if r.RG[rs1] >= r.RG[rs2] {
-			r.PC = r.PC + imm
+			r.PC += imm
 		} else {
 			r.PC += 4
 		}

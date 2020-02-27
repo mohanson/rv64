@@ -27,6 +27,14 @@ func ExecuterC(r *RegisterRV64I, m []byte, i uint64) int {
 		return 1
 	case i&0b_1111_1111_1111_1111 == 0b_0000_0000_0000_0001: // C.NOP
 	case i&0b_1110_0000_0000_0011 == 0b_0000_0000_0000_0001: // C.ADDI
+		var (
+			rd  = int(InstructionPart(i, 7, 11))
+			imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6)<<0, 5)
+		)
+		DebuglnIType("C.ADDI", rd, rd, imm)
+		r.RG[rd] = r.RG[rd] + imm
+		r.PC += 2
+		return 1
 	case i&0b_1110_0000_0000_0011 == 0b_0010_0000_0000_0001: // C.ADDIW
 	case i&0b_1110_0000_0000_0011 == 0b_0100_0000_0000_0001: // C.LI
 		var (

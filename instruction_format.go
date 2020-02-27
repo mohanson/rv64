@@ -27,7 +27,7 @@ func SType(i uint64) (rs1 int, rs2 int, imm uint64) {
 func BType(i uint64) (rs1 int, rs2 int, imm uint64) {
 	rs1 = int(InstructionPart(i, 15, 19))
 	rs2 = int(InstructionPart(i, 20, 24))
-	imm = InstructionPart(i, 31, 31)<<12 | InstructionPart(i, 7, 7)<<11 | InstructionPart(i, 25, 30)<<5 | InstructionPart(i, 8, 11)
+	imm = InstructionPart(i, 31, 31)<<12 | InstructionPart(i, 7, 7)<<11 | InstructionPart(i, 25, 30)<<5 | InstructionPart(i, 8, 11)<<1
 	return
 }
 
