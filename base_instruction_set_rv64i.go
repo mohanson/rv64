@@ -10,8 +10,8 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_0111: // LUI
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_00010_111: // AUIPC
 		_, rd, imm := UType(i)
-		DebuglnUType("AUIPC", rd, imm<<12)
-		r.RG[rd] = r.PC + imm<<12
+		DebuglnUType("AUIPC", rd, imm)
+		r.RG[rd] = r.PC + imm
 		r.PC += 4
 		return 1
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_1111: // JAL

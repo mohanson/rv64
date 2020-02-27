@@ -36,7 +36,7 @@ func BType() {}
 func UType(i uint64) (opcode int, rd int, imm uint64) {
 	opcode = int(InstructionPart(i, 0, 6))
 	rd = int(InstructionPart(i, 7, 11))
-	imm = InstructionPart(i, 12, 31)
+	imm = InstructionPart(i, 12, 31) << 12
 	return
 }
 
