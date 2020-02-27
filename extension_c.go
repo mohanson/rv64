@@ -19,8 +19,8 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 	case i&0b_1110_0000_0000_0011 == 0b_0010_0000_0000_0001: // C.ADDIW
 	case i&0b_1110_0000_0000_0011 == 0b_0100_0000_0000_0001: // C.LI
 		var (
-			imm = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
 			rd  = int(InstructionPart(i, 7, 11))
+			imm = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
 		)
 		if rd == 0 {
 			log.Panicln("")
@@ -36,11 +36,11 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 	case i&0b_1110_1100_0000_0011 == 0b_1000_1000_0000_0001: // C.ANDI
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0000_0001: // C.SUB
 		var (
-			rdrs1 = int(InstructionPart(i, 7, 9))
-			rs2   = int(InstructionPart(i, 2, 4))
+			rd  = int(InstructionPart(i, 7, 9))
+			rs2 = int(InstructionPart(i, 2, 4))
 		)
-		DebuglnRType("C.SUB", rdrs1+8, rdrs1+8, rs2+8)
-		r.RG[rdrs1+8] = r.RG[rdrs1+8] - r.RG[rs2+8]
+		DebuglnRType("C.SUB", rd+8, rd+8, rs2+8)
+		r.RG[rd+8] = r.RG[rd+8] - r.RG[rs2+8]
 		r.PC += 2
 		return 1
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0010_0001: // C.XOR
@@ -52,8 +52,29 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 	case i&0b_1111_1100_0110_0011 == 0b_1001_1100_0110_0001: // Reserved
 	case i&0b_1110_0000_0000_0011 == 0b_1010_0000_0000_0001: // C.J
 	case i&0b_1110_0000_0000_0011 == 0b_1100_0000_0000_0001: // C.BEQZ
+		var (
+			rs1 = int(InstructionPart(i, 7, 9))
+			imm = InstructionPart(i, 12, 12)<<7 | InstructionPart(i, 5, 6)<<5 | InstructionPart(i, 2, 2)<<4 | InstructionPart(i, 10, 11)<<2 | InstructionPart(i, 3, 4)<<0
+		)
+		DebuglnBType("C.BNEZ", rs1, Rzero, imm)
+		if r.RG[rs1] == r.RG[Rzero] {
+			r.PC = r.PC + SignExtend(imm, 12)
+		} else {
+			r.PC += 2
+		}
+		return 1
 	case i&0b_1110_0000_0000_0011 == 0b_1110_0000_0000_0001: // C.BNEZ
-
+		var (
+			rs1 = int(InstructionPart(i, 7, 9))
+			imm = InstructionPart(i, 12, 12)<<7 | InstructionPart(i, 5, 6)<<5 | InstructionPart(i, 2, 2)<<4 | InstructionPart(i, 10, 11)<<2 | InstructionPart(i, 3, 4)<<0
+		)
+		DebuglnBType("C.BNEZ", rs1, Rzero, imm)
+		if r.RG[rs1] != r.RG[Rzero] {
+			r.PC = r.PC + SignExtend(imm, 12)
+		} else {
+			r.PC += 2
+		}
+		return 1
 	case i&0b_1111_0000_0111_1111 == 0b_0000_0000_0000_0010: // C.SLLI64
 	case i&0b_1111_0000_0000_0011 == 0b_0010_0000_0000_0010: // C.FLDSP
 	case i&0b_1110_0000_0000_0011 == 0b_0100_0000_0000_0010: // C.LWSP
