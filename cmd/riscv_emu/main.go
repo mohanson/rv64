@@ -39,7 +39,7 @@ func (c *CPU) FetchInstruction() []byte {
 	return instructionBytes
 }
 
-var cStep = flag.Int64("steps", 20, "")
+var cStep = flag.Int64("steps", 30, "")
 
 func (c *CPU) Run() {
 	flag.Parse()
@@ -76,7 +76,7 @@ func (c *CPU) Run() {
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[20], c.ModuleBase.RG[21], c.ModuleBase.RG[22], c.ModuleBase.RG[23])
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[24], c.ModuleBase.RG[25], c.ModuleBase.RG[26], c.ModuleBase.RG[27])
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[28], c.ModuleBase.RG[29], c.ModuleBase.RG[30], c.ModuleBase.RG[31])
-			if riscv.ExecuterRV64I(c.ModuleBase, s) != 0 {
+			if riscv.ExecuterRV64I(c.ModuleBase, c.Mem, s) != 0 {
 				i += 1
 				continue
 			}
