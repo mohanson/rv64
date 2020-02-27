@@ -13,16 +13,24 @@ func RType(data []byte) (opcode int, rd int, funct3 int, rs1 int, rs2 int, funct
 	return
 }
 
-func IType(data []byte) (opcode int, rd int, funct3 int, rs1 int, imm int32) {
+func IType(data []byte) (opcode int, rd int, funct3 int, rs1 int, imm uint64) {
 	opcode = int(data[0]) & 0x8f
 	rd = (int(data[1])&0x0f)<<1 | (int(data[0]) >> 7)
 	funct3 = (int(data[1]) >> 4) & 0x07
 	rs1 = ((int(data[2]) & 0x0f) << 1) | (int(data[1]) >> 7)
-	imm = int32((int(data[3]) << 4) | int(data[2])>>4)
+	imm = uint64((int(data[3]) << 4) | int(data[2])>>4)
 	return
 }
 
-func SType() {}
+func SType(data []byte) (opcode int, imm uint64, funct3 int, rs1 int, rs2 int) {
+	opcode = int(data[0]) & 0x8f
+	imm = uint64(((int(data[3]) & 0xf7) << 4) | ((int(data[1]) & 0x0f) << 1) | ((int(data[0]) & 0x80) >> 7))
+	funct3 = (int(data[1]) >> 4) & 0x07
+	rs1 = ((int(data[2]) & 0x0f) << 1) | (int(data[1]) >> 7)
+	rs2 = ((int(data[4]) & 0x01) << 3) | (int(data[2]) >> 5)
+	return
+}
+
 func BType() {}
 
 func UType(data []byte) (opcode int, rd int, imm uint32) {
