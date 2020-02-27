@@ -1,5 +1,7 @@
 package riscv
 
+import "log"
+
 func ExecuterC(r *RegisterRV64I, i uint64) int {
 	switch {
 	case i&0b_1111_1111_1111_1111 == 0b_0000_0000_0000_0000: // Illegal instruction
@@ -20,6 +22,9 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 			imm = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
 			rd  = int(InstructionPart(i, 7, 11))
 		)
+		if rd == 0 {
+			log.Panicln("")
+		}
 		DebuglnIType("C.LI", rd, rd, SignExtend(imm, 5))
 		r.RG[rd] = r.RG[rd] + SignExtend(imm, 5)
 		r.PC += 2
@@ -55,6 +60,17 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 	case i&0b_1110_0000_0000_0011 == 0b_0110_0000_0000_0010: // C.LDSP
 	case i&0b_1111_0000_0111_1111 == 0b_1000_0000_0000_0010: // C.JR
 	case i&0b_1111_0000_0000_0011 == 0b_1000_0000_0000_0010: // C.MV
+		var (
+			rd  = int(InstructionPart(i, 7, 11))
+			rs2 = int(InstructionPart(i, 2, 6))
+		)
+		if rd == 0 || rs2 == 0 {
+			log.Panicln("")
+		}
+		DebuglnRType("C.MV", rd, Rzero, rs2)
+		r.RG[rd] = r.RG[rs2]
+		r.PC += 2
+		return 1
 	case i&0b_1111_1111_1111_1111 == 0b_1001_0000_0000_0010: // C.EBREAK
 	case i&0b_1111_0000_0111_1111 == 0b_1001_0000_0000_0010: // C.JALR
 	case i&0b_1111_0000_0000_0011 == 0b_1001_0000_0000_0010: // C.ADD
