@@ -54,11 +54,11 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 	case i&0b_1110_0000_0000_0011 == 0b_1100_0000_0000_0001: // C.BEQZ
 		var (
 			rs1 = int(InstructionPart(i, 7, 9))
-			imm = InstructionPart(i, 12, 12)<<7 | InstructionPart(i, 5, 6)<<5 | InstructionPart(i, 2, 2)<<4 | InstructionPart(i, 10, 11)<<2 | InstructionPart(i, 3, 4)<<0
+			imm = InstructionPart(i, 12, 12)<<8 | InstructionPart(i, 5, 6)<<6 | InstructionPart(i, 2, 2)<<5 | InstructionPart(i, 10, 11)<<3 | InstructionPart(i, 3, 4)<<1
 		)
-		DebuglnBType("C.BNEZ", rs1, Rzero, imm)
-		if r.RG[rs1] == r.RG[Rzero] {
-			r.PC = r.PC + SignExtend(imm, 12)
+		DebuglnBType("C.BNEZ", rs1+8, Rzero, imm)
+		if r.RG[rs1+8] == r.RG[Rzero] {
+			r.PC = r.PC + SignExtend(imm, 8)
 		} else {
 			r.PC += 2
 		}
@@ -66,11 +66,11 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 	case i&0b_1110_0000_0000_0011 == 0b_1110_0000_0000_0001: // C.BNEZ
 		var (
 			rs1 = int(InstructionPart(i, 7, 9))
-			imm = InstructionPart(i, 12, 12)<<7 | InstructionPart(i, 5, 6)<<5 | InstructionPart(i, 2, 2)<<4 | InstructionPart(i, 10, 11)<<2 | InstructionPart(i, 3, 4)<<0
+			imm = InstructionPart(i, 12, 12)<<8 | InstructionPart(i, 5, 6)<<6 | InstructionPart(i, 2, 2)<<5 | InstructionPart(i, 10, 11)<<3 | InstructionPart(i, 3, 4)<<1
 		)
-		DebuglnBType("C.BNEZ", rs1, Rzero, imm)
-		if r.RG[rs1] != r.RG[Rzero] {
-			r.PC = r.PC + SignExtend(imm, 12)
+		DebuglnBType("C.BNEZ", rs1+8, Rzero, imm)
+		if r.RG[rs1+8] != r.RG[Rzero] {
+			r.PC = r.PC + SignExtend(imm, 8)
 		} else {
 			r.PC += 2
 		}
