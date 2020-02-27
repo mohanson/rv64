@@ -1,8 +1,11 @@
 package riscv
 
-import "log"
+import (
+	"encoding/binary"
+	"log"
+)
 
-func ExecuterC(r *RegisterRV64I, i uint64) int {
+func ExecuterC(r *RegisterRV64I, m []byte, i uint64) int {
 	switch {
 	case i&0b_1111_1111_1111_1111 == 0b_0000_0000_0000_0000: // Illegal instruction
 	case i&0b_1110_0000_0000_0011 == 0b_0000_0000_0000_0000: // C.ADDI4SPN
@@ -13,7 +16,15 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 	case i&0b_1110_0000_0000_0011 == 0b_1010_0000_0000_0000: // C.FSD
 	case i&0b_1110_0000_0000_0011 == 0b_1100_0000_0000_0000: // C.SW
 	case i&0b_1110_0000_0000_0011 == 0b_1110_0000_0000_0000: // C.SD
-
+		var (
+			rs1 = int(InstructionPart(i, 7, 9)) + 8
+			rs2 = int(InstructionPart(i, 2, 4)) + 8
+			imm = InstructionPart(i, 5, 6)<<6 | InstructionPart(i, 10, 12)<<3
+		)
+		DebuglnSType("C.SD", rs1, rs2, imm)
+		binary.LittleEndian.PutUint64(m[int(r.RG[rs1]+imm):int(r.RG[rs1]+imm)+8], r.RG[rs2])
+		r.PC += 2
+		return 1
 	case i&0b_1111_1111_1111_1111 == 0b_0000_0000_0000_0001: // C.NOP
 	case i&0b_1110_0000_0000_0011 == 0b_0000_0000_0000_0001: // C.ADDI
 	case i&0b_1110_0000_0000_0011 == 0b_0010_0000_0000_0001: // C.ADDIW
@@ -127,6 +138,17 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 	case i&0b_1111_1111_1111_1111 == 0b_1001_0000_0000_0010: // C.EBREAK
 	case i&0b_1111_0000_0111_1111 == 0b_1001_0000_0000_0010: // C.JALR
 	case i&0b_1111_0000_0000_0011 == 0b_1001_0000_0000_0010: // C.ADD
+		var (
+			rd  = int(InstructionPart(i, 7, 11))
+			rs2 = int(InstructionPart(i, 2, 6))
+		)
+		if rd == 0 || rs2 == 0 {
+			log.Panicln("")
+		}
+		DebuglnRType("C.ADD", rd, rd, rs2)
+		r.RG[rd] += r.RG[rs2]
+		r.PC += 2
+		return 1
 	case i&0b_1110_0000_0000_0011 == 0b_1010_0000_0000_0010: // C.FSDSP
 	case i&0b_1110_0000_0000_0011 == 0b_1100_0000_0000_0010: // C.SWSP
 	case i&0b_1110_0000_0000_0011 == 0b_1110_0000_0000_0010: // C.SDSP
