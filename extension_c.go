@@ -20,13 +20,13 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 	case i&0b_1110_0000_0000_0011 == 0b_0100_0000_0000_0001: // C.LI
 		var (
 			rd  = int(InstructionPart(i, 7, 11))
-			imm = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
+			imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 5)
 		)
 		if rd == 0 {
 			log.Panicln("")
 		}
-		DebuglnIType("C.LI", rd, rd, SignExtend(imm, 5))
-		r.RG[rd] = r.RG[rd] + SignExtend(imm, 5)
+		DebuglnIType("C.LI", rd, rd, imm)
+		r.RG[rd] = r.RG[rd] + imm
 		r.PC += 2
 		return 1
 	case i&0b_1110_1111_1000_0011 == 0b_0110_0001_0000_0001: // C.ADDI16SP
@@ -34,18 +34,50 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 	case i&0b_1111_1100_0111_1111 == 0b_1000_0000_0000_0001: // C.SRLI64
 	case i&0b_1111_1100_0111_1111 == 0b_1000_0100_0000_0001: // C.SRAI64
 	case i&0b_1110_1100_0000_0011 == 0b_1000_1000_0000_0001: // C.ANDI
+		var (
+			rd  = int(InstructionPart(i, 7, 9)) + 8
+			imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6)<<0, 5)
+		)
+		DebuglnIType("C.ANDI", rd, rd, imm)
+		r.RG[rd] = r.RG[rd] & imm
+		r.PC += 2
+		return 1
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0000_0001: // C.SUB
 		var (
-			rd  = int(InstructionPart(i, 7, 9))
-			rs2 = int(InstructionPart(i, 2, 4))
+			rd  = int(InstructionPart(i, 7, 9)) + 8
+			rs2 = int(InstructionPart(i, 2, 4)) + 8
 		)
-		DebuglnRType("C.SUB", rd+8, rd+8, rs2+8)
-		r.RG[rd+8] = r.RG[rd+8] - r.RG[rs2+8]
+		DebuglnRType("C.SUB", rd, rd, rs2)
+		r.RG[rd] = r.RG[rd] - r.RG[rs2]
 		r.PC += 2
 		return 1
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0010_0001: // C.XOR
+		var (
+			rd  = int(InstructionPart(i, 7, 9)) + 8
+			rs2 = int(InstructionPart(i, 2, 4)) + 8
+		)
+		DebuglnRType("C.XOR", rd, rd, rs2)
+		r.RG[rd] = r.RG[rd] ^ r.RG[rs2]
+		r.PC += 2
+		return 1
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0100_0001: // C.OR
+		var (
+			rd  = int(InstructionPart(i, 7, 9)) + 8
+			rs2 = int(InstructionPart(i, 2, 4)) + 8
+		)
+		DebuglnRType("C.OR", rd, rd, rs2)
+		r.RG[rd] = r.RG[rd] | r.RG[rs2]
+		r.PC += 2
+		return 1
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0110_0001: // C.AND
+		var (
+			rd  = int(InstructionPart(i, 7, 9)) + 8
+			rs2 = int(InstructionPart(i, 2, 4)) + 8
+		)
+		DebuglnRType("C.AND", rd, rd, rs2)
+		r.RG[rd] = r.RG[rd] & r.RG[rs2]
+		r.PC += 2
+		return 1
 	case i&0b_1111_1100_0110_0011 == 0b_1001_1100_0000_0001: // C.SUBW
 	case i&0b_1111_1100_0110_0011 == 0b_1001_1100_0010_0001: // C.ADDW
 	case i&0b_1111_1100_0110_0011 == 0b_1001_1100_0100_0001: // Reserved
@@ -53,24 +85,24 @@ func ExecuterC(r *RegisterRV64I, i uint64) int {
 	case i&0b_1110_0000_0000_0011 == 0b_1010_0000_0000_0001: // C.J
 	case i&0b_1110_0000_0000_0011 == 0b_1100_0000_0000_0001: // C.BEQZ
 		var (
-			rs1 = int(InstructionPart(i, 7, 9))
-			imm = InstructionPart(i, 12, 12)<<8 | InstructionPart(i, 5, 6)<<6 | InstructionPart(i, 2, 2)<<5 | InstructionPart(i, 10, 11)<<3 | InstructionPart(i, 3, 4)<<1
+			rs1 = int(InstructionPart(i, 7, 9)) + 8
+			imm = SignExtend(InstructionPart(i, 12, 12)<<8|InstructionPart(i, 5, 6)<<6|InstructionPart(i, 2, 2)<<5|InstructionPart(i, 10, 11)<<3|InstructionPart(i, 3, 4)<<1, 8)
 		)
-		DebuglnBType("C.BNEZ", rs1+8, Rzero, imm)
-		if r.RG[rs1+8] == r.RG[Rzero] {
-			r.PC = r.PC + SignExtend(imm, 8)
+		DebuglnBType("C.BNEZ", rs1, Rzero, imm)
+		if r.RG[rs1] == r.RG[Rzero] {
+			r.PC = r.PC + imm
 		} else {
 			r.PC += 2
 		}
 		return 1
 	case i&0b_1110_0000_0000_0011 == 0b_1110_0000_0000_0001: // C.BNEZ
 		var (
-			rs1 = int(InstructionPart(i, 7, 9))
-			imm = InstructionPart(i, 12, 12)<<8 | InstructionPart(i, 5, 6)<<6 | InstructionPart(i, 2, 2)<<5 | InstructionPart(i, 10, 11)<<3 | InstructionPart(i, 3, 4)<<1
+			rs1 = int(InstructionPart(i, 7, 9)) + 8
+			imm = SignExtend(InstructionPart(i, 12, 12)<<8|InstructionPart(i, 5, 6)<<6|InstructionPart(i, 2, 2)<<5|InstructionPart(i, 10, 11)<<3|InstructionPart(i, 3, 4)<<1, 8)
 		)
-		DebuglnBType("C.BNEZ", rs1+8, Rzero, imm)
-		if r.RG[rs1+8] != r.RG[Rzero] {
-			r.PC = r.PC + SignExtend(imm, 8)
+		DebuglnBType("C.BNEZ", rs1, Rzero, imm)
+		if r.RG[rs1] != r.RG[Rzero] {
+			r.PC = r.PC + imm
 		} else {
 			r.PC += 2
 		}
