@@ -16,7 +16,7 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 		return 1
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_1111: // JAL
 		rd, imm := JType(i)
-		DebuglnJType("JAL", rd, imm)
+		DebuglnJType("JAL", rd, SignExtend(imm, 19))
 		r.RG[rd] = r.PC + 4
 		r.PC = r.PC + SignExtend(imm, 19)
 		return 1
