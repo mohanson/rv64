@@ -23,7 +23,9 @@ func DebuglnIType(i string, rd int, rs1 int, imm uint64) {
 
 func DebuglnSType() {}
 
-func DebuglnBType() {}
+func DebuglnBType(i string, rs1 int, rs2 int, imm uint64) {
+	Debugln(fmt.Sprintf("Instr: % 10s | rs1: 0x%02x rs2: 0x%02x imm: 0x%04x", i, rs1, rs2, imm))
+}
 
 func DebuglnUType(i string, rd int, imm uint64) {
 	Debugln(fmt.Sprintf("Instr: % 10s | rd: 0x%02x imm: 0x%04x", i, rd, imm))
