@@ -26,7 +26,9 @@ func DebuglnSType() {}
 func DebuglnBType() {}
 
 func DebuglnUType(i string, rd int, imm uint64) {
-	log.Printf("Instr: % 10s | rd: 0x%02x imm: 0x%04x", i, rd, imm)
+	Debugln(fmt.Sprintf("Instr: % 10s | rd: 0x%02x imm: 0x%04x", i, rd, imm))
 }
 
-func DebuglnJType() {}
+func DebuglnJType(i string, rd int, imm uint64) {
+	Debugln(fmt.Sprintf("Instr: % 10s | rd: 0x%02x imm: 0x%04x", i, rd, imm))
+}
