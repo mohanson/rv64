@@ -9,7 +9,7 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 	switch {
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_0111: // LUI
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_00010_111: // AUIPC
-		_, rd, imm := UType(i)
+		rd, imm := UType(i)
 		DebuglnUType("AUIPC", rd, imm)
 		r.RG[rd] = r.PC + imm
 		r.PC += 4
@@ -31,7 +31,7 @@ func ExecuterRV64I(r *RegisterRV64I, i uint64) int {
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0010_0011: // SH
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0010_0011: // SW
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_0011: // ADDI
-		_, rd, _, rs1, imm := IType(i)
+		rd, rs1, imm := IType(i)
 		DebuglnIType("ADDI", rd, rs1, SignExtend(imm, 11))
 		r.RG[rd] = r.RG[rs1] + SignExtend(imm, 11)
 		r.PC += 4
