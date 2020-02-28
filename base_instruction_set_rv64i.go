@@ -152,11 +152,26 @@ func ExecuterRV64I(r *RegisterRV64I, m []byte, i uint64) int {
 		r.PC += 4
 		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0001_0011: // SLLI
-		log.Println("SLLI")
+		rd, rs1, imm := IType(i)
+		imm = InstructionPart(imm, 0, 4)
+		DebuglnIType("SLLI", rd, rs1, imm)
+		r.RG[rd] = r.RG[rs1] << imm
+		r.PC += 4
+		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0001_0011: // SRLI
-		log.Println("SRLI")
+		rd, rs1, imm := IType(i)
+		imm = InstructionPart(imm, 0, 4)
+		DebuglnIType("SRLI", rd, rs1, imm)
+		r.RG[rd] = r.RG[rs1] >> imm
+		r.PC += 4
+		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0001_0011: // SRAI
-		log.Println("SRAI")
+		rd, rs1, imm := IType(i)
+		imm = InstructionPart(imm, 0, 4)
+		DebuglnIType("SRAI", rd, rs1, imm)
+		r.RG[rd] = uint64(int64(r.RG[rs1]) >> imm)
+		r.PC += 4
+		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_0011: // ADD
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("ADD", rd, rs1, rs2)
