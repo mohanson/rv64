@@ -30,7 +30,12 @@ func ExecuterRV64I(r *RegisterRV64I, m []byte, i uint64) int {
 		r.PC += imm
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0111: // JALR
-		log.Println("JALR")
+		rd, rs1, imm := IType(i)
+		imm = SignExtend(imm, 11)
+		DebuglnIType("JALR", rd, rs1, imm)
+		r.RG[rd] = r.PC + 4
+		r.PC = ((r.RG[rs1] + imm) >> 1) << 1
+		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0011: // BEQ
 		rs1, rs2, imm := BType(i)
 		imm = SignExtend(imm, 12)

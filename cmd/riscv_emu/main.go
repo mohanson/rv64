@@ -46,6 +46,7 @@ func (c *CPU) Run() {
 	// log.SetFlags(log.LstdFlags | log.Lshortfile)
 	i := 0
 	for {
+		c.ModuleBase.RG[riscv.Rzero] = 0x00
 		if i > int(*cStep) {
 			break
 		}
