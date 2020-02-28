@@ -10,7 +10,12 @@ type RegisterRV64I struct {
 func ExecuterRV64I(r *RegisterRV64I, m []byte, i uint64) int {
 	switch {
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_0111: // LUI
-		log.Println("LUI")
+		rd, imm := UType(i)
+		imm = imm << 12
+		DebuglnUType("LUI", rd, imm)
+		r.RG[rd] = imm
+		r.PC += 4
+		return 1
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_00010_111: // AUIPC
 		rd, imm := UType(i)
 		DebuglnUType("AUIPC", rd, imm)
@@ -185,21 +190,61 @@ func ExecuterRV64I(r *RegisterRV64I, m []byte, i uint64) int {
 		r.PC += 4
 		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0011_0011: // SLL
-		log.Println("SLL")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("SLL", rd, rs1, rs2)
+		r.RG[rd] = r.RG[rs1] << InstructionPart(r.RG[rs2], 0, 4)
+		r.PC += 4
+		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0011_0011: // SLT
-		log.Println("SLT")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("SLT", rd, rs1, rs2)
+		if int64(r.RG[rs1]) < int64(r.RG[rs2]) {
+			r.RG[rd] = 1
+		} else {
+			r.RG[rd] = 0
+		}
+		r.PC += 4
+		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0011_0011: // SLTU
-		log.Println("SLTU")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("SLTU", rd, rs1, rs2)
+		if r.RG[rs1] < r.RG[rs2] {
+			r.RG[rd] = 1
+		} else {
+			r.RG[rd] = 0
+		}
+		r.PC += 4
+		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0011_0011: // XOR
-		log.Println("XOR")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("XOR", rd, rs1, rs2)
+		r.RG[rd] = r.RG[rs1] ^ r.RG[rs2]
+		r.PC += 4
+		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0011_0011: // SRL
-		log.Println("SRL")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("SRL", rd, rs1, rs2)
+		r.RG[rd] = r.RG[rs1] >> InstructionPart(r.RG[rs2], 0, 4)
+		r.PC += 4
+		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0011_0011: // SRA
-		log.Println("SRA")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("SRA", rd, rs1, rs2)
+		r.RG[rd] = uint64(int64(r.RG[rs1]) >> InstructionPart(r.RG[rs2], 0, 4))
+		r.PC += 4
+		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0011_0011: // OR
-		log.Println("OR")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("XOR", rd, rs1, rs2)
+		r.RG[rd] = r.RG[rs1] | r.RG[rs2]
+		r.PC += 4
+		return 1
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0111_0000_0011_0011: // AND
-		log.Println("AND")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("XOR", rd, rs1, rs2)
+		r.RG[rd] = r.RG[rs1] & r.RG[rs2]
+		r.PC += 4
+		return 1
 	case i&0b_1111_0000_0000_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0000_1111: // FENCE
 		log.Println("FENCE")
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_1111: // FENCE.I
