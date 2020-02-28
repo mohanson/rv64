@@ -1,6 +1,9 @@
 package riscv
 
-import "log"
+import (
+	"encoding/binary"
+	"log"
+)
 
 type RegisterRV64I struct {
 	RG [32]uint64
@@ -97,21 +100,70 @@ func ExecuterRV64I(r *RegisterRV64I, m []byte, i uint64) int {
 		}
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0000_0011: // LB
-		log.Println("LB")
+		rd, rs1, imm := IType(i)
+		DebuglnIType("LB", rd, rs1, imm)
+		a := r.RG[rs1] + SignExtend(imm, 11)
+		v := SignExtend(binary.LittleEndian.Uint64(m[a:a+1]), 7)
+		r.RG[rd] = v
+		r.PC += 4
+		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_0011: // LH
-		log.Println("LH")
+		rd, rs1, imm := IType(i)
+		DebuglnIType("LH", rd, rs1, imm)
+		a := r.RG[rs1] + SignExtend(imm, 11)
+		v := SignExtend(binary.LittleEndian.Uint64(m[a:a+2]), 15)
+		r.RG[rd] = v
+		r.PC += 4
+		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0000_0011: // LW
-		log.Println("LW")
+		rd, rs1, imm := IType(i)
+		DebuglnIType("LW", rd, rs1, imm)
+		a := r.RG[rs1] + SignExtend(imm, 11)
+		v := SignExtend(binary.LittleEndian.Uint64(m[a:a+4]), 31)
+		r.RG[rd] = v
+		r.PC += 4
+		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0000_0011: // LBU
-		log.Println("LBU")
+		rd, rs1, imm := IType(i)
+		DebuglnIType("LBU", rd, rs1, imm)
+		a := r.RG[rs1] + SignExtend(imm, 11)
+		v := binary.LittleEndian.Uint64(m[a : a+1])
+		r.RG[rd] = v
+		r.PC += 4
+		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0000_0011: // LHU
-		log.Println("LHU")
+		rd, rs1, imm := IType(i)
+		DebuglnIType("LHU", rd, rs1, imm)
+		a := r.RG[rs1] + SignExtend(imm, 11)
+		v := binary.LittleEndian.Uint64(m[a : a+2])
+		r.RG[rd] = v
+		r.PC += 4
+		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0010_0011: // SB
-		log.Println("SB")
+		rs1, rs2, imm := SType(i)
+		DebuglnIType("SB", rs1, rs2, imm)
+		a := r.RG[rs1] + SignExtend(imm, 11)
+		m[a] = byte(r.RG[rs2])
+		r.PC += 4
+		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0010_0011: // SH
-		log.Println("SH")
+		rs1, rs2, imm := SType(i)
+		DebuglnIType("SH", rs1, rs2, imm)
+		a := r.RG[rs1] + SignExtend(imm, 11)
+		m[a] = byte(r.RG[rs2])
+		m[a+1] = byte(r.RG[rs2] >> 8)
+		r.PC += 4
+		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0010_0011: // SW
-		log.Println("SW")
+		rs1, rs2, imm := SType(i)
+		DebuglnIType("SW", rs1, rs2, imm)
+		a := r.RG[rs1] + SignExtend(imm, 11)
+		m[a] = byte(r.RG[rs2])
+		m[a+1] = byte(r.RG[rs2] >> 8)
+		m[a+2] = byte(r.RG[rs2] >> 16)
+		m[a+3] = byte(r.RG[rs2] >> 24)
+		r.PC += 4
+		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_0011: // ADDI
 		rd, rs1, imm := IType(i)
 		imm = SignExtend(imm, 11)
