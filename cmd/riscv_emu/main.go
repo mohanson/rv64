@@ -43,6 +43,7 @@ var cStep = flag.Int64("steps", 30, "")
 
 func (c *CPU) Run() {
 	flag.Parse()
+	// log.SetFlags(log.LstdFlags | log.Lshortfile)
 	i := 0
 	for {
 		if i > int(*cStep) {
