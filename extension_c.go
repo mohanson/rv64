@@ -152,7 +152,7 @@ func ExecuterC(r *RegisterRV64I, m []byte, i uint64) int {
 		}
 		DebuglnIType("C.SLLI", rd, rd, imm)
 		r.RG[rd] = r.RG[rd] << imm
-		r.PC += 4
+		r.PC += 2
 		return 1
 	case i&0b_1111_0000_0000_0011 == 0b_0010_0000_0000_0010: // C.FLDSP
 		log.Println("C.FLDSP")
