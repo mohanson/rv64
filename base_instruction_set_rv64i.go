@@ -20,13 +20,19 @@ func ExecuterRV64I(c *CPU, i uint64) int {
 		c.PC += 4
 		return 1
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0010_0011: // SD
-		// rd, rs1, imm := IType(i)
-		// imm = SignExtend(imm, 11)
-		// DebuglnIType("SD", rd, rs1, imm)
-		// a := c.Register[rs1] + imm
-		// c.Register[rd] = binary.LittleEndian.Uint64(m[a : a+8])
-		// c.PC += 4
-		// return 1
+		rs1, rs2, imm := SType(i)
+		DebuglnIType("SD", rs1, rs2, imm)
+		a := c.Register[rs1] + SignExtend(imm, 11)
+		m[a] = byte(c.Register[rs2])
+		m[a+1] = byte(c.Register[rs2] >> 8)
+		m[a+2] = byte(c.Register[rs2] >> 16)
+		m[a+3] = byte(c.Register[rs2] >> 24)
+		m[a+4] = byte(c.Register[rs2] >> 32)
+		m[a+5] = byte(c.Register[rs2] >> 40)
+		m[a+6] = byte(c.Register[rs2] >> 48)
+		m[a+7] = byte(c.Register[rs2] >> 56)
+		c.PC += 4
+		return 1
 	case i&0b_1111_1100_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0001_0011: // SLLI
 		rd, rs1, imm := IType(i)
 		imm = InstructionPart(imm, 0, 5)
