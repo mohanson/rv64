@@ -118,7 +118,16 @@ func ExecuterC(r *RegisterRV64I, m []byte, i uint64) int {
 	case i&0b_1111_1100_0110_0011 == 0b_1001_1100_0110_0001: // Reserved
 	case i&0b_1110_0000_0000_0011 == 0b_1010_0000_0000_0001: // C.J
 		var (
-			imm = SignExtend(InstructionPart(i, 13, 13)<<10|InstructionPart(i, 6, 6)<<9|InstructionPart(i, 10, 11)<<7|InstructionPart(i, 12, 12)<<6|InstructionPart(i, 8, 8)<<5|InstructionPart(i, 9, 9)<<4|InstructionPart(i, 3, 5)<<1|InstructionPart(i, 7, 7), 11)
+			imm = SignExtend(
+				InstructionPart(i, 12, 12)<<11|
+					InstructionPart(i, 8, 8)<<10|
+					InstructionPart(i, 9, 10)<<8|
+					InstructionPart(i, 6, 6)<<7|
+					InstructionPart(i, 7, 7)<<6|
+					InstructionPart(i, 2, 2)<<5|
+					InstructionPart(i, 11, 11)<<4|
+					InstructionPart(i, 3, 5)<<1,
+				11)
 		)
 		DebuglnJType("C.J", Rzero, imm)
 		r.PC += imm
