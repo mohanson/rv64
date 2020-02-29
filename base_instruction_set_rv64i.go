@@ -1,22 +1,94 @@
 package riscv
 
+import (
+	"encoding/binary"
+	"log"
+)
+
 func ExecuterRV64I(r *RegisterRV64I, m []byte, i uint64) int {
 	switch {
-	// case 0b00000011: // imm[11:0] rs1 110 rd 0000011 LWU
-	// case 0b00000011: // imm[11:0] rs1 011 rd 0000011 LD
-	// case 0b00100011: // imm[11:5] rs2 rs1 011 imm[4:0] 0100011 SD
-	// case 0b00010011: // 000000 shamt rs1 001 rd 0010011 SLLI
-	// case 0b00010011: // 000000 shamt rs1 101 rd 0010011 SRLI
-	// case 0b00010011: // 010000 shamt rs1 101 rd 0010011 SRAI
-	// case 0b00011011: // imm[11:0] rs1 000 rd 0011011 ADDIW
-	// case 0b00011011: // 0000000 shamt rs1 001 rd 0011011 SLLIW
-	// case 0b00011011: // 0000000 shamt rs1 101 rd 0011011 SRLIW
-	// case 0b00011011: // 0100000 shamt rs1 101 rd 0011011 SRAIW
-	// case 0b00111011: // 0000000 rs2 rs1 000 rd 0111011 ADDW
-	// case 0b00111011: // 0100000 rs2 rs1 000 rd 0111011 SUBW
-	// case 0b00111011: // 0000000 rs2 rs1 001 rd 0111011 SLLW
-	// case 0b00111011: // 0000000 rs2 rs1 101 rd 0111011 SRLW
-	// case 0b00111011: // 0100000 rs2 rs1 101 rd 0111011 SRAW
+	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0000_0011: // LWU
+		// I
+		log.Println("LWU")
+	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0000_0011: // LD
+		rd, rs1, imm := IType(i)
+		imm = SignExtend(imm, 11)
+		DebuglnIType("LD", rd, rs1, imm)
+		a := r.RG[rs1] + imm
+		r.RG[rd] = binary.LittleEndian.Uint64(m[a : a+8])
+		r.PC += 4
+		return 1
+	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0010_0011: // SD
+		// rd, rs1, imm := IType(i)
+		// imm = SignExtend(imm, 11)
+		// DebuglnIType("SD", rd, rs1, imm)
+		// a := r.RG[rs1] + imm
+		// r.RG[rd] = binary.LittleEndian.Uint64(m[a : a+8])
+		// r.PC += 4
+		// return 1
+	case i&0b_1111_1100_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0001_0011: // SLLI
+		rd, rs1, imm := IType(i)
+		imm = InstructionPart(imm, 0, 5)
+		DebuglnIType("SLLI", rd, rs1, imm)
+		r.RG[rd] = r.RG[rs1] << imm
+		r.PC += 4
+		return 1
+	case i&0b_1111_1100_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0001_0011: // SRLI
+		rd, rs1, imm := IType(i)
+		imm = InstructionPart(imm, 0, 5)
+		DebuglnIType("SRLI", rd, rs1, imm)
+		r.RG[rd] = r.RG[rs1] >> imm
+		r.PC += 4
+		return 1
+	case i&0b_1111_1100_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0001_0011: // SRAI
+		rd, rs1, imm := IType(i)
+		imm = InstructionPart(imm, 0, 5)
+		DebuglnIType("SRAI", rd, rs1, imm)
+		r.RG[rd] = uint64(int64(r.RG[rs1]) >> imm)
+		r.PC += 4
+		return 1
+	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_1011: // ADDIW
+		rd, rs1, imm := IType(i)
+		imm = SignExtend(imm, 11)
+		DebuglnIType("ADDIW", rd, rs1, imm)
+		r.RG[rd] = uint64(int32(r.RG[rs1]) + int32(imm))
+		r.PC += 4
+		return 1
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0001_1011: // SLLIW
+		rd, rs1, imm := IType(i)
+		imm = InstructionPart(imm, 0, 5)
+		DebuglnIType("SLLIW", rd, rs1, imm)
+		r.RG[rd] = SignExtend(uint64(uint32(r.RG[rs1]<<imm)), 31)
+		r.PC += 4
+		return 1
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0001_1011: // SRLIW
+		rd, rs1, imm := IType(i)
+		imm = InstructionPart(imm, 0, 5)
+		DebuglnIType("SRLIW", rd, rs1, imm)
+		r.RG[rd] = SignExtend(uint64(uint32(r.RG[rs1]>>imm)), 31)
+		r.PC += 4
+		return 1
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0001_1011: // SRAIW
+		rd, rs1, imm := IType(i)
+		imm = InstructionPart(imm, 0, 5)
+		DebuglnIType("SRAIW", rd, rs1, imm)
+		r.RG[rd] = uint64(int64(r.RG[rs1]) >> imm)
+		r.PC += 4
+		return 1
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_1011: // ADDW
+		// r
+		log.Println("ADDW")
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0000_0000_0011_1011: // SUBW
+		// r
+		log.Println("SUBW")
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0011_1011: // SLLW
+		// r
+		log.Println("SLLW")
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0011_1011: // SRLW
+		// r
+		log.Println("SRLW")
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0011_1011: // SRAW
+		log.Println("SRAW")
 	}
 	return 0
 }
