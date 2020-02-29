@@ -24,6 +24,8 @@ func call(name string, arg ...string) {
 
 func main() {
 	flag.Parse()
-	// call(*cCompile, "-o", "./bin/fuzz_32i", "-march=rv32i", "-mabi=ilp32", "./res/fuzz.c")
-	call(*cCompile, "-o", "./bin/fuzz", "./res/fuzz.c")
+	os.Mkdir("build", 0755)
+	os.Mkdir("build/res", 0755)
+	os.Mkdir("build/res/program", 0755)
+	call(*cCompile, "-o", "./build/res/program/minimal", "./res/program/minimal.c")
 }

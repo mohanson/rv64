@@ -13,6 +13,10 @@ func Debugln(v ...interface{}) {
 	log.Println(v...)
 }
 
+func Panicln(v ...interface{}) {
+	log.Panicln(v...)
+}
+
 func DebuglnRType(i string, rd int, rs1 int, rs2 int) {
 	Debugln(fmt.Sprintf("Instr: % 10s | rd: 0x%02x rs1: 0x%02x rs2: 0x%02x", i, rd, rs1, rs2))
 }
