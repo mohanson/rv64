@@ -54,7 +54,7 @@ func ExecuterC(r *RegisterRV64I, m []byte, i uint64) int {
 			log.Panicln("")
 		}
 		DebuglnIType("C.LI", rd, rd, imm)
-		r.RG[rd] = r.RG[rd] + imm
+		r.RG[rd] = imm
 		r.PC += 2
 		return 1
 	case i&0b_1110_1111_1000_0011 == 0b_0110_0001_0000_0001: // C.ADDI16SP
@@ -117,7 +117,12 @@ func ExecuterC(r *RegisterRV64I, m []byte, i uint64) int {
 	case i&0b_1111_1100_0110_0011 == 0b_1001_1100_0100_0001: // Reserved
 	case i&0b_1111_1100_0110_0011 == 0b_1001_1100_0110_0001: // Reserved
 	case i&0b_1110_0000_0000_0011 == 0b_1010_0000_0000_0001: // C.J
-		log.Println("C.J")
+		var (
+			imm = SignExtend(InstructionPart(i, 13, 13)<<10|InstructionPart(i, 6, 6)<<9|InstructionPart(i, 10, 11)<<7|InstructionPart(i, 12, 12)<<6|InstructionPart(i, 8, 8)<<5|InstructionPart(i, 9, 9)<<4|InstructionPart(i, 3, 5)<<1|InstructionPart(i, 7, 7), 11)
+		)
+		DebuglnJType("C.J", Rzero, imm)
+		r.PC += imm
+		return 1
 	case i&0b_1110_0000_0000_0011 == 0b_1100_0000_0000_0001: // C.BEQZ
 		var (
 			rs1 = int(InstructionPart(i, 7, 9)) + 8
@@ -161,7 +166,12 @@ func ExecuterC(r *RegisterRV64I, m []byte, i uint64) int {
 	case i&0b_1110_0000_0000_0011 == 0b_0110_0000_0000_0010: // C.LDSP
 		log.Println("C.LDSP")
 	case i&0b_1111_0000_0111_1111 == 0b_1000_0000_0000_0010: // C.JR
-		log.Println("C.JR")
+		var (
+			rs1 = int(InstructionPart(i, 7, 11))
+		)
+		DebuglnIType("C.JR", Rzero, rs1, 0)
+		r.PC = r.RG[rs1]
+		return 1
 	case i&0b_1111_0000_0000_0011 == 0b_1000_0000_0000_0010: // C.MV
 		var (
 			rd  = int(InstructionPart(i, 7, 11))
@@ -177,7 +187,12 @@ func ExecuterC(r *RegisterRV64I, m []byte, i uint64) int {
 	case i&0b_1111_1111_1111_1111 == 0b_1001_0000_0000_0010: // C.EBREAK
 		log.Println("C.EBREAK")
 	case i&0b_1111_0000_0111_1111 == 0b_1001_0000_0000_0010: // C.JALR
-		log.Println("C.JALR")
+		var (
+			rs1 = int(InstructionPart(i, 7, 11))
+		)
+		DebuglnIType("C.JALR", Rra, rs1, 0)
+		r.PC = r.RG[rs1]
+		return 1
 	case i&0b_1111_0000_0000_0011 == 0b_1001_0000_0000_0010: // C.ADD
 		var (
 			rd  = int(InstructionPart(i, 7, 11))
