@@ -106,9 +106,10 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_0011: // LH
 		rd, rs1, imm := IType(i)
+		imm = SignExtend(imm, 11)
 		DebuglnIType("LH", rd, rs1, imm)
-		a := c.Register[rs1] + SignExtend(imm, 11)
-		c.SetRegister(rd, SignExtend(binary.LittleEndian.Uint64(m[a:a+2]), 15))
+		a := c.GetRegister(rs1) + imm
+		c.SetRegister(rd, SignExtend(uint64(binary.LittleEndian.Uint16(m[a:a+2])), 15))
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0000_0011: // LW
@@ -116,8 +117,7 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("LW", rd, rs1, imm)
 		a := c.GetRegister(rs1) + imm
-		v := SignExtend(uint64(binary.LittleEndian.Uint32(m[a:a+4])), 63)
-		c.Register[rd] = v
+		c.SetRegister(rd, SignExtend(uint64(binary.LittleEndian.Uint32(m[a:a+4])), 63))
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0000_0011: // LBU
@@ -130,35 +130,34 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0000_0011: // LHU
 		rd, rs1, imm := IType(i)
-		DebuglnIType("LHU", rd, rs1, imm)
-		a := c.Register[rs1] + SignExtend(imm, 11)
-		v := binary.LittleEndian.Uint64(m[a : a+2])
-		c.Register[rd] = v
+		imm = SignExtend(imm, 11)
+		DebuglnIType("LH", rd, rs1, imm)
+		a := c.GetRegister(rs1) + imm
+		c.SetRegister(rd, uint64(binary.LittleEndian.Uint16(m[a:a+2])))
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0010_0011: // SB
 		rs1, rs2, imm := SType(i)
+		imm = SignExtend(imm, 11)
 		DebuglnIType("SB", rs1, rs2, imm)
-		a := c.Register[rs1] + SignExtend(imm, 11)
-		m[a] = byte(c.Register[rs2])
+		a := c.GetRegister(rs1) + imm
+		m[a] = uint8(c.GetRegister(rs2))
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0010_0011: // SH
 		rs1, rs2, imm := SType(i)
+		imm = SignExtend(imm, 11)
 		DebuglnIType("SH", rs1, rs2, imm)
-		a := c.Register[rs1] + SignExtend(imm, 11)
-		m[a] = byte(c.Register[rs2])
-		m[a+1] = byte(c.Register[rs2] >> 8)
+		a := c.GetRegister(rs1) + imm
+		binary.LittleEndian.PutUint16(m[a:a+2], uint16(c.GetRegister(rs2)))
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0010_0011: // SW
 		rs1, rs2, imm := SType(i)
+		imm = SignExtend(imm, 11)
 		DebuglnIType("SW", rs1, rs2, imm)
-		a := c.Register[rs1] + SignExtend(imm, 11)
-		m[a] = byte(c.Register[rs2])
-		m[a+1] = byte(c.Register[rs2] >> 8)
-		m[a+2] = byte(c.Register[rs2] >> 16)
-		m[a+3] = byte(c.Register[rs2] >> 24)
+		a := c.GetRegister(rs1) + imm
+		binary.LittleEndian.PutUint32(m[a:a+4], uint32(c.GetRegister(rs2)))
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_0011: // ADDI
@@ -340,8 +339,9 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0010_0011: // SD
 		rs1, rs2, imm := SType(i)
+		imm = SignExtend(imm, 11)
 		DebuglnIType("SD", rs1, rs2, imm)
-		a := c.GetRegister(rs1) + SignExtend(imm, 11)
+		a := c.GetRegister(rs1) + imm
 		binary.LittleEndian.PutUint64(m[a:a+8], c.GetRegister(rs2))
 		c.PC += 4
 		return 1, nil
