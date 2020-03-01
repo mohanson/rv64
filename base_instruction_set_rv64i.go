@@ -89,13 +89,23 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		// r
 		log.Println("SUBW")
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0011_1011: // SLLW
-		// r
-		log.Println("SLLW")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("SLLW", rd, rs1, rs2)
+		c.Register[rd] = c.Register[rs1] << InstructionPart(c.Register[rs2], 0, 5)
+		c.PC += 4
+		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0011_1011: // SRLW
-		// r
-		log.Println("SRLW")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("SRLW", rd, rs1, rs2)
+		c.Register[rd] = c.Register[rs1] >> InstructionPart(c.Register[rs2], 0, 5)
+		c.PC += 4
+		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0011_1011: // SRAW
-		log.Println("SRAW")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("SRAW", rd, rs1, rs2)
+		c.Register[rd] = uint64(int64(c.Register[rs1]) >> InstructionPart(c.Register[rs2], 0, 5))
+		c.PC += 4
+		return 1, nil
 	}
 	return 0, nil
 }

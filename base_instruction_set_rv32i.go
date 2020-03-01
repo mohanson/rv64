@@ -99,7 +99,7 @@ func ExecuterRV32I(c *CPU, i uint64) (int, error) {
 		rd, rs1, imm := IType(i)
 		DebuglnIType("LB", rd, rs1, imm)
 		a := c.Register[rs1] + SignExtend(imm, 11)
-		v := SignExtend(binary.LittleEndian.Uint64(m[a:a+1]), 7)
+		v := SignExtend(uint64(m[a]), 7)
 		c.Register[rd] = v
 		c.PC += 4
 		return 1, nil
@@ -123,7 +123,7 @@ func ExecuterRV32I(c *CPU, i uint64) (int, error) {
 		rd, rs1, imm := IType(i)
 		DebuglnIType("LBU", rd, rs1, imm)
 		a := c.Register[rs1] + SignExtend(imm, 11)
-		v := binary.LittleEndian.Uint64(m[a : a+1])
+		v := uint64(m[a])
 		c.Register[rd] = v
 		c.PC += 4
 		return 1, nil
