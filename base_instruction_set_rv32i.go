@@ -303,7 +303,9 @@ func ExecuterRV32I(c *CPU, i uint64) (int, error) {
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_1111: // FENCE.I
 		log.Println("FENCE.I")
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0111_0011: // ECALL
-		log.Println("ECALL")
+		rd, rs1, imm := IType(i)
+		DebuglnIType("ECALL", rd, rs1, imm)
+		return c.System.HandleCall(c)
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0001_0000_0000_0000_0111_0011: // EBREAK
 		log.Println("EBREAK")
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0111_0011: // CSRRW

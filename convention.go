@@ -81,4 +81,5 @@ const (
 var (
 	ErrAbnormalInstruction = errors.New("Abnormal instruction")
 	ErrReservedInstruction = errors.New("Reserved instruction")
+	ErrAbnormalEcall       = errors.New("Abnormal ecall")
 )

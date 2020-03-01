@@ -3,7 +3,9 @@ package riscv
 type CPU struct {
 	Register [32]uint64
 	Memory   []byte
+	System   System
 	PC       uint64
+	Stop     bool
 }
 
 func (c *CPU) SetRegister(i int, u uint64) {

@@ -38,13 +38,17 @@ func (c *CPU) FetchInstruction() []byte {
 	return instructionBytes
 }
 
-var cStep = flag.Int64("steps", 240, "")
+var cStep = flag.Int64("steps", 250, "")
 
 func (c *CPU) Run() {
 	flag.Parse()
 	// log.SetFlags(log.LstdFlags | log.Lshortfile)
 	i := 0
 	for {
+		if c.Inner.Stop {
+			log.Println("Exit:", c.Inner.System.(*riscv.SystemStandard).ExitCode)
+			break
+		}
 		c.Inner.Register[riscv.Rzero] = 0x00
 		if i > int(*cStep) {
 			break
@@ -130,6 +134,7 @@ func main() {
 	cpu := &CPU{
 		Inner: &riscv.CPU{
 			Register: [32]uint64{},
+			System:   &riscv.SystemStandard{},
 			Memory:   make([]byte, 4*1024*1024),
 			PC:       0,
 		},
