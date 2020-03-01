@@ -10,7 +10,7 @@ func ExecuterRV32I(c *CPU, i uint64) (int, error) {
 	switch {
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_0111: // LUI
 		rd, imm := UType(i)
-		imm = imm << 12
+		imm = SignExtend(imm, 31)
 		DebuglnUType("LUI", rd, imm)
 		c.Register[rd] = imm
 		c.PC += 4
@@ -115,7 +115,7 @@ func ExecuterRV32I(c *CPU, i uint64) (int, error) {
 		rd, rs1, imm := IType(i)
 		DebuglnIType("LW", rd, rs1, imm)
 		a := c.Register[rs1] + SignExtend(imm, 11)
-		v := SignExtend(binary.LittleEndian.Uint64(m[a:a+4]), 31)
+		v := SignExtend(uint64(binary.LittleEndian.Uint32(m[a:a+4])), 63)
 		c.Register[rd] = v
 		c.PC += 4
 		return 1, nil
