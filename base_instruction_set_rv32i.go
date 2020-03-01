@@ -12,13 +12,14 @@ func ExecuterRV32I(c *CPU, i uint64) (int, error) {
 		rd, imm := UType(i)
 		imm = SignExtend(imm, 31)
 		DebuglnUType("LUI", rd, imm)
-		c.Register[rd] = imm
+		c.SetRegister(rd, imm)
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_00010_111: // AUIPC
 		rd, imm := UType(i)
+		imm = SignExtend(imm, 31)
 		DebuglnUType("AUIPC", rd, imm)
-		c.Register[rd] = c.PC + imm
+		c.SetRegister(rd, c.PC+imm)
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_1111: // JAL
