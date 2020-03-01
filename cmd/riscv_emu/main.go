@@ -67,6 +67,7 @@ func (c *CPU) Run() {
 			s += c.Inner.Register[i]
 		}
 		log.Println(i, c.Inner.PC, s)
+
 		if len(data) == 4 {
 			var s uint64 = 0
 			for i := len(data) - 1; i >= 0; i-- {
@@ -91,18 +92,14 @@ func (c *CPU) Run() {
 			}
 		}
 
-		s = 0
-		for i := len(data) - 1; i >= 0; i-- {
-			s += uint64(data[i]) << (8 * i)
-		}
-		n, err := riscv.ExecuterC(c.Inner, s)
-		if err != nil {
-			log.Panicln(err)
-		}
-		if n != 0 {
-			i += 1
-			continue
-		}
+		// n, err := riscv.ExecuterC(c.Inner, s)
+		// if err != nil {
+		// 	log.Panicln(err)
+		// }
+		// if n != 0 {
+		// 	i += 1
+		// 	continue
+		// }
 		// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[0], c.ModuleBase.RG[1], c.ModuleBase.RG[2], c.ModuleBase.RG[3])
 		// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[4], c.ModuleBase.RG[5], c.ModuleBase.RG[6], c.ModuleBase.RG[7])
 		// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[8], c.ModuleBase.RG[9], c.ModuleBase.RG[10], c.ModuleBase.RG[11])
