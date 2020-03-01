@@ -1,5 +1,9 @@
 package riscv
 
+import (
+	"errors"
+)
+
 // https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
 // Chapter 20
 // Table 20.1
@@ -72,4 +76,9 @@ const (
 	Rft9  = 29 // FP temporaries
 	Rft10 = 30 // FP temporaries
 	Rft11 = 31 // FP temporaries
+)
+
+var (
+	ErrAbnormalInstruction = errors.New("Abnormal instruction")
+	ErrReservedInstruction = errors.New("Reserved instruction")
 )

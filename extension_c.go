@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func ExecuterC(c *CPU, i uint64) int {
+func ExecuterC(c *CPU, i uint64) (int, error) {
 	m := c.Memory
 	switch {
 	case i&0b_1111_1111_1111_1111 == 0b_0000_0000_0000_0000: // Illegal instruction
@@ -32,7 +32,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		DebuglnSType("C.SD", rs1, rs2, imm)
 		binary.LittleEndian.PutUint64(m[int(c.Register[rs1]+imm):int(c.Register[rs1]+imm)+8], c.Register[rs2])
 		c.PC += 2
-		return 1
+		return 1, nil
 	case i&0b_1111_1111_1111_1111 == 0b_0000_0000_0000_0001: // C.NOP
 		log.Println("C.NOP")
 	case i&0b_1110_0000_0000_0011 == 0b_0000_0000_0000_0001: // C.ADDI
@@ -43,7 +43,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		DebuglnIType("C.ADDI", rd, rd, imm)
 		c.Register[rd] = c.Register[rd] + imm
 		c.PC += 2
-		return 1
+		return 1, nil
 	case i&0b_1110_0000_0000_0011 == 0b_0010_0000_0000_0001: // C.ADDIW
 		log.Println("C.ADDIW")
 	case i&0b_1110_0000_0000_0011 == 0b_0100_0000_0000_0001: // C.LI
@@ -57,7 +57,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		DebuglnIType("C.LI", rd, rd, imm)
 		c.Register[rd] = imm
 		c.PC += 2
-		return 1
+		return 1, nil
 	case i&0b_1110_1111_1000_0011 == 0b_0110_0001_0000_0001: // C.ADDI16SP
 		log.Println("C.ADDI16SP")
 	case i&0b_1110_0000_0000_0011 == 0b_0110_0000_0000_0001: // C.LUI
@@ -74,7 +74,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		DebuglnIType("C.ANDI", rd, rd, imm)
 		c.Register[rd] = c.Register[rd] & imm
 		c.PC += 2
-		return 1
+		return 1, nil
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0000_0001: // C.SUB
 		var (
 			rd  = int(InstructionPart(i, 7, 9)) + 8
@@ -83,7 +83,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		DebuglnRType("C.SUB", rd, rd, rs2)
 		c.Register[rd] = c.Register[rd] - c.Register[rs2]
 		c.PC += 2
-		return 1
+		return 1, nil
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0010_0001: // C.XOR
 		var (
 			rd  = int(InstructionPart(i, 7, 9)) + 8
@@ -92,7 +92,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		DebuglnRType("C.XOR", rd, rd, rs2)
 		c.Register[rd] = c.Register[rd] ^ c.Register[rs2]
 		c.PC += 2
-		return 1
+		return 1, nil
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0100_0001: // C.OR
 		var (
 			rd  = int(InstructionPart(i, 7, 9)) + 8
@@ -101,7 +101,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		DebuglnRType("C.OR", rd, rd, rs2)
 		c.Register[rd] = c.Register[rd] | c.Register[rs2]
 		c.PC += 2
-		return 1
+		return 1, nil
 	case i&0b_1111_1100_0110_0011 == 0b_1000_1100_0110_0001: // C.AND
 		var (
 			rd  = int(InstructionPart(i, 7, 9)) + 8
@@ -110,7 +110,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		DebuglnRType("C.AND", rd, rd, rs2)
 		c.Register[rd] = c.Register[rd] & c.Register[rs2]
 		c.PC += 2
-		return 1
+		return 1, nil
 	case i&0b_1111_1100_0110_0011 == 0b_1001_1100_0000_0001: // C.SUBW
 		log.Println("C.SUBW")
 	case i&0b_1111_1100_0110_0011 == 0b_1001_1100_0010_0001: // C.ADDW
@@ -132,7 +132,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		)
 		DebuglnJType("C.J", Rzero, imm)
 		c.PC += imm
-		return 1
+		return 1, nil
 	case i&0b_1110_0000_0000_0011 == 0b_1100_0000_0000_0001: // C.BEQZ
 		var (
 			rs1 = int(InstructionPart(i, 7, 9)) + 8
@@ -144,7 +144,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		} else {
 			c.PC += 2
 		}
-		return 1
+		return 1, nil
 	case i&0b_1110_0000_0000_0011 == 0b_1110_0000_0000_0001: // C.BNEZ
 		var (
 			rs1 = int(InstructionPart(i, 7, 9)) + 8
@@ -156,7 +156,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		} else {
 			c.PC += 2
 		}
-		return 1
+		return 1, nil
 	case i&0b_1110_0000_0000_0011 == 0b_0000_0000_0000_0010: // C.SLLI
 		var (
 			rd  = int(InstructionPart(i, 7, 11))
@@ -168,7 +168,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		DebuglnIType("C.SLLI", rd, rd, imm)
 		c.Register[rd] = c.Register[rd] << imm
 		c.PC += 2
-		return 1
+		return 1, nil
 	case i&0b_1111_0000_0000_0011 == 0b_0010_0000_0000_0010: // C.FLDSP
 		log.Println("C.FLDSP")
 	case i&0b_1110_0000_0000_0011 == 0b_0100_0000_0000_0010: // C.LWSP
@@ -181,7 +181,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		)
 		DebuglnIType("C.JR", Rzero, rs1, 0)
 		c.PC = c.Register[rs1]
-		return 1
+		return 1, nil
 	case i&0b_1111_0000_0000_0011 == 0b_1000_0000_0000_0010: // C.MV
 		var (
 			rd  = int(InstructionPart(i, 7, 11))
@@ -193,7 +193,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		DebuglnRType("C.MV", rd, Rzero, rs2)
 		c.Register[rd] = c.Register[rs2]
 		c.PC += 2
-		return 1
+		return 1, nil
 	case i&0b_1111_1111_1111_1111 == 0b_1001_0000_0000_0010: // C.EBREAK
 		log.Println("C.EBREAK")
 	case i&0b_1111_0000_0111_1111 == 0b_1001_0000_0000_0010: // C.JALR
@@ -202,7 +202,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		)
 		DebuglnIType("C.JALR", Rra, rs1, 0)
 		c.PC = c.Register[rs1]
-		return 1
+		return 1, nil
 	case i&0b_1111_0000_0000_0011 == 0b_1001_0000_0000_0010: // C.ADD
 		var (
 			rd  = int(InstructionPart(i, 7, 11))
@@ -214,7 +214,7 @@ func ExecuterC(c *CPU, i uint64) int {
 		DebuglnRType("C.ADD", rd, rd, rs2)
 		c.Register[rd] += c.Register[rs2]
 		c.PC += 2
-		return 1
+		return 1, nil
 	case i&0b_1110_0000_0000_0011 == 0b_1010_0000_0000_0010: // C.FSDSP
 		log.Println("C.FSDSP")
 	case i&0b_1110_0000_0000_0011 == 0b_1100_0000_0000_0010: // C.SWSP
@@ -223,5 +223,5 @@ func ExecuterC(c *CPU, i uint64) int {
 		log.Println("C.SDSP")
 	}
 
-	return 0
+	return 0, nil
 }
