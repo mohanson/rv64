@@ -108,14 +108,14 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		rd, rs1, imm := IType(i)
 		DebuglnIType("LH", rd, rs1, imm)
 		a := c.Register[rs1] + SignExtend(imm, 11)
-		v := SignExtend(binary.LittleEndian.Uint64(m[a:a+2]), 15)
-		c.Register[rd] = v
+		c.SetRegister(rd, SignExtend(binary.LittleEndian.Uint64(m[a:a+2]), 15))
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0000_0011: // LW
 		rd, rs1, imm := IType(i)
+		imm = SignExtend(imm, 11)
 		DebuglnIType("LW", rd, rs1, imm)
-		a := c.Register[rs1] + SignExtend(imm, 11)
+		a := c.GetRegister(rs1) + imm
 		v := SignExtend(uint64(binary.LittleEndian.Uint32(m[a:a+4])), 63)
 		c.Register[rd] = v
 		c.PC += 4
@@ -323,28 +323,26 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		log.Println("CSRRCI")
 
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0000_0011: // LWU
-		// I
-		log.Println("LWU")
+		rd, rs1, imm := IType(i)
+		imm = SignExtend(imm, 11)
+		DebuglnIType("LWU", rd, rs1, imm)
+		a := c.GetRegister(rs1) + imm
+		c.SetRegister(rd, uint64(binary.LittleEndian.Uint32(m[a:a+4])))
+		c.PC += 4
+		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0000_0011: // LD
 		rd, rs1, imm := IType(i)
 		imm = SignExtend(imm, 11)
 		DebuglnIType("LD", rd, rs1, imm)
-		a := c.Register[rs1] + imm
-		c.Register[rd] = binary.LittleEndian.Uint64(m[a : a+8])
+		a := c.GetRegister(rs1) + imm
+		c.SetRegister(rd, binary.LittleEndian.Uint64(m[a:a+8]))
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0010_0011: // SD
 		rs1, rs2, imm := SType(i)
 		DebuglnIType("SD", rs1, rs2, imm)
-		a := c.Register[rs1] + SignExtend(imm, 11)
-		m[a] = byte(c.Register[rs2])
-		m[a+1] = byte(c.Register[rs2] >> 8)
-		m[a+2] = byte(c.Register[rs2] >> 16)
-		m[a+3] = byte(c.Register[rs2] >> 24)
-		m[a+4] = byte(c.Register[rs2] >> 32)
-		m[a+5] = byte(c.Register[rs2] >> 40)
-		m[a+6] = byte(c.Register[rs2] >> 48)
-		m[a+7] = byte(c.Register[rs2] >> 56)
+		a := c.GetRegister(rs1) + SignExtend(imm, 11)
+		binary.LittleEndian.PutUint64(m[a:a+8], c.GetRegister(rs2))
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_1011: // ADDIW
