@@ -246,7 +246,7 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0011_0011: // SLL
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SLL", rd, rs1, rs2)
-		c.Register[rd] = c.Register[rs1] << InstructionPart(c.Register[rs2], 0, 4)
+		c.SetRegister(rd, c.GetRegister(rs1)<<InstructionPart(c.GetRegister(rs2), 0, 5))
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0011_0011: // SLT
@@ -278,13 +278,13 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0011_0011: // SRL
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SRL", rd, rs1, rs2)
-		c.Register[rd] = c.Register[rs1] >> InstructionPart(c.Register[rs2], 0, 4)
+		c.SetRegister(rd, c.GetRegister(rs1)>>InstructionPart(c.GetRegister(rs2), 0, 5))
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0011_0011: // SRA
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SRA", rd, rs1, rs2)
-		c.Register[rd] = uint64(int64(c.Register[rs1]) >> InstructionPart(c.Register[rs2], 0, 4))
+		c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 5)))
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0011_0011: // OR
@@ -361,7 +361,7 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		}
 		imm = InstructionPart(imm, 0, 4)
 		DebuglnIType("SLLIW", rd, rs1, imm)
-		c.SetRegister(rd, SignExtend(uint64(int32(c.GetRegister(rs1))<<imm), 31))
+		c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<imm), 31))
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0001_1011: // SRLIW
@@ -371,7 +371,7 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		}
 		imm = InstructionPart(imm, 0, 4)
 		DebuglnIType("SRLIW", rd, rs1, imm)
-		c.SetRegister(rd, SignExtend(uint64(int32(c.GetRegister(rs1))>>imm), 31))
+		c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>imm), 31))
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0001_1011: // SRAIW
@@ -385,27 +385,33 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_1011: // ADDW
-		// r
-		log.Println("ADDW")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("ADDW", rd, rs1, rs2)
+		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(c.GetRegister(rs2))))
+		c.PC += 4
+		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0000_0000_0011_1011: // SUBW
-		// r
-		log.Println("SUBW")
+		rd, rs1, rs2 := RType(i)
+		DebuglnRType("SUBW", rd, rs1, rs2)
+		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(c.GetRegister(rs2))))
+		c.PC += 4
+		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0011_1011: // SLLW
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SLLW", rd, rs1, rs2)
-		c.Register[rd] = c.Register[rs1] << InstructionPart(c.Register[rs2], 0, 5)
+		c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<InstructionPart(c.GetRegister(rs2), 0, 4)), 31))
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0011_1011: // SRLW
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SRLW", rd, rs1, rs2)
-		c.Register[rd] = c.Register[rs1] >> InstructionPart(c.Register[rs2], 0, 5)
+		c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 4)), 31))
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0011_1011: // SRAW
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SRAW", rd, rs1, rs2)
-		c.Register[rd] = uint64(int64(c.Register[rs1]) >> InstructionPart(c.Register[rs2], 0, 5))
+		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>InstructionPart(c.Register[rs2], 0, 4)))
 		c.PC += 4
 		return 1, nil
 	}
