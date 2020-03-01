@@ -81,15 +81,7 @@ func (c *CPU) Run() {
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[20], c.ModuleBase.RG[21], c.ModuleBase.RG[22], c.ModuleBase.RG[23])
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[24], c.ModuleBase.RG[25], c.ModuleBase.RG[26], c.ModuleBase.RG[27])
 			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[28], c.ModuleBase.RG[29], c.ModuleBase.RG[30], c.ModuleBase.RG[31])
-			n, err := riscv.ExecuterRV32I(c.Inner, s)
-			if err != nil {
-				log.Panicln(err)
-			}
-			if n != 0 {
-				i += 1
-				continue
-			}
-			n, err = riscv.ExecuterRV64I(c.Inner, s)
+			n, err := riscv.ExecuterRV64I(c.Inner, s)
 			if err != nil {
 				log.Panicln(err)
 			}
