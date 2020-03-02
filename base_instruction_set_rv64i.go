@@ -98,10 +98,10 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0000_0011: // LB
 		rd, rs1, imm := IType(i)
+		imm = SignExtend(imm, 11)
 		DebuglnIType("LB", rd, rs1, imm)
-		a := c.Register[rs1] + SignExtend(imm, 11)
-		v := SignExtend(uint64(m[a]), 7)
-		c.Register[rd] = v
+		a := c.GetRegister(rs1) + imm
+		c.SetRegister(rd, SignExtend(uint64(m[a]), 7))
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_0011: // LH
@@ -122,10 +122,10 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0000_0011: // LBU
 		rd, rs1, imm := IType(i)
+		imm = SignExtend(imm, 11)
 		DebuglnIType("LBU", rd, rs1, imm)
-		a := c.Register[rs1] + SignExtend(imm, 11)
-		v := uint64(m[a])
-		c.Register[rd] = v
+		a := c.GetRegister(rs1) + imm
+		c.SetRegister(rd, uint64(m[a]))
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0000_0011: // LHU
