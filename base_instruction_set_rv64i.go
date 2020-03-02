@@ -233,13 +233,13 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_0011: // ADD
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("ADD", rd, rs1, rs2)
-		c.Register[rd] = c.Register[rs1] + c.Register[rs2]
+		c.SetRegister(rd, c.GetRegister(rs1)+c.GetRegister(rs2))
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0000_0000_0011_0011: // SUB
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SUB", rd, rs1, rs2)
-		c.Register[rd] = c.Register[rs1] - c.Register[rs2]
+		c.SetRegister(rd, c.GetRegister(rs1)-c.GetRegister(rs2))
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0011_0011: // SLL
@@ -251,27 +251,27 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0011_0011: // SLT
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SLT", rd, rs1, rs2)
-		if int64(c.Register[rs1]) < int64(c.Register[rs2]) {
-			c.Register[rd] = 1
+		if int64(c.GetRegister(rs1)) < int64(c.GetRegister(rs2)) {
+			c.SetRegister(rd, 1)
 		} else {
-			c.Register[rd] = 0
+			c.SetRegister(rd, 0)
 		}
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0011_0011: // SLTU
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SLTU", rd, rs1, rs2)
-		if c.Register[rs1] < c.Register[rs2] {
-			c.Register[rd] = 1
+		if c.GetRegister(rs1) < c.GetRegister(rs2) {
+			c.SetRegister(rd, 1)
 		} else {
-			c.Register[rd] = 0
+			c.SetRegister(rd, 0)
 		}
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0011_0011: // XOR
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("XOR", rd, rs1, rs2)
-		c.Register[rd] = c.Register[rs1] ^ c.Register[rs2]
+		c.SetRegister(rd, c.GetRegister(rs1)^c.GetRegister(rs2))
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0011_0011: // SRL
@@ -288,14 +288,14 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0011_0011: // OR
 		rd, rs1, rs2 := RType(i)
-		DebuglnRType("XOR", rd, rs1, rs2)
-		c.Register[rd] = c.Register[rs1] | c.Register[rs2]
+		DebuglnRType("OR", rd, rs1, rs2)
+		c.SetRegister(rd, c.GetRegister(rs1)|c.GetRegister(rs2))
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0111_0000_0011_0011: // AND
 		rd, rs1, rs2 := RType(i)
-		DebuglnRType("XOR", rd, rs1, rs2)
-		c.Register[rd] = c.Register[rs1] & c.Register[rs2]
+		DebuglnRType("AND", rd, rs1, rs2)
+		c.SetRegister(rd, c.GetRegister(rs1)&c.GetRegister(rs2))
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_0000_0000_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0000_1111: // FENCE
