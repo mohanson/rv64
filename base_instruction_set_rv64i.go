@@ -26,21 +26,21 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		rd, imm := JType(i)
 		imm = SignExtend(imm, 19)
 		DebuglnJType("JAL", rd, imm)
-		c.Register[rd] = c.PC + 4
+		c.SetRegister(rd, c.PC+4)
 		c.PC += imm
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0111: // JALR
 		rd, rs1, imm := IType(i)
 		imm = SignExtend(imm, 11)
 		DebuglnIType("JALR", rd, rs1, imm)
-		c.Register[rd] = c.PC + 4
-		c.PC = ((c.Register[rs1] + imm) >> 1) << 1
+		c.SetRegister(rd, c.PC+4)
+		c.PC = ((c.GetRegister(rs1) + imm) >> 1) << 1
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0011: // BEQ
 		rs1, rs2, imm := BType(i)
 		imm = SignExtend(imm, 12)
 		DebuglnBType("BEQ", rs1, rs2, imm)
-		if c.Register[rs1] == c.Register[rs2] {
+		if c.GetRegister(rs1) == c.GetRegister(rs2) {
 			c.PC += imm
 		} else {
 			c.PC += 4
@@ -50,7 +50,7 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		rs1, rs2, imm := BType(i)
 		imm = SignExtend(imm, 12)
 		DebuglnBType("BNE", rs1, rs2, imm)
-		if c.Register[rs1] != c.Register[rs2] {
+		if c.GetRegister(rs1) != c.GetRegister(rs2) {
 			c.PC += imm
 		} else {
 			c.PC += 4
@@ -60,7 +60,7 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		rs1, rs2, imm := BType(i)
 		imm = SignExtend(imm, 12)
 		DebuglnBType("BLT", rs1, rs2, imm)
-		if int64(c.Register[rs1]) < int64(c.Register[rs2]) {
+		if int64(c.GetRegister(rs1)) < int64(c.GetRegister(rs2)) {
 			c.PC += imm
 		} else {
 			c.PC += 4
@@ -70,7 +70,7 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		rs1, rs2, imm := BType(i)
 		imm = SignExtend(imm, 12)
 		DebuglnBType("BGE", rs1, rs2, imm)
-		if int64(c.Register[rs1]) >= int64(c.Register[rs2]) {
+		if int64(c.GetRegister(rs1)) >= int64(c.GetRegister(rs2)) {
 			c.PC += imm
 		} else {
 			c.PC += 4
@@ -80,7 +80,7 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		rs1, rs2, imm := BType(i)
 		imm = SignExtend(imm, 12)
 		DebuglnBType("BLTU", rs1, rs2, imm)
-		if c.Register[rs1] < c.Register[rs2] {
+		if c.GetRegister(rs1) < c.GetRegister(rs2) {
 			c.PC += imm
 		} else {
 			c.PC += 4
@@ -90,7 +90,7 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		rs1, rs2, imm := BType(i)
 		imm = SignExtend(imm, 12)
 		DebuglnBType("BGEU", rs1, rs2, imm)
-		if c.Register[rs1] >= c.Register[rs2] {
+		if c.GetRegister(rs1) >= c.GetRegister(rs2) {
 			c.PC += imm
 		} else {
 			c.PC += 4
