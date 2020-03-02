@@ -164,27 +164,27 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		rd, rs1, imm := IType(i)
 		imm = SignExtend(imm, 11)
 		DebuglnIType("ADDI", rd, rs1, imm)
-		c.Register[rd] = c.Register[rs1] + imm
+		c.SetRegister(rd, c.GetRegister(rs1)+imm)
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0001_0011: // SLTI
 		rd, rs1, imm := IType(i)
 		imm = SignExtend(imm, 11)
 		DebuglnIType("SLTI", rd, rs1, imm)
-		if int64(c.Register[rs1]) < int64(imm) {
-			c.Register[rd] = 1
+		if int64(c.GetRegister(rs1)) < int64(imm) {
+			c.SetRegister(rd, 1)
 		} else {
-			c.Register[rd] = 0
+			c.SetRegister(rd, 0)
 		}
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0001_0011: // SLTIU
 		rd, rs1, imm := IType(i)
 		DebuglnIType("SLTIU", rd, rs1, imm)
-		if c.Register[rs1] < imm {
-			c.Register[rd] = 1
+		if c.GetRegister(rs1) < imm {
+			c.SetRegister(rd, 1)
 		} else {
-			c.Register[rd] = 0
+			c.SetRegister(rd, 0)
 		}
 		c.PC += 4
 		return 1, nil
@@ -192,21 +192,21 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		rd, rs1, imm := IType(i)
 		imm = SignExtend(imm, 11)
 		DebuglnIType("XORI", rd, rs1, imm)
-		c.Register[rd] = c.Register[rs1] ^ imm
+		c.SetRegister(rd, c.GetRegister(rs1)^imm)
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0001_0011: // ORI
 		rd, rs1, imm := IType(i)
 		imm = SignExtend(imm, 11)
 		DebuglnIType("ORI", rd, rs1, imm)
-		c.Register[rd] = c.Register[rs1] | imm
+		c.SetRegister(rd, c.GetRegister(rs1)|imm)
 		c.PC += 4
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0111_0000_0001_0011: // ANDI
 		rd, rs1, imm := IType(i)
 		imm = SignExtend(imm, 11)
 		DebuglnIType("ANDI", rd, rs1, imm)
-		c.Register[rd] = c.Register[rs1] & imm
+		c.SetRegister(rd, c.GetRegister(rs1)&imm)
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0001_0011: // SLLI
