@@ -19,22 +19,27 @@ func (c *CPU) pushString(s string) {
 	bs := append([]byte(s), 0x00)
 	c.Inner.SetRegister(riscv.Rsp, c.Inner.GetRegister(riscv.Rsp)-uint64(len(bs)))
 	for i, b := range bs {
-		c.Inner.Memory[c.Inner.GetRegister(riscv.Rsp)+uint64(i)] = b
+		c.Inner.GetMemory().Set(c.Inner.GetRegister(riscv.Rsp)+uint64(i), []byte{b})
 	}
 }
 
 func (c *CPU) pushUint64(v uint64) {
 	c.Inner.SetRegister(riscv.Rsp, c.Inner.GetRegister(riscv.Rsp))
-	binary.LittleEndian.PutUint64(c.Inner.Memory[c.Inner.GetRegister(riscv.Rsp):c.Inner.GetRegister(riscv.Rsp)+8], v)
+	mem := make([]byte, 8)
+	binary.LittleEndian.PutUint64(mem, v)
+	c.Inner.GetMemory().Set(c.Inner.GetRegister(riscv.Rsp), mem)
 }
 
 func (c *CPU) FetchInstruction() []byte {
-	if (c.Inner.GetPC() + 2) > uint64(len(c.Inner.Memory)) {
-		log.Panicln("Out of memory")
+	a, err := c.Inner.GetMemory().Get(c.Inner.GetPC(), 2)
+	if err != nil {
+		log.Panicln(err)
 	}
-	a := c.Inner.Memory[c.Inner.GetPC() : c.Inner.GetPC()+2]
 	b := riscv.InstructionLengthEncoding(a)
-	instructionBytes := c.Inner.Memory[c.Inner.GetPC() : c.Inner.GetPC()+uint64(b)]
+	instructionBytes, err := c.Inner.GetMemory().Get(c.Inner.GetPC(), uint64(b))
+	if err != nil {
+		log.Panicln(err)
+	}
 	return instructionBytes
 }
 
@@ -46,7 +51,7 @@ func (c *CPU) Run() {
 	i := 0
 	for {
 		if c.Inner.GetStatus() == 1 {
-			log.Println("Exit:", c.Inner.System.Code())
+			log.Println("Exit:", c.Inner.GetSystem().Code())
 			break
 		}
 		if i > int(*cStep) {
@@ -94,8 +99,8 @@ func main() {
 	flag.Parse()
 
 	inner := &riscv.CPU{}
-	inner.BindSystem(&riscv.SystemStandard{})
-	inner.BindMemory(make([]byte, 4*1024*1024))
+	inner.SetMemory(riscv.NewMemoryLinear(4 * 1024 * 1024))
+	inner.SetSystem(&riscv.SystemStandard{})
 	cpu := &CPU{
 		Inner: inner,
 	}
@@ -111,11 +116,13 @@ func main() {
 		if s.Flags&elf.SHF_ALLOC == 0 {
 			continue
 		}
-		if _, err := s.ReadAt(cpu.Inner.Memory[s.Addr:s.Addr+s.Size], 0); err != nil {
+		mem := make([]byte, s.Size)
+		if _, err := s.ReadAt(mem, 0); err != nil {
 			log.Panicln(err)
 		}
+		cpu.Inner.GetMemory().Set(s.Addr, mem)
 	}
-	cpu.Inner.SetRegister(riscv.Rsp, uint64(len(cpu.Inner.Memory)))
+	cpu.Inner.SetRegister(riscv.Rsp, cpu.Inner.GetMemory().Len())
 
 	// Command line parameters, distribution of environment variables on the stack:
 	//

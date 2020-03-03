@@ -7,7 +7,6 @@ import (
 )
 
 func ExecuterRV64I(c *CPU, i uint64) (int, error) {
-	m := c.Memory
 	switch {
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_0111: // LUI
 		rd, imm := UType(i)
@@ -102,7 +101,11 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("LB", rd, rs1, imm)
 		a := c.GetRegister(rs1) + imm
-		c.SetRegister(rd, SignExtend(uint64(m[a]), 7))
+		mem, err := c.GetMemory().Get(a, 1)
+		if err != nil {
+			return 0, err
+		}
+		c.SetRegister(rd, SignExtend(uint64(mem[0]), 7))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_0011: // LH
@@ -110,7 +113,11 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("LH", rd, rs1, imm)
 		a := c.GetRegister(rs1) + imm
-		c.SetRegister(rd, SignExtend(uint64(binary.LittleEndian.Uint16(m[a:a+2])), 15))
+		mem, err := c.GetMemory().Get(a, 2)
+		if err != nil {
+			return 0, err
+		}
+		c.SetRegister(rd, SignExtend(uint64(binary.LittleEndian.Uint16(mem)), 15))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0000_0011: // LW
@@ -118,7 +125,11 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("LW", rd, rs1, imm)
 		a := c.GetRegister(rs1) + imm
-		c.SetRegister(rd, SignExtend(uint64(binary.LittleEndian.Uint32(m[a:a+4])), 63))
+		mem, err := c.GetMemory().Get(a, 4)
+		if err != nil {
+			return 0, err
+		}
+		c.SetRegister(rd, SignExtend(uint64(binary.LittleEndian.Uint32(mem)), 63))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0000_0011: // LBU
@@ -126,7 +137,11 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("LBU", rd, rs1, imm)
 		a := c.GetRegister(rs1) + imm
-		c.SetRegister(rd, uint64(m[a]))
+		mem, err := c.GetMemory().Get(a, 1)
+		if err != nil {
+			return 0, err
+		}
+		c.SetRegister(rd, uint64(mem[0]))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0000_0011: // LHU
@@ -134,7 +149,11 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("LH", rd, rs1, imm)
 		a := c.GetRegister(rs1) + imm
-		c.SetRegister(rd, uint64(binary.LittleEndian.Uint16(m[a:a+2])))
+		mem, err := c.GetMemory().Get(a, 2)
+		if err != nil {
+			return 0, err
+		}
+		c.SetRegister(rd, uint64(binary.LittleEndian.Uint16(mem)))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0010_0011: // SB
@@ -142,7 +161,12 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("SB", rs1, rs2, imm)
 		a := c.GetRegister(rs1) + imm
-		m[a] = uint8(c.GetRegister(rs2))
+		mem := make([]byte, 1)
+		mem[0] = uint8(c.GetRegister(rs2))
+		err := c.GetMemory().Set(a, mem)
+		if err != nil {
+			return 0, err
+		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0010_0011: // SH
@@ -150,7 +174,12 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("SH", rs1, rs2, imm)
 		a := c.GetRegister(rs1) + imm
-		binary.LittleEndian.PutUint16(m[a:a+2], uint16(c.GetRegister(rs2)))
+		mem := make([]byte, 2)
+		binary.LittleEndian.PutUint16(mem, uint16(c.GetRegister(rs2)))
+		err := c.GetMemory().Set(a, mem)
+		if err != nil {
+			return 0, err
+		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0010_0011: // SW
@@ -158,7 +187,12 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("SW", rs1, rs2, imm)
 		a := c.GetRegister(rs1) + imm
-		binary.LittleEndian.PutUint32(m[a:a+4], uint32(c.GetRegister(rs2)))
+		mem := make([]byte, 4)
+		binary.LittleEndian.PutUint32(mem, uint32(c.GetRegister(rs2)))
+		err := c.GetMemory().Set(a, mem)
+		if err != nil {
+			return 0, err
+		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_0011: // ADDI
@@ -308,7 +342,7 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0111_0011: // ECALL
 		rd, rs1, imm := IType(i)
 		DebuglnIType("ECALL", rd, rs1, imm)
-		return c.System.HandleCall(c)
+		return c.GetSystem().HandleCall(c)
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0001_0000_0000_0000_0111_0011: // EBREAK
 		log.Println("EBREAK")
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0111_0011: // CSRRW
@@ -329,7 +363,11 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("LWU", rd, rs1, imm)
 		a := c.GetRegister(rs1) + imm
-		c.SetRegister(rd, uint64(binary.LittleEndian.Uint32(m[a:a+4])))
+		mem, err := c.GetMemory().Get(a, 4)
+		if err != nil {
+			return 0, err
+		}
+		c.SetRegister(rd, uint64(binary.LittleEndian.Uint32(mem)))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0000_0011: // LD
@@ -337,7 +375,11 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("LD", rd, rs1, imm)
 		a := c.GetRegister(rs1) + imm
-		c.SetRegister(rd, binary.LittleEndian.Uint64(m[a:a+8]))
+		mem, err := c.GetMemory().Get(a, 8)
+		if err != nil {
+			return 0, err
+		}
+		c.SetRegister(rd, binary.LittleEndian.Uint64(mem))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0010_0011: // SD
@@ -345,7 +387,9 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("SD", rs1, rs2, imm)
 		a := c.GetRegister(rs1) + imm
-		binary.LittleEndian.PutUint64(m[a:a+8], c.GetRegister(rs2))
+		mem := make([]byte, 8)
+		binary.LittleEndian.PutUint64(mem, c.GetRegister(rs2))
+		c.GetMemory().Set(a, mem)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_1011: // ADDIW

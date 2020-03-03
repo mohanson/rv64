@@ -79,7 +79,8 @@ const (
 )
 
 var (
-	ErrAbnormalInstruction = errors.New("Abnormal instruction")
-	ErrReservedInstruction = errors.New("Reserved instruction")
 	ErrAbnormalEcall       = errors.New("Abnormal ecall")
+	ErrAbnormalInstruction = errors.New("Abnormal instruction")
+	ErrOutOfMemory         = errors.New("Out of memory")
+	ErrReservedInstruction = errors.New("Reserved instruction")
 )
