@@ -5,7 +5,7 @@ var (
 )
 
 type System interface {
-	HandleCall(*CPU) (int, error)
+	HandleCall(*CPU) (uint64, error)
 	Code() uint8
 }
 
@@ -13,7 +13,7 @@ type SystemStandard struct {
 	ExitCode uint8
 }
 
-func (s *SystemStandard) HandleCall(c *CPU) (int, error) {
+func (s *SystemStandard) HandleCall(c *CPU) (uint64, error) {
 	code := c.GetRegister(Ra7)
 	switch code {
 	case 0x005d:

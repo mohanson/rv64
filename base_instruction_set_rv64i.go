@@ -6,7 +6,7 @@ import (
 	"math"
 )
 
-func ExecuterRV64I(c *CPU, i uint64) (int, error) {
+func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 	switch {
 	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_0111: // LUI
 		rd, imm := UType(i)

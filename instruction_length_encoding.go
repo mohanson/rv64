@@ -5,7 +5,7 @@ import "log"
 // https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
 // Chapter 1.2
 
-func InstructionLengthEncoding(b []byte) int {
+func InstructionLengthEncoding(b []byte) uint64 {
 	if len(b) != 2 {
 		log.Panicln("")
 	}
@@ -28,7 +28,7 @@ func InstructionLengthEncoding(b []byte) int {
 	// xnnnxxxxx1111111 (80+16*nnn)-bit, nnn != 111
 	if b[1]&0x70 != 0x70 {
 		n := (b[1] & 0x70) >> 4
-		return int(10 + 2*n)
+		return 10 + 2*uint64(n)
 	}
 	// x111xxxxx1111111 Reserved for ≥192-bits
 	log.Panicln("Reserved for ≥192-bits")

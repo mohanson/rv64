@@ -68,7 +68,7 @@ func (c *CPU) Run() {
 		}
 		var s uint64 = 0
 		for i := 0; i < 32; i++ {
-			s += c.Inner.GetRegister(i)
+			s += c.Inner.GetRegister(uint64(i))
 		}
 		log.Println(i, c.Inner.GetPC(), s)
 
