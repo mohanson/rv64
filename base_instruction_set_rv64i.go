@@ -2,7 +2,6 @@ package riscv
 
 import (
 	"fmt"
-	"log"
 	"math"
 )
 
@@ -338,7 +337,9 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 		DebuglnIType("ECALL", rd, rs1, imm)
 		return c.GetSystem().HandleCall(c)
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0001_0000_0000_0000_0111_0011: // EBREAK
-		log.Println("EBREAK")
+		rd, rs1, imm := IType(i)
+		DebuglnIType("EBREAK", rd, rs1, imm)
+		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0111_0011: // CSRRW
 		rd, rs1, csr := IType(i)
 		DebuglnIType("CSRRW", rd, rs1, csr)
