@@ -100,7 +100,7 @@ func main() {
 
 	inner := &riscv.CPU{}
 	inner.SetMemory(riscv.NewMemoryLinear(4 * 1024 * 1024))
-	inner.SetSystem(&riscv.SystemStandard{})
+	inner.SetSystem(riscv.NewSystemStandard())
 	cpu := &CPU{
 		Inner: inner,
 	}

@@ -27,3 +27,9 @@ func (s *SystemStandard) HandleCall(c *CPU) (int, error) {
 func (s *SystemStandard) Code() uint8 {
 	return s.ExitCode
 }
+
+func NewSystemStandard() *SystemStandard {
+	return &SystemStandard{
+		ExitCode: 0,
+	}
+}
