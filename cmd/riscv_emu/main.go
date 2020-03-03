@@ -93,11 +93,11 @@ var (
 func main() {
 	flag.Parse()
 
+	inner := &riscv.CPU{}
+	inner.BindSystem(&riscv.SystemStandard{})
+	inner.BindMemory(make([]byte, 4*1024*1024))
 	cpu := &CPU{
-		Inner: &riscv.CPU{
-			System: &riscv.SystemStandard{},
-			Memory: make([]byte, 4*1024*1024),
-		},
+		Inner: inner,
 	}
 
 	f, err := elf.Open(flag.Arg(0))
