@@ -2,6 +2,7 @@ package riscv
 
 import (
 	"encoding/binary"
+	"fmt"
 	"log"
 )
 
@@ -299,9 +300,11 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 		c.PC += 4
 		return 1, nil
 	case i&0b_1111_0000_0000_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0000_1111: // FENCE
-		log.Println("FENCE")
+		Debugln(fmt.Sprintf("Instr: % 10s |", "FENCE"))
+		return 1, nil
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_1111: // FENCE.I
-		log.Println("FENCE.I")
+		Debugln(fmt.Sprintf("Instr: % 10s |", "FENCE.I"))
+		return 1, nil
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0111_0011: // ECALL
 		rd, rs1, imm := IType(i)
 		DebuglnIType("ECALL", rd, rs1, imm)
