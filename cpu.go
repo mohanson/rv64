@@ -1,15 +1,15 @@
 package riscv
 
 type CPU struct {
-	memory   Memory
+	memory   *Memory
 	pc       uint64
 	register [32]uint64
 	status   int
 	system   System
 }
 
-func (c *CPU) GetMemory() Memory           { return c.memory }
-func (c *CPU) SetMemory(m Memory)          { c.memory = m }
+func (c *CPU) GetMemory() *Memory          { return c.memory }
+func (c *CPU) SetMemory(m *Memory)         { c.memory = m }
 func (c *CPU) GetPC() uint64               { return c.pc }
 func (c *CPU) SetPC(i uint64)              { c.pc = i }
 func (c *CPU) GetStatus() int              { return c.status }
