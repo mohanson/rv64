@@ -412,7 +412,7 @@ func ExecuterRV64I(c *CPU, i uint64) (int, error) {
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0011_1011: // SRAW
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SRAW", rd, rs1, rs2)
-		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>InstructionPart(c.Register[rs2], 0, 4)))
+		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 4)))
 		c.PC += 4
 		return 1, nil
 	}
