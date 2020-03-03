@@ -17,7 +17,7 @@ func (s *SystemStandard) HandleCall(c *CPU) (int, error) {
 	switch code {
 	case 0x005d:
 		s.ExitCode = uint8(c.GetRegister(Ra0))
-		c.Stop = true
+		c.SetStatus(1)
 		return 1, nil
 	}
 	return 0, ErrAbnormalEcall

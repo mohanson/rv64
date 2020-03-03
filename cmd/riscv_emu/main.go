@@ -45,7 +45,7 @@ func (c *CPU) Run() {
 	// log.SetFlags(log.LstdFlags | log.Lshortfile)
 	i := 0
 	for {
-		if c.Inner.Stop {
+		if c.Inner.GetStatus() == 1 {
 			log.Println("Exit:", c.Inner.System.(*riscv.SystemStandard).ExitCode)
 			break
 		}
