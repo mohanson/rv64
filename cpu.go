@@ -18,3 +18,10 @@ func (c *CPU) GetSystem() System           { return c.system }
 func (c *CPU) SetSystem(s System)          { c.system = s }
 func (c *CPU) SetRegister(i int, u uint64) { c.register[i] = Cond(i == Rzero, 0x00, u) }
 func (c *CPU) GetRegister(i int) uint64    { return Cond(i == Rzero, 0x00, c.register[i]) }
+
+func Cond(b bool, y uint64, f uint64) uint64 {
+	if b {
+		return y
+	}
+	return f
+}
