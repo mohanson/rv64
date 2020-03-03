@@ -17,15 +17,15 @@ type CPU struct {
 
 func (c *CPU) pushString(s string) {
 	bs := append([]byte(s), 0x00)
-	c.Inner.Register[riscv.Rsp] -= uint64(len(bs))
+	c.Inner.SetRegister(riscv.Rsp, c.Inner.GetRegister(riscv.Rsp)-uint64(len(bs)))
 	for i, b := range bs {
-		c.Inner.Memory[c.Inner.Register[riscv.Rsp]+uint64(i)] = b
+		c.Inner.Memory[c.Inner.GetRegister(riscv.Rsp)+uint64(i)] = b
 	}
 }
 
 func (c *CPU) pushUint64(v uint64) {
-	c.Inner.Register[riscv.Rsp] -= 8
-	binary.LittleEndian.PutUint64(c.Inner.Memory[c.Inner.Register[riscv.Rsp]:c.Inner.Register[riscv.Rsp]+8], v)
+	c.Inner.SetRegister(riscv.Rsp, c.Inner.GetRegister(riscv.Rsp))
+	binary.LittleEndian.PutUint64(c.Inner.Memory[c.Inner.GetRegister(riscv.Rsp):c.Inner.GetRegister(riscv.Rsp)+8], v)
 }
 
 func (c *CPU) FetchInstruction() []byte {
@@ -49,7 +49,6 @@ func (c *CPU) Run() {
 			log.Println("Exit:", c.Inner.System.(*riscv.SystemStandard).ExitCode)
 			break
 		}
-		c.Inner.Register[riscv.Rzero] = 0x00
 		if i > int(*cStep) {
 			break
 		}
@@ -64,7 +63,7 @@ func (c *CPU) Run() {
 		}
 		var s uint64 = 0
 		for i := 0; i < 32; i++ {
-			s += c.Inner.Register[i]
+			s += c.Inner.GetRegister(i)
 		}
 		log.Println(i, c.Inner.PC, s)
 
@@ -73,15 +72,6 @@ func (c *CPU) Run() {
 			for i := len(data) - 1; i >= 0; i-- {
 				s += uint64(data[i]) << (8 * i)
 			}
-
-			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[0], c.ModuleBase.RG[1], c.ModuleBase.RG[2], c.ModuleBase.RG[3])
-			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[4], c.ModuleBase.RG[5], c.ModuleBase.RG[6], c.ModuleBase.RG[7])
-			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[8], c.ModuleBase.RG[9], c.ModuleBase.RG[10], c.ModuleBase.RG[11])
-			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[12], c.ModuleBase.RG[13], c.ModuleBase.RG[14], c.ModuleBase.RG[15])
-			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[16], c.ModuleBase.RG[17], c.ModuleBase.RG[18], c.ModuleBase.RG[19])
-			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[20], c.ModuleBase.RG[21], c.ModuleBase.RG[22], c.ModuleBase.RG[23])
-			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[24], c.ModuleBase.RG[25], c.ModuleBase.RG[26], c.ModuleBase.RG[27])
-			// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[28], c.ModuleBase.RG[29], c.ModuleBase.RG[30], c.ModuleBase.RG[31])
 			n, err := riscv.ExecuterRV64I(c.Inner, s)
 			if err != nil {
 				log.Panicln(err)
@@ -91,23 +81,6 @@ func (c *CPU) Run() {
 				continue
 			}
 		}
-
-		// n, err := riscv.ExecuterC(c.Inner, s)
-		// if err != nil {
-		// 	log.Panicln(err)
-		// }
-		// if n != 0 {
-		// 	i += 1
-		// 	continue
-		// }
-		// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[0], c.ModuleBase.RG[1], c.ModuleBase.RG[2], c.ModuleBase.RG[3])
-		// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[4], c.ModuleBase.RG[5], c.ModuleBase.RG[6], c.ModuleBase.RG[7])
-		// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[8], c.ModuleBase.RG[9], c.ModuleBase.RG[10], c.ModuleBase.RG[11])
-		// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[12], c.ModuleBase.RG[13], c.ModuleBase.RG[14], c.ModuleBase.RG[15])
-		// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[16], c.ModuleBase.RG[17], c.ModuleBase.RG[18], c.ModuleBase.RG[19])
-		// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[20], c.ModuleBase.RG[21], c.ModuleBase.RG[22], c.ModuleBase.RG[23])
-		// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[24], c.ModuleBase.RG[25], c.ModuleBase.RG[26], c.ModuleBase.RG[27])
-		// log.Printf("%02x %02x %02x %02x\n", c.ModuleBase.RG[28], c.ModuleBase.RG[29], c.ModuleBase.RG[30], c.ModuleBase.RG[31])
 		log.Panicln("")
 	}
 }
@@ -122,10 +95,8 @@ func main() {
 
 	cpu := &CPU{
 		Inner: &riscv.CPU{
-			Register: [32]uint64{},
-			System:   &riscv.SystemStandard{},
-			Memory:   make([]byte, 4*1024*1024),
-			PC:       0,
+			System: &riscv.SystemStandard{},
+			Memory: make([]byte, 4*1024*1024),
 		},
 	}
 
@@ -144,7 +115,7 @@ func main() {
 			log.Panicln(err)
 		}
 	}
-	cpu.Inner.Register[riscv.Rsp] = uint64(len(cpu.Inner.Memory))
+	cpu.Inner.SetRegister(riscv.Rsp, uint64(len(cpu.Inner.Memory)))
 
 	// Command line parameters, distribution of environment variables on the stack:
 	//
@@ -168,10 +139,10 @@ func main() {
 	// addr = append(addr, 0)
 	for i := len(cArgs) - 1; i >= 0; i-- {
 		cpu.pushString(cArgs[i])
-		addr = append(addr, cpu.Inner.Register[riscv.Rsp])
+		addr = append(addr, cpu.Inner.GetRegister(riscv.Rsp))
 	}
 	// Align the stack to 8 bytes
-	cpu.Inner.Register[riscv.Rsp] &^= 0x7
+	cpu.Inner.SetRegister(riscv.Rsp, cpu.Inner.GetRegister(riscv.Rsp)&^0x7)
 	for _, a := range addr {
 		cpu.pushUint64(a)
 	}
