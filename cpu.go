@@ -1,6 +1,7 @@
 package riscv
 
 type CPU struct {
+	csr      [4096]uint64
 	memory   *Memory
 	pc       uint64
 	register [32]uint64
@@ -8,6 +9,8 @@ type CPU struct {
 	system   System
 }
 
+func (c *CPU) GetCSR(i int) uint64         { return c.csr[i] }
+func (c *CPU) SetCSR(i int, u uint64)      { c.csr[i] = u }
 func (c *CPU) GetMemory() *Memory          { return c.memory }
 func (c *CPU) SetMemory(m *Memory)         { c.memory = m }
 func (c *CPU) GetPC() uint64               { return c.pc }
