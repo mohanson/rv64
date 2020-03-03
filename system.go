@@ -6,6 +6,7 @@ var (
 
 type System interface {
 	HandleCall(*CPU) (int, error)
+	Code() uint8
 }
 
 type SystemStandard struct {
@@ -21,4 +22,8 @@ func (s *SystemStandard) HandleCall(c *CPU) (int, error) {
 		return 1, nil
 	}
 	return 0, ErrAbnormalEcall
+}
+
+func (s *SystemStandard) Code() uint8 {
+	return s.ExitCode
 }

@@ -46,7 +46,7 @@ func (c *CPU) Run() {
 	i := 0
 	for {
 		if c.Inner.GetStatus() == 1 {
-			log.Println("Exit:", c.Inner.System.(*riscv.SystemStandard).ExitCode)
+			log.Println("Exit:", c.Inner.System.Code())
 			break
 		}
 		if i > int(*cStep) {
