@@ -2,9 +2,9 @@ package riscv
 
 type CPU struct {
 	register [32]uint64
+	pc       uint64
 	Memory   []byte
 	System   System
-	PC       uint64
 	Stop     bool
 }
 
@@ -21,3 +21,6 @@ func (c *CPU) GetRegister(i int) uint64 {
 	}
 	return c.register[i]
 }
+
+func (c *CPU) GetPC() uint64  { return c.pc }
+func (c *CPU) SetPC(i uint64) { c.pc = i }

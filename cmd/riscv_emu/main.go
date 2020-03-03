@@ -29,12 +29,12 @@ func (c *CPU) pushUint64(v uint64) {
 }
 
 func (c *CPU) FetchInstruction() []byte {
-	if (c.Inner.PC + 2) > uint64(len(c.Inner.Memory)) {
+	if (c.Inner.GetPC() + 2) > uint64(len(c.Inner.Memory)) {
 		log.Panicln("Out of memory")
 	}
-	a := c.Inner.Memory[c.Inner.PC : c.Inner.PC+2]
+	a := c.Inner.Memory[c.Inner.GetPC() : c.Inner.GetPC()+2]
 	b := riscv.InstructionLengthEncoding(a)
-	instructionBytes := c.Inner.Memory[c.Inner.PC : c.Inner.PC+uint64(b)]
+	instructionBytes := c.Inner.Memory[c.Inner.GetPC() : c.Inner.GetPC()+uint64(b)]
 	return instructionBytes
 }
 
@@ -65,7 +65,7 @@ func (c *CPU) Run() {
 		for i := 0; i < 32; i++ {
 			s += c.Inner.GetRegister(i)
 		}
-		log.Println(i, c.Inner.PC, s)
+		log.Println(i, c.Inner.GetPC(), s)
 
 		if len(data) == 4 {
 			var s uint64 = 0
@@ -105,7 +105,7 @@ func main() {
 		log.Panicln(err)
 	}
 	defer f.Close()
-	cpu.Inner.PC = f.Entry
+	cpu.Inner.SetPC(f.Entry)
 
 	for _, s := range f.Sections {
 		if s.Flags&elf.SHF_ALLOC == 0 {
