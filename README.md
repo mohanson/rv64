@@ -1,7 +1,5 @@
 # RISC-V Emulator
 
-\[English\] \[[中文](./README_CN.md)\]
-
 I wrote this simulator to understand riscv more accurately. RISC-V is awesome, but also very young, I hope my work can provide reference value for latecomers.
 
 # Install riscv-gnu-toolchain
