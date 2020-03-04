@@ -237,21 +237,21 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 		c.SetRegister(rd, c.GetRegister(rs1)&imm)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0001_0011: // SLLI
+	case i&0b_1111_1100_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0001_0011: // SLLI
 		rd, rs1, imm := IType(i)
 		imm = InstructionPart(imm, 0, 5)
 		DebuglnIType("SLLI", rd, rs1, imm)
 		c.SetRegister(rd, c.GetRegister(rs1)<<imm)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0001_0011: // SRLI
+	case i&0b_1111_1100_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0001_0011: // SRLI
 		rd, rs1, imm := IType(i)
 		imm = InstructionPart(imm, 0, 5)
 		DebuglnIType("SRLI", rd, rs1, imm)
 		c.SetRegister(rd, c.GetRegister(rs1)>>imm)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0001_0011: // SRAI
+	case i&0b_1111_1100_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0001_0011: // SRAI
 		rd, rs1, imm := IType(i)
 		imm = InstructionPart(imm, 0, 5)
 		DebuglnIType("SRAI", rd, rs1, imm)

@@ -99,7 +99,7 @@ func main() {
 	flag.Parse()
 
 	inner := &riscv.CPU{}
-	inner.SetMemory(riscv.NewMemoryLinear(4 * 1024 * 1024))
+	inner.SetMemory(riscv.NewMemoryLinear(3 * 1024 * 1024 * 1024))
 	inner.SetSystem(riscv.NewSystemStandard())
 	cpu := &CPU{
 		Inner: inner,
