@@ -1,4 +1,4 @@
-package riscv
+package rv64
 
 type CPU struct {
 	csr      [4096]uint64

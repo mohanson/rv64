@@ -1,4 +1,4 @@
-package riscv
+package rv64
 
 // https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
 // Chapter 19

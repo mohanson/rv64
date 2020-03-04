@@ -6,28 +6,28 @@ import (
 	"flag"
 	"log"
 
-	"github.com/mohanson/riscv"
+	"github.com/mohanson/rv64"
 )
 
 const cDebug = 1
 
 type CPU struct {
-	Inner *riscv.CPU
+	Inner *rv64.CPU
 }
 
 func (c *CPU) pushString(s string) {
 	bs := append([]byte(s), 0x00)
-	c.Inner.SetRegister(riscv.Rsp, c.Inner.GetRegister(riscv.Rsp)-uint64(len(bs)))
+	c.Inner.SetRegister(rv64.Rsp, c.Inner.GetRegister(rv64.Rsp)-uint64(len(bs)))
 	for i, b := range bs {
-		c.Inner.GetMemory().Set(c.Inner.GetRegister(riscv.Rsp)+uint64(i), []byte{b})
+		c.Inner.GetMemory().Set(c.Inner.GetRegister(rv64.Rsp)+uint64(i), []byte{b})
 	}
 }
 
 func (c *CPU) pushUint64(v uint64) {
-	c.Inner.SetRegister(riscv.Rsp, c.Inner.GetRegister(riscv.Rsp))
+	c.Inner.SetRegister(rv64.Rsp, c.Inner.GetRegister(rv64.Rsp))
 	mem := make([]byte, 8)
 	binary.LittleEndian.PutUint64(mem, v)
-	c.Inner.GetMemory().Set(c.Inner.GetRegister(riscv.Rsp), mem)
+	c.Inner.GetMemory().Set(c.Inner.GetRegister(rv64.Rsp), mem)
 }
 
 func (c *CPU) FetchInstruction() []byte {
@@ -35,7 +35,7 @@ func (c *CPU) FetchInstruction() []byte {
 	if err != nil {
 		log.Panicln(err)
 	}
-	b := riscv.InstructionLengthEncoding(a)
+	b := rv64.InstructionLengthEncoding(a)
 	instructionBytes, err := c.Inner.GetMemory().Get(c.Inner.GetPC(), uint64(b))
 	if err != nil {
 		log.Panicln(err)
@@ -77,7 +77,7 @@ func (c *CPU) Run() {
 			for i := len(data) - 1; i >= 0; i-- {
 				s += uint64(data[i]) << (8 * i)
 			}
-			n, err := riscv.ExecuterRV64I(c.Inner, s)
+			n, err := rv64.ExecuterRV64I(c.Inner, s)
 			if err != nil {
 				log.Panicln(err)
 			}
@@ -98,9 +98,9 @@ var (
 func main() {
 	flag.Parse()
 
-	inner := &riscv.CPU{}
-	inner.SetMemory(riscv.NewMemoryLinear(3 * 1024 * 1024 * 1024))
-	inner.SetSystem(riscv.NewSystemStandard())
+	inner := &rv64.CPU{}
+	inner.SetMemory(rv64.NewMemoryLinear(3 * 1024 * 1024 * 1024))
+	inner.SetSystem(rv64.NewSystemStandard())
 	cpu := &CPU{
 		Inner: inner,
 	}
@@ -122,7 +122,7 @@ func main() {
 		}
 		cpu.Inner.GetMemory().Set(s.Addr, mem)
 	}
-	cpu.Inner.SetRegister(riscv.Rsp, cpu.Inner.GetMemory().Len())
+	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetMemory().Len())
 
 	// Command line parameters, distribution of environment variables on the stack:
 	//
@@ -146,10 +146,10 @@ func main() {
 	// addr = append(addr, 0)
 	for i := len(cArgs) - 1; i >= 0; i-- {
 		cpu.pushString(cArgs[i])
-		addr = append(addr, cpu.Inner.GetRegister(riscv.Rsp))
+		addr = append(addr, cpu.Inner.GetRegister(rv64.Rsp))
 	}
 	// Align the stack to 8 bytes
-	cpu.Inner.SetRegister(riscv.Rsp, cpu.Inner.GetRegister(riscv.Rsp)&^0x7)
+	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetRegister(rv64.Rsp)&^0x7)
 	for _, a := range addr {
 		cpu.pushUint64(a)
 	}

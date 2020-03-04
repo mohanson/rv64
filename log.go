@@ -1,4 +1,4 @@
-package riscv
+package rv64
 
 import (
 	"fmt"
