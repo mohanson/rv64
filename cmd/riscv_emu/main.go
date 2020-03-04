@@ -43,7 +43,7 @@ func (c *CPU) FetchInstruction() []byte {
 	return instructionBytes
 }
 
-var cStep = flag.Int64("steps", 250, "")
+var cStep = flag.Int64("steps", 2000, "")
 
 func (c *CPU) Run() {
 	flag.Parse()
