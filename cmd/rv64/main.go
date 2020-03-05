@@ -25,7 +25,7 @@ func (c *CPU) pushString(s string) {
 }
 
 func (c *CPU) pushUint64(v uint64) {
-	c.Inner.SetRegister(rv64.Rsp, c.Inner.GetRegister(rv64.Rsp))
+	c.Inner.SetRegister(rv64.Rsp, c.Inner.GetRegister(rv64.Rsp)-8)
 	mem := make([]byte, 8)
 	binary.LittleEndian.PutUint64(mem, v)
 	c.Inner.GetMemory().Set(c.Inner.GetRegister(rv64.Rsp), mem)
@@ -148,7 +148,7 @@ func main() {
 	// | argv[0].ptr |
 	// | argc        |
 
-	addr := []uint64{0}
+	addr := []uint64{}
 	// for i := len(cEnvs) - 1; i >= 0; i-- {
 	// 	cpu.pushString(cEnvs[i])
 	// 	addr = append(addr, cpu.ModuleBase.RG[riscv.Rsp])
@@ -158,11 +158,14 @@ func main() {
 		cpu.pushString(cArgs[i])
 		addr = append(addr, cpu.Inner.GetRegister(rv64.Rsp))
 	}
-	// Align the stack to 8 bytes
-	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetRegister(rv64.Rsp)&^0x7)
-	for _, a := range addr {
-		cpu.pushUint64(a)
+	cpu.Inner.GetMemory().SetUint8(cpu.Inner.GetRegister(rv64.Rsp), 0)
+	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetRegister(rv64.Rsp)-1)
+	for i := len(addr) - 1; i >= 0; i-- {
+		cpu.pushUint64(addr[i])
 	}
 	cpu.pushUint64(uint64(len(cArgs)))
+	log.Println(cpu.Inner.GetRegister(rv64.Rsp))
+	// Align the stack to 16 bytes
+	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetRegister(rv64.Rsp)&0xfffffff0)
 	os.Exit(int(cpu.Run()))
 }
