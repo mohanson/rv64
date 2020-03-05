@@ -37,15 +37,30 @@ func makeBinary() {
 
 func makeRiscvTests() {
 	os.Chdir(*cTmp)
+	defer os.Chdir(cPwd)
 	if _, err := os.Stat("riscv-tests"); err == nil {
 		return
 	}
 	call("git", "clone", "https://github.com/nervosnetwork/riscv-tests")
 	os.Chdir("riscv-tests")
+	defer os.Chdir("..")
 	call("git", "submodule", "update", "--init", "--recursive")
 	call("autoconf")
 	call("./configure", "--prefix="+cRiscvTool)
 	call("make", "isa")
+}
+
+func testRiscvTests() {
+	m, err := filepath.Glob(filepath.Join(*cTmp, "riscv-tests", "isa", "rv64u[i]-u-*"))
+	if err != nil {
+		log.Panicln(err)
+	}
+	for _, e := range m {
+		if strings.HasSuffix(e, ".dump") {
+			continue
+		}
+		call(cEmu, e)
+	}
 }
 
 func main() {
@@ -59,6 +74,7 @@ func main() {
 		}
 		if e == "test" {
 			makeRiscvTests()
+			testRiscvTests()
 		}
 	}
 }

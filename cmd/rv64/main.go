@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"flag"
 	"log"
+	"os"
 
 	"github.com/mohanson/rv64"
 )
@@ -45,14 +46,14 @@ func (c *CPU) FetchInstruction() []byte {
 
 var cStep = flag.Int64("steps", 2000, "")
 
-func (c *CPU) Run() {
+func (c *CPU) Run() uint8 {
 	flag.Parse()
 	// log.SetFlags(log.LstdFlags | log.Lshortfile)
 	i := 0
 	for {
 		if c.Inner.GetStatus() == 1 {
 			log.Println("Exit:", c.Inner.GetSystem().Code())
-			break
+			return c.Inner.GetSystem().Code()
 		}
 		if i > int(*cStep) {
 			break
@@ -96,6 +97,7 @@ func (c *CPU) Run() {
 		}
 		log.Panicln("")
 	}
+	return 0
 }
 
 var (
@@ -162,5 +164,5 @@ func main() {
 		cpu.pushUint64(a)
 	}
 	cpu.pushUint64(uint64(len(cArgs)))
-	cpu.Run()
+	os.Exit(int(cpu.Run()))
 }
