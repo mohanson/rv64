@@ -11,12 +11,73 @@ func ExecuterM(c *CPU, i uint64) (uint64, error) {
 	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0001_0000_0011_0011: // MULH
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("MULH", rd, rs1, rs2)
+		v := func() uint64 {
+			n1, n2 := int64(c.GetRegister(rs1)), int64(c.GetRegister(rs2))
+			var neg1, neg2 bool
+			if n1 < 0 {
+				neg1, n1 = true, -n1
+			}
+			if n2 < 0 {
+				neg2, n2 = true, -n2
+			}
+			ah, al := uint64(n1)>>32, uint64(n1)&0xffffffff
+			bh, bl := uint64(n2)>>32, uint64(n2)&0xffffffff
+			a := ah * bh
+			b := ah * bl
+			c := al * bh
+			d := al * bl
+			v := a + b>>32 + c>>32 + (d>>32+b&0xffffffff+c&0xffffffff)>>32
+
+			if neg1 != neg2 {
+				v = -v
+			}
+			return v
+		}()
+		c.SetRegister(rd, v)
+		c.SetPC(c.GetPC() + 4)
+		return 1, nil
 	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0010_0000_0011_0011: // MULHSU
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("MULHSU", rd, rs1, rs2)
+		v := func() uint64 {
+			n1, n2 := int64(c.GetRegister(rs1)), c.GetRegister(rs2)
+			var neg bool
+			if n1 < 0 {
+				neg, n1 = true, -n1
+			}
+
+			ah, al := uint64(n1)>>32, uint64(n1)&0xffffffff
+			bh, bl := n2>>32, n2&0xffffffff
+			a := ah * bh
+			b := ah * bl
+			c := al * bh
+			d := al * bl
+			v := a + b>>32 + c>>32 + (d>>32+b&0xffffffff+c&0xffffffff)>>32
+
+			if neg {
+				v = -v
+			}
+			return v
+		}()
+		c.SetRegister(rd, v)
+		c.SetPC(c.GetPC() + 4)
+		return 1, nil
 	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0011_0000_0011_0011: // MULHU
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("MULHU", rd, rs1, rs2)
+		v := func() uint64 {
+			ah, al := c.GetRegister(rs1)>>32, c.GetRegister(rs1)&0xffffffff
+			bh, bl := c.GetRegister(rs2)>>32, c.GetRegister(rs2)&0xffffffff
+			a := ah * bh
+			b := ah * bl
+			c := al * bh
+			d := al * bl
+			v := a + b>>32 + c>>32 + (d>>32+b&0xffffffff+c&0xffffffff)>>32
+			return v
+		}()
+		c.SetRegister(rd, v)
+		c.SetPC(c.GetPC() + 4)
+		return 1, nil
 	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0100_0000_0011_0011: // DIV
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("DIV", rd, rs1, rs2)
