@@ -164,8 +164,13 @@ func main() {
 		cpu.pushUint64(addr[i])
 	}
 	cpu.pushUint64(uint64(len(cArgs)))
-	log.Println(cpu.Inner.GetRegister(rv64.Rsp))
+	if cpu.Inner.GetRegister(rv64.Rsp) != 4194282 {
+		log.Panicln("")
+	}
 	// Align the stack to 16 bytes
 	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetRegister(rv64.Rsp)&0xfffffff0)
+	if cpu.Inner.GetRegister(rv64.Rsp) != 4194272 {
+		log.Panicln("")
+	}
 	os.Exit(int(cpu.Run()))
 }
