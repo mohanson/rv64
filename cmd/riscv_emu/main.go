@@ -85,6 +85,14 @@ func (c *CPU) Run() {
 				i += 1
 				continue
 			}
+			n, err = rv64.ExecuterM(c.Inner, s)
+			if err != nil {
+				log.Panicln(err)
+			}
+			if n != 0 {
+				i += 1
+				continue
+			}
 		}
 		log.Panicln("")
 	}
