@@ -1,23 +1,27 @@
 # RISC-V Emulator
 
-\[English\] \[[中文](./README_CN.md)\]
-
 I wrote this simulator to understand riscv more accurately. RISC-V is awesome, but also very young, I hope my work can provide reference value for latecomers.
 
-# Getting the sources, build and play
+# Install riscv-gnu-toolchain
+
+Repo: [https://github.com/riscv/riscv-gnu-toolchain](https://github.com/riscv/riscv-gnu-toolchain)
 
 ```sh
-$ git clone https://github.com/mohanson/riscv
-$ cd riscv
-$ go build github.com/mohanson/cmd/riscv_emu
+$ ./configure --prefix=/opt/riscv --with-arch=rv64g
+$ make
 ```
 
-Play!
+# Installation
 
 ```sh
-$ ./riscv_emu ./bin/fuzz
+$ mkdir bin
+$ go build -o bin github.com/mohanson/rv64/cmd/make
+$ ./bin/make make
 ```
 
-# Dose it done?
+The binary file located at the `./bin` directory. Test the output with the following command:
 
-No! I'm just starting! There will be JIT and there will also be AOT.
+```sh
+$ export RISCV=/opt/riscv
+$ ./bin/make test
+```

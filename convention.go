@@ -1,4 +1,8 @@
-package riscv
+package rv64
+
+import (
+	"errors"
+)
 
 // https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
 // Chapter 20
@@ -72,4 +76,11 @@ const (
 	Rft9  = 29 // FP temporaries
 	Rft10 = 30 // FP temporaries
 	Rft11 = 31 // FP temporaries
+)
+
+var (
+	ErrAbnormalEcall       = errors.New("Abnormal ecall")
+	ErrAbnormalInstruction = errors.New("Abnormal instruction")
+	ErrOutOfMemory         = errors.New("Out of memory")
+	ErrReservedInstruction = errors.New("Reserved instruction")
 )
