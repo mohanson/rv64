@@ -4,7 +4,7 @@ I wrote this simulator to understand riscv more accurately. RISC-V is awesome, b
 
 # Install riscv-gnu-toolchain
 
-Repo: [https://github.com/riscv/riscv-gnu-toolchain](https://github.com/riscv/riscv-gnu-toolchain)
+First of all, riscv gnu toolchain must be installed. Source repo at [https://github.com/riscv/riscv-gnu-toolchain](https://github.com/riscv/riscv-gnu-toolchain), complete the build with the following commands:
 
 ```sh
 $ ./configure --prefix=/opt/riscv --with-arch=rv64g
