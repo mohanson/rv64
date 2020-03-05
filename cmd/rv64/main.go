@@ -4,13 +4,12 @@ import (
 	"debug/elf"
 	"encoding/binary"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/mohanson/rv64"
 )
-
-const cDebug = 1
 
 type CPU struct {
 	Inner *rv64.CPU
@@ -44,10 +43,12 @@ func (c *CPU) FetchInstruction() []byte {
 	return instructionBytes
 }
 
-var cStep = flag.Int64("steps", 2000, "")
+var (
+	cStep  = flag.Int64("steps", -1, "")
+	cDebug = flag.Bool("d", false, "Debug")
+)
 
 func (c *CPU) Run() uint8 {
-	flag.Parse()
 	// log.SetFlags(log.LstdFlags | log.Lshortfile)
 	i := 0
 	for {
@@ -55,23 +56,23 @@ func (c *CPU) Run() uint8 {
 			log.Println("Exit:", c.Inner.GetSystem().Code())
 			return c.Inner.GetSystem().Code()
 		}
-		if i > int(*cStep) {
+		if i > int(*cStep) && *cStep < 0 {
 			break
 		}
 		data := c.FetchInstruction()
-		log.Println("==========")
+		rv64.Debugln("==========")
 		if len(data) == 2 {
-			log.Printf("%08b %08b\n", data[1], data[0])
+			rv64.Debugln(fmt.Sprintf("%08b %08b\n", data[1], data[0]))
 		} else if len(data) == 4 {
-			log.Printf("%08b %08b %08b %08b\n", data[3], data[2], data[1], data[0])
+			rv64.Debugln(fmt.Sprintf("%08b %08b %08b %08b\n", data[3], data[2], data[1], data[0]))
 		} else {
-			log.Panicln("")
+			rv64.Panicln("")
 		}
 		var s uint64 = 0
 		for i := 0; i < 32; i++ {
 			s += c.Inner.GetRegister(uint64(i))
 		}
-		log.Println(i, c.Inner.GetPC(), s)
+		rv64.Debugln(i, c.Inner.GetPC(), s)
 
 		if len(data) == 4 {
 			var s uint64 = 0
@@ -107,7 +108,9 @@ var (
 
 func main() {
 	flag.Parse()
-
+	if *cDebug == true {
+		rv64.LogLevel = 1
+	}
 	inner := &rv64.CPU{}
 	inner.SetMemory(rv64.NewMemoryLinear(4 * 1024 * 1024))
 	inner.SetSystem(rv64.NewSystemStandard())

@@ -5,12 +5,16 @@ import (
 	"log"
 )
 
+var LogLevel = 0
+
 func Println(v ...interface{}) {
 	log.Println(v...)
 }
 
 func Debugln(v ...interface{}) {
-	log.Println(v...)
+	if LogLevel > 0 {
+		log.Println(v...)
+	}
 }
 
 func Panicln(v ...interface{}) {

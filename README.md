@@ -11,20 +11,17 @@ $ ./configure --prefix=/opt/riscv --with-arch=rv64g
 $ make
 ```
 
-# Install riscv-tests
+# Installation
 
-Repo: [https://github.com/riscv/riscv-tests](https://github.com/riscv/riscv-tests)
+```sh
+$ mkdir bin
+$ go build -o bin github.com/mohanson/rv64/cmd/make
+$ ./bin/make make
+```
+
+The binary file located at the `./bin` directory. Test the output with the following command:
 
 ```sh
 $ export RISCV=/opt/riscv
-```
-
-```sh
-$ git clone https://github.com/riscv/riscv-tests
-$ cd riscv-tests
-$ git submodule update --init --recursive
-$ autoconf
-$ ./configure --prefix=$RISCV/target
-$ make
-$ make install
+$ ./bin/make test
 ```
