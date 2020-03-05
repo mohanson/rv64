@@ -17,6 +17,7 @@ var (
 var (
 	cPwd, _    = os.Getwd()
 	cRiscvTool = os.Getenv("RISCV")
+	cEmu       = "./bin/rv64"
 )
 
 func call(name string, arg ...string) {
@@ -27,6 +28,11 @@ func call(name string, arg ...string) {
 	if err := cmd.Run(); err != nil {
 		log.Panicln(err)
 	}
+}
+
+func makeBinary() {
+	os.Mkdir("bin", 0755)
+	call("go", "build", "-o", "bin", "github.com/mohanson/rv64/cmd/rv64")
 }
 
 func makeRiscvTests() {
@@ -47,12 +53,12 @@ func main() {
 		log.Panicln("$RISCV undefined")
 	}
 	flag.Parse()
-	if flag.Arg(0) == "test" {
-		makeRiscvTests()
+	for _, e := range flag.Args() {
+		if e == "make" {
+			makeBinary()
+		}
+		if e == "test" {
+			makeRiscvTests()
+		}
 	}
 }
-
-// os.Mkdir("build", 0755)
-// os.Mkdir("build/res", 0755)
-// os.Mkdir("build/res/program", 0755)
-// call(*cCompile, "-o", "./build/res/program/minimal", "./res/program/minimal.c")
