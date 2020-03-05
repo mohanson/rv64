@@ -128,7 +128,7 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 		if err != nil {
 			return 0, err
 		}
-		c.SetRegister(rd, SignExtend(uint64(v), 63))
+		c.SetRegister(rd, SignExtend(uint64(v), 31))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0000_0011: // LBU
@@ -208,6 +208,7 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0001_0011: // SLTIU
 		rd, rs1, imm := IType(i)
+		imm = uint64(SignExtend(imm, 11))
 		DebuglnIType("SLTIU", rd, rs1, imm)
 		if c.GetRegister(rs1) < imm {
 			c.SetRegister(rd, 1)
