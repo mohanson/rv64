@@ -109,7 +109,7 @@ func main() {
 	flag.Parse()
 
 	inner := &rv64.CPU{}
-	inner.SetMemory(rv64.NewMemoryLinear(3 * 1024 * 1024 * 1024))
+	inner.SetMemory(rv64.NewMemoryLinear(4 * 1024 * 1024))
 	inner.SetSystem(rv64.NewSystemStandard())
 	cpu := &CPU{
 		Inner: inner,
