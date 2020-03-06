@@ -26,6 +26,30 @@ $ export RISCV=/opt/riscv
 $ ./bin/make test
 ```
 
+# Lick it
+
+Let's compile a simple C file, which implements the fibonacci function.
+
+```c
+int fib(int n) {
+    if (n <= 1) {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+
+int main() {
+    return fib(10);
+}
+```
+
+```sh
+$ /opt/riscv/bin/riscv64-unknown-elf-gcc -o /tmp/fib ./res/program/fib.c
+$ ./bin/rv64 /tmp/fib
+$ echo $?
+# 55
+```
+
 # Licence
 
 WTFPL.
