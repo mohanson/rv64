@@ -97,7 +97,7 @@ func ExecuterM(c *CPU, i uint64) (uint64, error) {
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("REM", rd, rs1, rs2)
 		if c.GetRegister(rs2) == 0 {
-			c.SetRegister(rd, math.MaxUint64)
+			c.SetRegister(rd, c.GetRegister(rs1))
 		} else {
 			c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))%int64(c.GetRegister(rs2))))
 		}
@@ -107,7 +107,7 @@ func ExecuterM(c *CPU, i uint64) (uint64, error) {
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("REMU", rd, rs1, rs2)
 		if c.GetRegister(rs2) == 0 {
-			c.SetRegister(rd, math.MaxUint64)
+			c.SetRegister(rd, c.GetRegister(rs1))
 		} else {
 			c.SetRegister(rd, c.GetRegister(rs1)%c.GetRegister(rs2))
 		}
@@ -143,9 +143,9 @@ func ExecuterM(c *CPU, i uint64) (uint64, error) {
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("REMW", rd, rs1, rs2)
 		if c.GetRegister(rs2) == 0 {
-			c.SetRegister(rd, math.MaxUint64)
+			c.SetRegister(rd, c.GetRegister(rs1))
 		} else {
-			c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))/int32(c.GetRegister(rs2))))
+			c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))%int32(c.GetRegister(rs2))))
 		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
@@ -153,9 +153,9 @@ func ExecuterM(c *CPU, i uint64) (uint64, error) {
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("REMUW", rd, rs1, rs2)
 		if c.GetRegister(rs2) == 0 {
-			c.SetRegister(rd, math.MaxUint64)
+			c.SetRegister(rd, c.GetRegister(rs1))
 		} else {
-			c.SetRegister(rd, SignExtend(uint64(int32(c.GetRegister(rs1))/int32(c.GetRegister(rs2))), 31))
+			c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))%uint32(c.GetRegister(rs2))), 31))
 		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
