@@ -19,7 +19,7 @@ $ go build -o bin github.com/mohanson/rv64/cmd/make
 $ ./bin/make make
 ```
 
-The binary file located at the `./bin` directory. Test the output with the following command:
+The binary file `rv64` will be located at the `./bin` directory. Could test it with the following command:
 
 ```sh
 $ export RISCV=/opt/riscv
