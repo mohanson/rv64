@@ -2,6 +2,7 @@ package rv64
 
 import (
 	"math"
+	"math/big"
 )
 
 func ExecuterM(c *CPU, i uint64) (uint64, error) {
@@ -16,26 +17,12 @@ func ExecuterM(c *CPU, i uint64) (uint64, error) {
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("MULH", rd, rs1, rs2)
 		v := func() uint64 {
-			n1, n2 := int64(c.GetRegister(rs1)), int64(c.GetRegister(rs2))
-			var neg1, neg2 bool
-			if n1 < 0 {
-				neg1, n1 = true, -n1
-			}
-			if n2 < 0 {
-				neg2, n2 = true, -n2
-			}
-			ah, al := uint64(n1)>>32, uint64(n1)&0xffffffff
-			bh, bl := uint64(n2)>>32, uint64(n2)&0xffffffff
-			a := ah * bh
-			b := ah * bl
-			c := al * bh
-			d := al * bl
-			v := a + b>>32 + c>>32 + (d>>32+b&0xffffffff+c&0xffffffff)>>32
-
-			if neg1 != neg2 {
-				v = -v
-			}
-			return v
+			ag1 := big.NewInt(int64(c.GetRegister(rs1)))
+			ag2 := big.NewInt(int64(c.GetRegister(rs2)))
+			tmp := big.NewInt(0)
+			tmp.Mul(ag1, ag2)
+			tmp.Rsh(tmp, 64)
+			return uint64(tmp.Int64())
 		}()
 		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
@@ -44,24 +31,18 @@ func ExecuterM(c *CPU, i uint64) (uint64, error) {
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("MULHSU", rd, rs1, rs2)
 		v := func() uint64 {
-			n1, n2 := int64(c.GetRegister(rs1)), c.GetRegister(rs2)
-			var neg bool
-			if n1 < 0 {
-				neg, n1 = true, -n1
+			ag1 := big.NewInt(int64(c.GetRegister(rs1)))
+			ag2 := big.NewInt(int64(c.GetRegister(rs2)))
+			if ag2.Cmp(big.NewInt(0)) == -1 {
+				tmp := big.NewInt(0)
+				tmp.Add(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64))
+				tmp.Add(tmp, big.NewInt(2))
+				ag2 = tmp.Add(tmp, ag2)
 			}
-
-			ah, al := uint64(n1)>>32, uint64(n1)&0xffffffff
-			bh, bl := n2>>32, n2&0xffffffff
-			a := ah * bh
-			b := ah * bl
-			c := al * bh
-			d := al * bl
-			v := a + b>>32 + c>>32 + (d>>32+b&0xffffffff+c&0xffffffff)>>32
-
-			if neg {
-				v = -v
-			}
-			return v
+			tmp := big.NewInt(0)
+			tmp.Mul(ag1, ag2)
+			tmp.Rsh(tmp, 64)
+			return uint64(tmp.Int64())
 		}()
 		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
@@ -70,14 +51,24 @@ func ExecuterM(c *CPU, i uint64) (uint64, error) {
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("MULHU", rd, rs1, rs2)
 		v := func() uint64 {
-			ah, al := c.GetRegister(rs1)>>32, c.GetRegister(rs1)&0xffffffff
-			bh, bl := c.GetRegister(rs2)>>32, c.GetRegister(rs2)&0xffffffff
-			a := ah * bh
-			b := ah * bl
-			c := al * bh
-			d := al * bl
-			v := a + b>>32 + c>>32 + (d>>32+b&0xffffffff+c&0xffffffff)>>32
-			return v
+			ag1 := big.NewInt(int64(c.GetRegister(rs1)))
+			ag2 := big.NewInt(int64(c.GetRegister(rs2)))
+			if ag1.Cmp(big.NewInt(0)) == -1 {
+				tmp := big.NewInt(0)
+				tmp.Add(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64))
+				tmp.Add(tmp, big.NewInt(2))
+				ag1 = tmp.Add(tmp, ag1)
+			}
+			if ag2.Cmp(big.NewInt(0)) == -1 {
+				tmp := big.NewInt(0)
+				tmp.Add(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64))
+				tmp.Add(tmp, big.NewInt(2))
+				ag2 = tmp.Add(tmp, ag2)
+			}
+			tmp := big.NewInt(0)
+			tmp.Mul(ag1, ag2)
+			tmp.Rsh(tmp, 64)
+			return tmp.Uint64()
 		}()
 		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
