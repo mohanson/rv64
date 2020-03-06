@@ -1,4 +1,4 @@
-# RISC-V Emulator
+# RISC-V RV64IMAFDC Emulator
 
 I wrote this simulator to understand riscv more accurately. RISC-V is awesome, but also very young, I hope my work can provide reference value for latecomers.
 
@@ -25,3 +25,7 @@ The binary file `rv64` will be located at the `./bin` directory. Could test it w
 $ export RISCV=/opt/riscv
 $ ./bin/make test
 ```
+
+# Licences
+
+WTFPL.
