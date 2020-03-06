@@ -53,10 +53,10 @@ func (c *CPU) Run() uint8 {
 	i := 0
 	for {
 		if c.Inner.GetStatus() == 1 {
-			log.Println("Exit:", c.Inner.GetSystem().Code())
+			rv64.Debugln("Exit:", c.Inner.GetSystem().Code())
 			return c.Inner.GetSystem().Code()
 		}
-		if i > int(*cStep) && *cStep < 0 {
+		if i > int(*cStep) && *cStep > 0 {
 			break
 		}
 		data := c.FetchInstruction()

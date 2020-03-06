@@ -329,9 +329,11 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 		return 1, nil
 	case i&0b_1111_0000_0000_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0000_1111: // FENCE
 		Debugln(fmt.Sprintf("Instr: % 10s |", "FENCE"))
+		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_1111: // FENCE.I
 		Debugln(fmt.Sprintf("Instr: % 10s |", "FENCE.I"))
+		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0111_0011: // ECALL
 		rd, rs1, imm := IType(i)
@@ -469,7 +471,7 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0000_0000_0011_1011: // SUBW
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SUBW", rd, rs1, rs2)
-		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(c.GetRegister(rs2))))
+		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))-int32(c.GetRegister(rs2))))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0011_1011: // SLLW

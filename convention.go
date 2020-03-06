@@ -84,3 +84,7 @@ var (
 	ErrOutOfMemory         = errors.New("Out of memory")
 	ErrReservedInstruction = errors.New("Reserved instruction")
 )
+
+var (
+	LogLevel = 0
+)
