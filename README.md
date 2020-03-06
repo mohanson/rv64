@@ -26,6 +26,6 @@ $ export RISCV=/opt/riscv
 $ ./bin/make test
 ```
 
-# Licences
+# Licence
 
 WTFPL.
