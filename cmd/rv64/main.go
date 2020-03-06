@@ -62,9 +62,9 @@ func (c *CPU) Run() uint8 {
 		data := c.FetchInstruction()
 		rv64.Debugln("==========")
 		if len(data) == 2 {
-			rv64.Debugln(fmt.Sprintf("%08b %08b\n", data[1], data[0]))
+			rv64.Debugln(fmt.Sprintf("%08b %08b", data[1], data[0]))
 		} else if len(data) == 4 {
-			rv64.Debugln(fmt.Sprintf("%08b %08b %08b %08b\n", data[3], data[2], data[1], data[0]))
+			rv64.Debugln(fmt.Sprintf("%08b %08b %08b %08b", data[3], data[2], data[1], data[0]))
 		} else {
 			rv64.Panicln("")
 		}
