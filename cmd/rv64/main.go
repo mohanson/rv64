@@ -145,14 +145,13 @@ func main() {
 	cpu.Inner.SetPC(f.Entry)
 
 	for _, s := range f.Sections {
-		if s.Flags&elf.SHF_ALLOC == 0 {
-			continue
+		if s.Flags&elf.SHF_ALLOC != 0 && s.Type&elf.SHT_NOBITS == 0 {
+			mem := make([]byte, s.Size)
+			if _, err := s.ReadAt(mem, 0); err != nil {
+				log.Panicln(err)
+			}
+			cpu.Inner.GetMemory().Set(s.Addr, mem)
 		}
-		mem := make([]byte, s.Size)
-		if _, err := s.ReadAt(mem, 0); err != nil {
-			log.Panicln(err)
-		}
-		cpu.Inner.GetMemory().Set(s.Addr, mem)
 	}
 	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetMemory().Len())
 
