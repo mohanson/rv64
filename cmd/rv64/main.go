@@ -85,22 +85,33 @@ func (c *CPU) Run() uint8 {
 			}
 			if n != 0 {
 				i += 1
+				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
+				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
+				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
 				continue
 			}
+
 			n, err = rv64.ExecuterM(c.Inner, s)
 			if err != nil {
 				log.Panicln(err)
 			}
 			if n != 0 {
 				i += 1
+				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
+				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
+				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
 				continue
 			}
+
 			n, err = rv64.ExecuterA(c.Inner, s)
 			if err != nil {
 				log.Panicln(err)
 			}
 			if n != 0 {
 				i += 1
+				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
+				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
+				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
 				continue
 			}
 		}
@@ -120,7 +131,7 @@ func main() {
 		rv64.LogLevel = 1
 	}
 	inner := &rv64.CPU{}
-	inner.SetMemory(rv64.NewMemoryLinear(3 * 1024 * 1024 * 1024))
+	inner.SetMemory(rv64.NewMemoryLinear(4 * 1024 * 1024))
 	inner.SetSystem(rv64.NewSystemStandard())
 	cpu := &CPU{
 		Inner: inner,
@@ -175,13 +186,13 @@ func main() {
 		cpu.pushUint64(addr[i])
 	}
 	cpu.pushUint64(uint64(len(cArgs)))
-	// if cpu.Inner.GetRegister(rv64.Rsp) != 4194282 {
-	// 	log.Panicln("")
-	// }
+	if cpu.Inner.GetRegister(rv64.Rsp) != 4194282 {
+		log.Panicln("")
+	}
 	// Align the stack to 16 bytes
 	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetRegister(rv64.Rsp)&0xfffffff0)
-	// if cpu.Inner.GetRegister(rv64.Rsp) != 4194272 {
-	// 	log.Panicln("")
-	// }
+	if cpu.Inner.GetRegister(rv64.Rsp) != 4194272 {
+		log.Panicln("")
+	}
 	os.Exit(int(cpu.Run()))
 }
