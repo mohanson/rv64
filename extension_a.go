@@ -16,8 +16,7 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		if err != nil {
 			return 0, err
 		}
-		v = SignExtend(v, 31)
-		c.SetRegister(rd, v)
+		c.SetRegister(rd, SignExtend(v, 31))
 		c.GetMemory().SetUint64(a, c.GetRegister(rs2))
 		c.SetRegister(rs2, v)
 		c.SetPC(c.GetPC() + 4)
