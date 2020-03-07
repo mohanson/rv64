@@ -42,7 +42,7 @@ func makeRiscvTests() {
 	if _, err := os.Stat("riscv-tests"); err == nil {
 		return
 	}
-	call("git", "clone", "https://github.com/nervosnetwork/riscv-tests")
+	call("git", "clone", "https://github.com/libraries/riscv-tests")
 	os.Chdir("riscv-tests")
 	defer os.Chdir("..")
 	call("git", "submodule", "update", "--init", "--recursive")

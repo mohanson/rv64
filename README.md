@@ -1,6 +1,6 @@
 # RISC-V RV64IMAFDC Emulator
 
-I wrote this simulator to understand riscv more accurately. RISC-V is awesome, but also very young, I hope my work can provide reference value for latecomers.
+An outstanding RISC-V RV64IMAFDC(RV64GC) simulator.
 
 # Install riscv-gnu-toolchain
 
