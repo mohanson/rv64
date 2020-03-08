@@ -1,9 +1,5 @@
 package rv64
 
-var (
-	lr uint64
-)
-
 func ExecuterA(c *CPU, i uint64) (uint64, error) {
 	switch {
 	case i&0b_1111_1001_1111_0000_0111_0000_0111_1111 == 0b_0001_0000_0000_0000_0010_0000_0010_1111: // LR.W
@@ -15,7 +11,7 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 			return 0, err
 		}
 		c.SetRegister(rd, SignExtend(uint64(v), 31))
-		lr = a
+		c.SetLoadReservation(a)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0001_1000_0000_0000_0010_0000_0010_1111: // SC.W
@@ -25,16 +21,16 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		rs2_val := uint32(c.GetRegister(rs2))
 		mem_addr := SignExtend(rs1_val, 31)
 
-		if mem_addr != lr {
+		if mem_addr != c.GetLoadReservation() {
 			c.SetRegister(rd, 1)
-			lr = 0
+			c.SetLoadReservation(0)
 			c.SetPC(c.GetPC() + 4)
 			return 1, nil
 		}
 
 		c.GetMemory().SetUint32(mem_addr, rs2_val)
 		c.SetRegister(rd, 0)
-		lr = 0
+		c.SetLoadReservation(0)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0000_1000_0000_0000_0010_0000_0010_1111: // AMOSWAP.W
@@ -183,7 +179,7 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 			return 0, err
 		}
 		c.SetRegister(rd, v)
-		lr = a
+		c.SetLoadReservation(a)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0001_1000_0000_0000_0011_0000_0010_1111: // SC.D
@@ -192,15 +188,15 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		rs1_val := c.GetRegister(rs1)
 		rs2_val := c.GetRegister(rs2)
 		mem_addr := rs1_val
-		if mem_addr != lr {
+		if mem_addr != c.GetLoadReservation() {
 			c.SetRegister(rd, 1)
-			lr = 0
+			c.SetLoadReservation(0)
 			c.SetPC(c.GetPC() + 4)
 			return 1, nil
 		}
 		c.GetMemory().SetUint64(mem_addr, rs2_val)
 		c.SetRegister(rd, 0)
-		lr = 0
+		c.SetLoadReservation(0)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0000_1000_0000_0000_0011_0000_0010_1111: // AMOSWAP.D
