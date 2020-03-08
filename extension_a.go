@@ -1,5 +1,9 @@
 package rv64
 
+var (
+	lr uint64
+)
+
 func ExecuterA(c *CPU, i uint64) (uint64, error) {
 	switch {
 	case i&0b_1111_1001_1111_0000_0111_0000_0111_1111 == 0b_0001_0000_0000_0000_0010_0000_0010_1111: // LR.W
@@ -11,19 +15,27 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 			return 0, err
 		}
 		c.SetRegister(rd, SignExtend(uint64(v), 31))
+		lr = a
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0001_1000_0000_0000_0010_0000_0010_1111: // SC.W
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SC.W", rd, rs1, rs2)
-		rs1Val := SignExtend(c.GetRegister(rs1), 31)
-		v, err := c.GetMemory().GetUint32(rs1Val)
-		if err != nil {
-			return 0, err
+
+		rs1_val := c.GetRegister(rs1)
+		rs2_val := uint32(c.GetRegister(rs2))
+		mem_addr := SignExtend(rs1_val, 31)
+
+		if mem_addr != lr {
+			c.SetRegister(rd, 1)
+			lr = 0
+			c.SetPC(c.GetPC() + 4)
+			return 1, nil
 		}
-		r := uint32(c.GetRegister(rs2))
-		c.GetMemory().SetUint32(rs1Val, r)
-		c.SetRegister(rd, SignExtend(uint64(v), 31))
+
+		c.GetMemory().SetUint32(mem_addr, rs2_val)
+		c.SetRegister(rd, 0)
+		lr = 0
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0000_1000_0000_0000_0010_0000_0010_1111: // AMOSWAP.W
