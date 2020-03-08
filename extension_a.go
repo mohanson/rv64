@@ -17,19 +17,13 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0001_1000_0000_0000_0010_0000_0010_1111: // SC.W
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SC.W", rd, rs1, rs2)
-		rs1_val := c.GetRegister(rs1)
-		rs2_val := uint32(c.GetRegister(rs2))
-		mem_addr := SignExtend(rs1_val, 31)
-
-		if mem_addr != c.GetLoadReservation() {
+		a := SignExtend(c.GetRegister(rs1), 31)
+		if a == c.GetLoadReservation() {
+			c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2)))
+			c.SetRegister(rd, 0)
+		} else {
 			c.SetRegister(rd, 1)
-			c.SetLoadReservation(0)
-			c.SetPC(c.GetPC() + 4)
-			return 1, nil
 		}
-
-		c.GetMemory().SetUint32(mem_addr, rs2_val)
-		c.SetRegister(rd, 0)
 		c.SetLoadReservation(0)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
@@ -185,17 +179,13 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0001_1000_0000_0000_0011_0000_0010_1111: // SC.D
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SC.D", rd, rs1, rs2)
-		rs1_val := c.GetRegister(rs1)
-		rs2_val := c.GetRegister(rs2)
-		mem_addr := rs1_val
-		if mem_addr != c.GetLoadReservation() {
+		a := c.GetRegister(rs1)
+		if a == c.GetLoadReservation() {
+			c.GetMemory().SetUint64(a, c.GetRegister(rs2))
+			c.SetRegister(rd, 0)
+		} else {
 			c.SetRegister(rd, 1)
-			c.SetLoadReservation(0)
-			c.SetPC(c.GetPC() + 4)
-			return 1, nil
 		}
-		c.GetMemory().SetUint64(mem_addr, rs2_val)
-		c.SetRegister(rd, 0)
 		c.SetLoadReservation(0)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
