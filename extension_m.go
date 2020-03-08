@@ -2,87 +2,78 @@ package rv64
 
 import (
 	"math"
+	"math/big"
 )
 
 func ExecuterM(c *CPU, i uint64) (uint64, error) {
 	switch {
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0000_0000_0011_0011: // MUL
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0000_0000_0011_0011: // MUL
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("MUL", rd, rs1, rs2)
 		c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))*int64(c.GetRegister(rs2))))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0001_0000_0011_0011: // MULH
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0001_0000_0011_0011: // MULH
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("MULH", rd, rs1, rs2)
 		v := func() uint64 {
-			n1, n2 := int64(c.GetRegister(rs1)), int64(c.GetRegister(rs2))
-			var neg1, neg2 bool
-			if n1 < 0 {
-				neg1, n1 = true, -n1
-			}
-			if n2 < 0 {
-				neg2, n2 = true, -n2
-			}
-			ah, al := uint64(n1)>>32, uint64(n1)&0xffffffff
-			bh, bl := uint64(n2)>>32, uint64(n2)&0xffffffff
-			a := ah * bh
-			b := ah * bl
-			c := al * bh
-			d := al * bl
-			v := a + b>>32 + c>>32 + (d>>32+b&0xffffffff+c&0xffffffff)>>32
-
-			if neg1 != neg2 {
-				v = -v
-			}
-			return v
+			ag1 := big.NewInt(int64(c.GetRegister(rs1)))
+			ag2 := big.NewInt(int64(c.GetRegister(rs2)))
+			tmp := big.NewInt(0)
+			tmp.Mul(ag1, ag2)
+			tmp.Rsh(tmp, 64)
+			return uint64(tmp.Int64())
 		}()
 		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0010_0000_0011_0011: // MULHSU
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0010_0000_0011_0011: // MULHSU
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("MULHSU", rd, rs1, rs2)
 		v := func() uint64 {
-			n1, n2 := int64(c.GetRegister(rs1)), c.GetRegister(rs2)
-			var neg bool
-			if n1 < 0 {
-				neg, n1 = true, -n1
+			ag1 := big.NewInt(int64(c.GetRegister(rs1)))
+			ag2 := big.NewInt(int64(c.GetRegister(rs2)))
+			if ag2.Cmp(big.NewInt(0)) == -1 {
+				tmp := big.NewInt(0)
+				tmp.Add(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64))
+				tmp.Add(tmp, big.NewInt(2))
+				ag2 = tmp.Add(tmp, ag2)
 			}
-
-			ah, al := uint64(n1)>>32, uint64(n1)&0xffffffff
-			bh, bl := n2>>32, n2&0xffffffff
-			a := ah * bh
-			b := ah * bl
-			c := al * bh
-			d := al * bl
-			v := a + b>>32 + c>>32 + (d>>32+b&0xffffffff+c&0xffffffff)>>32
-
-			if neg {
-				v = -v
-			}
-			return v
+			tmp := big.NewInt(0)
+			tmp.Mul(ag1, ag2)
+			tmp.Rsh(tmp, 64)
+			return uint64(tmp.Int64())
 		}()
 		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0011_0000_0011_0011: // MULHU
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0011_0000_0011_0011: // MULHU
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("MULHU", rd, rs1, rs2)
 		v := func() uint64 {
-			ah, al := c.GetRegister(rs1)>>32, c.GetRegister(rs1)&0xffffffff
-			bh, bl := c.GetRegister(rs2)>>32, c.GetRegister(rs2)&0xffffffff
-			a := ah * bh
-			b := ah * bl
-			c := al * bh
-			d := al * bl
-			v := a + b>>32 + c>>32 + (d>>32+b&0xffffffff+c&0xffffffff)>>32
-			return v
+			ag1 := big.NewInt(int64(c.GetRegister(rs1)))
+			ag2 := big.NewInt(int64(c.GetRegister(rs2)))
+			if ag1.Cmp(big.NewInt(0)) == -1 {
+				tmp := big.NewInt(0)
+				tmp.Add(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64))
+				tmp.Add(tmp, big.NewInt(2))
+				ag1 = tmp.Add(tmp, ag1)
+			}
+			if ag2.Cmp(big.NewInt(0)) == -1 {
+				tmp := big.NewInt(0)
+				tmp.Add(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64))
+				tmp.Add(tmp, big.NewInt(2))
+				ag2 = tmp.Add(tmp, ag2)
+			}
+			tmp := big.NewInt(0)
+			tmp.Mul(ag1, ag2)
+			tmp.Rsh(tmp, 64)
+			return tmp.Uint64()
 		}()
 		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0100_0000_0011_0011: // DIV
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0100_0000_0011_0011: // DIV
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("DIV", rd, rs1, rs2)
 		if c.GetRegister(rs2) == 0 {
@@ -92,7 +83,7 @@ func ExecuterM(c *CPU, i uint64) (uint64, error) {
 		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0101_0000_0011_0011: // DIVU
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0101_0000_0011_0011: // DIVU
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("DIVU", rd, rs1, rs2)
 		if c.GetRegister(rs2) == 0 {
@@ -102,33 +93,33 @@ func ExecuterM(c *CPU, i uint64) (uint64, error) {
 		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0110_0000_0011_0011: // REM
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0110_0000_0011_0011: // REM
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("REM", rd, rs1, rs2)
 		if c.GetRegister(rs2) == 0 {
-			c.SetRegister(rd, math.MaxUint64)
+			c.SetRegister(rd, c.GetRegister(rs1))
 		} else {
 			c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))%int64(c.GetRegister(rs2))))
 		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0111_0000_0011_0011: // REMU
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0111_0000_0011_0011: // REMU
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("REMU", rd, rs1, rs2)
 		if c.GetRegister(rs2) == 0 {
-			c.SetRegister(rd, math.MaxUint64)
+			c.SetRegister(rd, c.GetRegister(rs1))
 		} else {
 			c.SetRegister(rd, c.GetRegister(rs1)%c.GetRegister(rs2))
 		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0000_0000_0011_1011: // MULW
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0000_0000_0011_1011: // MULW
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("MULW", rd, rs1, rs2)
 		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))*int32(c.GetRegister(rs2))))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0100_0000_0011_1011: // DIVW
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0100_0000_0011_1011: // DIVW
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("DIVW", rd, rs1, rs2)
 		if c.GetRegister(rs2) == 0 {
@@ -138,7 +129,7 @@ func ExecuterM(c *CPU, i uint64) (uint64, error) {
 		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0101_0000_0011_1011: // DIVUW
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0101_0000_0011_1011: // DIVUW
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("DIVUW", rd, rs1, rs2)
 		if c.GetRegister(rs2) == 0 {
@@ -148,23 +139,23 @@ func ExecuterM(c *CPU, i uint64) (uint64, error) {
 		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0110_0000_0011_1011: // REMW
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0110_0000_0011_1011: // REMW
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("REMW", rd, rs1, rs2)
 		if c.GetRegister(rs2) == 0 {
-			c.SetRegister(rd, math.MaxUint64)
+			c.SetRegister(rd, c.GetRegister(rs1))
 		} else {
-			c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))/int32(c.GetRegister(rs2))))
+			c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))%int32(c.GetRegister(rs2))))
 		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_1111_1110_0000_0111_0000_0000_0111_1111 == 0b_0000_0010_0000_0000_0111_0000_0011_1011: // REMUW
+	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0010_0000_0000_0111_0000_0011_1011: // REMUW
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("REMUW", rd, rs1, rs2)
 		if c.GetRegister(rs2) == 0 {
-			c.SetRegister(rd, math.MaxUint64)
+			c.SetRegister(rd, c.GetRegister(rs1))
 		} else {
-			c.SetRegister(rd, SignExtend(uint64(int32(c.GetRegister(rs1))/int32(c.GetRegister(rs2))), 31))
+			c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))%uint32(c.GetRegister(rs2))), 31))
 		}
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil

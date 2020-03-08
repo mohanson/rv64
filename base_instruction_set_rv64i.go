@@ -329,9 +329,11 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 		return 1, nil
 	case i&0b_1111_0000_0000_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0000_1111: // FENCE
 		Debugln(fmt.Sprintf("Instr: % 10s |", "FENCE"))
+		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_1111: // FENCE.I
 		Debugln(fmt.Sprintf("Instr: % 10s |", "FENCE.I"))
+		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0111_0011: // ECALL
 		rd, rs1, imm := IType(i)
@@ -352,43 +354,38 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 		rd, rs1, csr := IType(i)
 		DebuglnIType("CSRRS", rd, rs1, csr)
 		c.SetRegister(rd, c.GetCSR(csr))
-		if rs1 != Rzero {
-			c.SetCSR(csr, c.GetCSR(csr)|c.GetRegister(rs1))
-		}
+		c.SetCSR(csr, c.GetCSR(csr)|c.GetRegister(rs1))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0111_0011: // CSRRC
 		rd, rs1, csr := IType(i)
 		DebuglnIType("CSRRC", rd, rs1, csr)
 		c.SetRegister(rd, c.GetCSR(csr))
-		if rs1 != Rzero {
-			c.SetCSR(csr, c.GetCSR(csr)&(math.MaxUint64-c.GetRegister(rs1)))
-		}
+		c.SetCSR(csr, c.GetCSR(csr)&(math.MaxUint64-c.GetRegister(rs1)))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0111_0011: // CSRRWI
 		rd, rs1, csr := IType(i)
+		rs1 = SignExtend(rs1, 4)
 		DebuglnIType("CSRRWI", rd, rs1, csr)
 		c.SetRegister(rd, c.GetCSR(csr))
-		c.SetCSR(csr, uint64(rs1))
+		c.SetCSR(csr, rs1)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0111_0011: // CSRRSI
 		rd, rs1, csr := IType(i)
+		rs1 = SignExtend(rs1, 4)
 		DebuglnIType("CSRRSI", rd, rs1, csr)
 		c.SetRegister(rd, c.GetCSR(csr))
-		if rs1 != Rzero {
-			c.SetCSR(csr, c.GetCSR(csr)|uint64(rs1))
-		}
+		c.SetCSR(csr, c.GetCSR(csr)|rs1)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0111_0000_0111_0011: // CSRRCI
 		rd, rs1, csr := IType(i)
+		rs1 = SignExtend(rs1, 4)
 		DebuglnIType("CSRRCI", rd, rs1, csr)
 		c.SetRegister(rd, c.GetCSR(csr))
-		if rs1 != Rzero {
-			c.SetCSR(csr, c.GetCSR(csr)&(math.MaxUint64-uint64(rs1)))
-		}
+		c.SetCSR(csr, c.GetCSR(csr)&(math.MaxUint64-rs1))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0000_0011: // LWU
@@ -469,7 +466,7 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0000_0000_0011_1011: // SUBW
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SUBW", rd, rs1, rs2)
-		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(c.GetRegister(rs2))))
+		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))-int32(c.GetRegister(rs2))))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0011_1011: // SLLW

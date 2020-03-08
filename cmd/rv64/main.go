@@ -53,18 +53,18 @@ func (c *CPU) Run() uint8 {
 	i := 0
 	for {
 		if c.Inner.GetStatus() == 1 {
-			log.Println("Exit:", c.Inner.GetSystem().Code())
+			rv64.Debugln("Exit:", c.Inner.GetSystem().Code())
 			return c.Inner.GetSystem().Code()
 		}
-		if i > int(*cStep) && *cStep < 0 {
+		if i > int(*cStep) && *cStep > 0 {
 			break
 		}
 		data := c.FetchInstruction()
 		rv64.Debugln("==========")
 		if len(data) == 2 {
-			rv64.Debugln(fmt.Sprintf("%08b %08b\n", data[1], data[0]))
+			rv64.Debugln(fmt.Sprintf("%08b %08b", data[1], data[0]))
 		} else if len(data) == 4 {
-			rv64.Debugln(fmt.Sprintf("%08b %08b %08b %08b\n", data[3], data[2], data[1], data[0]))
+			rv64.Debugln(fmt.Sprintf("%08b %08b %08b %08b", data[3], data[2], data[1], data[0]))
 		} else {
 			rv64.Panicln("")
 		}
@@ -85,14 +85,33 @@ func (c *CPU) Run() uint8 {
 			}
 			if n != 0 {
 				i += 1
+				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
+				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
+				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
 				continue
 			}
+
 			n, err = rv64.ExecuterM(c.Inner, s)
 			if err != nil {
 				log.Panicln(err)
 			}
 			if n != 0 {
 				i += 1
+				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
+				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
+				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
+				continue
+			}
+
+			n, err = rv64.ExecuterA(c.Inner, s)
+			if err != nil {
+				log.Panicln(err)
+			}
+			if n != 0 {
+				i += 1
+				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
+				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
+				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
 				continue
 			}
 		}
@@ -126,14 +145,13 @@ func main() {
 	cpu.Inner.SetPC(f.Entry)
 
 	for _, s := range f.Sections {
-		if s.Flags&elf.SHF_ALLOC == 0 {
-			continue
+		if s.Flags&elf.SHF_ALLOC != 0 && s.Type&elf.SHT_NOBITS == 0 {
+			mem := make([]byte, s.Size)
+			if _, err := s.ReadAt(mem, 0); err != nil {
+				log.Panicln(err)
+			}
+			cpu.Inner.GetMemory().Set(s.Addr, mem)
 		}
-		mem := make([]byte, s.Size)
-		if _, err := s.ReadAt(mem, 0); err != nil {
-			log.Panicln(err)
-		}
-		cpu.Inner.GetMemory().Set(s.Addr, mem)
 	}
 	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetMemory().Len())
 

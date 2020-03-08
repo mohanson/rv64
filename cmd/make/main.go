@@ -32,6 +32,7 @@ func call(name string, arg ...string) {
 
 func makeBinary() {
 	os.Mkdir("bin", 0755)
+	call("go", "build", "-o", "bin", "github.com/mohanson/rv64/cmd/make")
 	call("go", "build", "-o", "bin", "github.com/mohanson/rv64/cmd/rv64")
 }
 
@@ -41,7 +42,7 @@ func makeRiscvTests() {
 	if _, err := os.Stat("riscv-tests"); err == nil {
 		return
 	}
-	call("git", "clone", "https://github.com/nervosnetwork/riscv-tests")
+	call("git", "clone", "https://github.com/libraries/riscv-tests")
 	os.Chdir("riscv-tests")
 	defer os.Chdir("..")
 	call("git", "submodule", "update", "--init", "--recursive")
@@ -51,7 +52,7 @@ func makeRiscvTests() {
 }
 
 func testRiscvTests() {
-	m, err := filepath.Glob(filepath.Join(*cTmp, "riscv-tests", "isa", "rv64u[i]-u-*"))
+	m, err := filepath.Glob(filepath.Join(*cTmp, "riscv-tests", "isa", "rv64u[ima]-u-*"))
 	if err != nil {
 		log.Panicln(err)
 	}

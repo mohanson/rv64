@@ -5,8 +5,6 @@ import (
 	"log"
 )
 
-var LogLevel = 0
-
 func Println(v ...interface{}) {
 	log.Println(v...)
 }

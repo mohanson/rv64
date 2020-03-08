@@ -78,9 +78,19 @@ const (
 	Rft11 = 31 // FP temporaries
 )
 
+const (
+	Rdcycle   = 0xC00
+	Rdtime    = 0xC01
+	Rdinstret = 0xC02
+)
+
 var (
 	ErrAbnormalEcall       = errors.New("Abnormal ecall")
 	ErrAbnormalInstruction = errors.New("Abnormal instruction")
 	ErrOutOfMemory         = errors.New("Out of memory")
 	ErrReservedInstruction = errors.New("Reserved instruction")
+)
+
+var (
+	LogLevel = 0
 )
