@@ -31,65 +31,60 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("AMOSWAP.W", rd, rs1, rs2)
 		a := SignExtend(c.GetRegister(rs1), 31)
-		b, err := c.GetMemory().GetUint32(a)
+		v, err := c.GetMemory().GetUint32(a)
 		if err != nil {
 			return 0, err
 		}
-		r := uint32(c.GetRegister(rs2))
-		c.GetMemory().SetUint32(a, r)
-		c.SetRegister(rd, SignExtend(uint64(b), 31))
+		c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2)))
+		c.SetRegister(rd, SignExtend(uint64(v), 31))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0010_1111: // AMOADD.W
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("AMOADD.W", rd, rs1, rs2)
 		a := SignExtend(c.GetRegister(rs1), 31)
-		b, err := c.GetMemory().GetUint32(a)
+		v, err := c.GetMemory().GetUint32(a)
 		if err != nil {
 			return 0, err
 		}
-		r := b + uint32(c.GetRegister(rs2))
-		c.GetMemory().SetUint32(a, r)
-		c.SetRegister(rd, SignExtend(uint64(b), 31))
+		c.GetMemory().SetUint32(a, v+uint32(c.GetRegister(rs2)))
+		c.SetRegister(rd, SignExtend(uint64(v), 31))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0010_0000_0000_0000_0010_0000_0010_1111: // AMOXOR.W
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("AMOXOR.W", rd, rs1, rs2)
 		a := SignExtend(c.GetRegister(rs1), 31)
-		b, err := c.GetMemory().GetUint32(a)
+		v, err := c.GetMemory().GetUint32(a)
 		if err != nil {
 			return 0, err
 		}
-		r := b ^ uint32(c.GetRegister(rs2))
-		c.GetMemory().SetUint32(a, r)
-		c.SetRegister(rd, SignExtend(uint64(b), 31))
+		c.GetMemory().SetUint32(a, v^uint32(c.GetRegister(rs2)))
+		c.SetRegister(rd, SignExtend(uint64(v), 31))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0110_0000_0000_0000_0010_0000_0010_1111: // AMOAND.W
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("AMOAND.W", rd, rs1, rs2)
 		a := SignExtend(c.GetRegister(rs1), 31)
-		b, err := c.GetMemory().GetUint32(a)
+		v, err := c.GetMemory().GetUint32(a)
 		if err != nil {
 			return 0, err
 		}
-		r := b & uint32(c.GetRegister(rs2))
-		c.GetMemory().SetUint32(a, r)
-		c.SetRegister(rd, SignExtend(uint64(b), 31))
+		c.GetMemory().SetUint32(a, v&uint32(c.GetRegister(rs2)))
+		c.SetRegister(rd, SignExtend(uint64(v), 31))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0010_0000_0010_1111: // AMOOR.W
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("AMOOR.W", rd, rs1, rs2)
 		a := SignExtend(c.GetRegister(rs1), 31)
-		b, err := c.GetMemory().GetUint32(a)
+		v, err := c.GetMemory().GetUint32(a)
 		if err != nil {
 			return 0, err
 		}
-		r := b | uint32(c.GetRegister(rs2))
-		c.GetMemory().SetUint32(a, r)
-		c.SetRegister(rd, SignExtend(uint64(b), 31))
+		c.GetMemory().SetUint32(a, v|uint32(c.GetRegister(rs2)))
+		c.SetRegister(rd, SignExtend(uint64(v), 31))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_1000_0000_0000_0000_0010_0000_0010_1111: // AMOMIN.W
