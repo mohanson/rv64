@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	cTmp = flag.String("tmp", "/tmp", "")
+	cTmp = flag.String("tmp", os.TempDir(), "")
 	cGCC = flag.String("gcc", filepath.Join(cRiscvTool, "bin", "riscv64-unknown-elf-gcc"), "")
 )
 
