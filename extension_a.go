@@ -5,9 +5,27 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 	case i&0b_1111_1001_1111_0000_0111_0000_0111_1111 == 0b_0001_0000_0000_0000_0010_0000_0010_1111: // LR.W
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("LR.W", rd, rs1, rs2)
+		a := SignExtend(c.GetRegister(rs1), 31)
+		v, err := c.GetMemory().GetUint32(a)
+		if err != nil {
+			return 0, err
+		}
+		c.SetRegister(rd, SignExtend(uint64(v), 31))
+		c.SetPC(c.GetPC() + 4)
+		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0001_1000_0000_0000_0010_0000_0010_1111: // SC.W
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SC.W", rd, rs1, rs2)
+		rs1Val := SignExtend(c.GetRegister(rs1), 31)
+		v, err := c.GetMemory().GetUint32(rs1Val)
+		if err != nil {
+			return 0, err
+		}
+		r := uint32(c.GetRegister(rs2))
+		c.GetMemory().SetUint32(rs1Val, r)
+		c.SetRegister(rd, SignExtend(uint64(v), 31))
+		c.SetPC(c.GetPC() + 4)
+		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0000_1000_0000_0000_0010_0000_0010_1111: // AMOSWAP.W
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("AMOSWAP.W", rd, rs1, rs2)
@@ -148,9 +166,22 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 	case i&0b_1111_1001_1111_0000_0111_0000_0111_1111 == 0b_0001_0000_0000_0000_0011_0000_0010_1111: // LR.D
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("LR.D", rd, rs1, rs2)
+		a := c.GetRegister(rs1)
+		v, err := c.GetMemory().GetUint64(a)
+		if err != nil {
+			return 0, err
+		}
+		c.SetRegister(rd, v)
+		c.SetPC(c.GetPC() + 4)
+		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0001_1000_0000_0000_0011_0000_0010_1111: // SC.D
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("SC.D", rd, rs1, rs2)
+		a := c.GetRegister(rs1)
+		c.GetMemory().SetUint64(a, c.GetRegister(rs2))
+		c.SetRegister(rd, 0x00)
+		c.SetPC(c.GetPC() + 4)
+		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0000_1000_0000_0000_0011_0000_0010_1111: // AMOSWAP.D
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("AMOSWAP.D", rd, rs1, rs2)
