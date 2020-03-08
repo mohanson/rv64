@@ -36,7 +36,7 @@ func makeBinary() {
 	call("go", "build", "-o", "bin", "github.com/mohanson/rv64/cmd/rv64")
 }
 
-func makeExample() {
+func makeExamples() {
 	os.Mkdir("bin", 0755)
 	os.Mkdir("bin/res", 0755)
 	os.Mkdir("bin/res/program", 0755)
@@ -78,13 +78,12 @@ func main() {
 	}
 	flag.Parse()
 	for _, e := range flag.Args() {
-		if e == "example" {
-			makeExample()
-		}
-		if e == "make" {
+		switch e {
+		case "example", "examples":
+			makeExamples()
+		case "make":
 			makeBinary()
-		}
-		if e == "test" {
+		case "test":
 			makeRiscvTests()
 			testRiscvTests()
 		}
