@@ -91,72 +91,72 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("AMOMIN.W", rd, rs1, rs2)
 		a := SignExtend(c.GetRegister(rs1), 31)
-		b, err := c.GetMemory().GetUint32(a)
+		v, err := c.GetMemory().GetUint32(a)
 		if err != nil {
 			return 0, err
 		}
 		var r uint32
-		if int32(b) < int32(uint32(c.GetRegister(rs2))) {
-			r = b
+		if int32(v) < int32(uint32(c.GetRegister(rs2))) {
+			r = v
 		} else {
 			r = uint32(c.GetRegister(rs2))
 		}
 		c.GetMemory().SetUint32(a, r)
-		c.SetRegister(rd, SignExtend(uint64(b), 31))
+		c.SetRegister(rd, SignExtend(uint64(v), 31))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_1010_0000_0000_0000_0010_0000_0010_1111: // AMOMAX.W
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("AMOMAX.W", rd, rs1, rs2)
 		a := SignExtend(c.GetRegister(rs1), 31)
-		b, err := c.GetMemory().GetUint32(a)
+		v, err := c.GetMemory().GetUint32(a)
 		if err != nil {
 			return 0, err
 		}
 		var r uint32
-		if int32(b) > int32(uint32(c.GetRegister(rs2))) {
-			r = b
+		if int32(v) > int32(uint32(c.GetRegister(rs2))) {
+			r = v
 		} else {
 			r = uint32(c.GetRegister(rs2))
 		}
 		c.GetMemory().SetUint32(a, r)
-		c.SetRegister(rd, SignExtend(uint64(b), 31))
+		c.SetRegister(rd, SignExtend(uint64(v), 31))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_1100_0000_0000_0000_0010_0000_0010_1111: // AMOMINU.W
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("AMOMINU.W", rd, rs1, rs2)
 		a := SignExtend(c.GetRegister(rs1), 31)
-		b, err := c.GetMemory().GetUint32(a)
+		v, err := c.GetMemory().GetUint32(a)
 		if err != nil {
 			return 0, err
 		}
 		var r uint32
-		if b < uint32(c.GetRegister(rs2)) {
-			r = b
+		if v < uint32(c.GetRegister(rs2)) {
+			r = v
 		} else {
 			r = uint32(c.GetRegister(rs2))
 		}
 		c.GetMemory().SetUint32(a, r)
-		c.SetRegister(rd, SignExtend(uint64(b), 31))
+		c.SetRegister(rd, SignExtend(uint64(v), 31))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_1110_0000_0000_0000_0010_0000_0010_1111: // AMOMAXU.W
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("AMOMAXU.W", rd, rs1, rs2)
 		a := SignExtend(c.GetRegister(rs1), 31)
-		b, err := c.GetMemory().GetUint32(a)
+		v, err := c.GetMemory().GetUint32(a)
 		if err != nil {
 			return 0, err
 		}
 		var r uint32
-		if b > uint32(c.GetRegister(rs2)) {
-			r = b
+		if v > uint32(c.GetRegister(rs2)) {
+			r = v
 		} else {
 			r = uint32(c.GetRegister(rs2))
 		}
 		c.GetMemory().SetUint32(a, r)
-		c.SetRegister(rd, SignExtend(uint64(b), 31))
+		c.SetRegister(rd, SignExtend(uint64(v), 31))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1001_1111_0000_0111_0000_0111_1111 == 0b_0001_0000_0000_0000_0011_0000_0010_1111: // LR.D
@@ -192,9 +192,8 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		if err != nil {
 			return 0, err
 		}
-		c.SetRegister(rd, v)
 		c.GetMemory().SetUint64(a, c.GetRegister(rs2))
-		c.SetRegister(rs2, v)
+		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0010_1111: // AMOADD.D
@@ -205,8 +204,8 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		if err != nil {
 			return 0, err
 		}
-		c.SetRegister(rd, v)
 		c.GetMemory().SetUint64(a, v+c.GetRegister(rs2))
+		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0010_0000_0000_0000_0011_0000_0010_1111: // AMOXOR.D
@@ -217,8 +216,8 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		if err != nil {
 			return 0, err
 		}
-		c.SetRegister(rd, v)
 		c.GetMemory().SetUint64(a, v^c.GetRegister(rs2))
+		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0110_0000_0000_0000_0011_0000_0010_1111: // AMOAND.D
@@ -229,8 +228,8 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		if err != nil {
 			return 0, err
 		}
-		c.SetRegister(rd, v)
 		c.GetMemory().SetUint64(a, v&c.GetRegister(rs2))
+		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0011_0000_0010_1111: // AMOOR.D
@@ -241,8 +240,8 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		if err != nil {
 			return 0, err
 		}
-		c.SetRegister(rd, v)
 		c.GetMemory().SetUint64(a, v|c.GetRegister(rs2))
+		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_1000_0000_0000_0000_0011_0000_0010_1111: // AMOMIN.D
@@ -253,14 +252,14 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		if err != nil {
 			return 0, err
 		}
-		c.SetRegister(rd, v)
-		var w uint64 = 0
+		var r uint64 = 0
 		if int64(v) < int64(c.GetRegister(rs2)) {
-			w = v
+			r = v
 		} else {
-			w = c.GetRegister(rs2)
+			r = c.GetRegister(rs2)
 		}
-		c.GetMemory().SetUint64(a, w)
+		c.GetMemory().SetUint64(a, r)
+		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_1010_0000_0000_0000_0011_0000_0010_1111: // AMOMAX.D
@@ -271,14 +270,14 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		if err != nil {
 			return 0, err
 		}
-		c.SetRegister(rd, v)
-		var w uint64 = 0
+		var r uint64 = 0
 		if int64(v) > int64(c.GetRegister(rs2)) {
-			w = v
+			r = v
 		} else {
-			w = c.GetRegister(rs2)
+			r = c.GetRegister(rs2)
 		}
-		c.GetMemory().SetUint64(a, w)
+		c.GetMemory().SetUint64(a, r)
+		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_1100_0000_0000_0000_0011_0000_0010_1111: // AMOMINU.D
@@ -289,14 +288,14 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		if err != nil {
 			return 0, err
 		}
-		c.SetRegister(rd, v)
-		var w uint64 = 0
+		var r uint64 = 0
 		if v < c.GetRegister(rs2) {
-			w = v
+			r = v
 		} else {
-			w = c.GetRegister(rs2)
+			r = c.GetRegister(rs2)
 		}
-		c.GetMemory().SetUint64(a, w)
+		c.GetMemory().SetUint64(a, r)
+		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_1111_1000_0000_0000_0111_0000_0111_1111 == 0b_1110_0000_0000_0000_0011_0000_0010_1111: // AMOMAXU.D
@@ -307,14 +306,14 @@ func ExecuterA(c *CPU, i uint64) (uint64, error) {
 		if err != nil {
 			return 0, err
 		}
-		c.SetRegister(rd, v)
-		var w uint64 = 0
+		var r uint64 = 0
 		if v > c.GetRegister(rs2) {
-			w = v
+			r = v
 		} else {
-			w = c.GetRegister(rs2)
+			r = c.GetRegister(rs2)
 		}
-		c.GetMemory().SetUint64(a, w)
+		c.GetMemory().SetUint64(a, r)
+		c.SetRegister(rd, v)
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	}
