@@ -23,6 +23,10 @@ func DebuglnRType(i string, rd uint64, rs1 uint64, rs2 uint64) {
 	Debugln(fmt.Sprintf("Instr: % 10s | rd: 0x%02x rs1: 0x%02x rs2: 0x%02x", i, rd, rs1, rs2))
 }
 
+func DebuglnR4Type(i string, rd uint64, rs1 uint64, rs2 uint64, rs3 uint64) {
+	Debugln(fmt.Sprintf("Instr: % 10s | rd: 0x%02x rs1: 0x%02x rs2: 0x%02x rs3: 0x%02x", i, rd, rs1, rs2, rs3))
+}
+
 func DebuglnIType(i string, rd uint64, rs1 uint64, imm uint64) {
 	Debugln(fmt.Sprintf("Instr: % 10s | rd: 0x%02x rs1: 0x%02x imm: 0x%04x", i, rd, rs1, imm))
 }
