@@ -1,13 +1,11 @@
 package rv64
 
-import "log"
-
 // https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
 // Chapter 1.2
 
 func InstructionLengthEncoding(b []byte) uint64 {
 	if len(b) != 2 {
-		log.Panicln("")
+		Panicln("Unreachable")
 	}
 	// xxxxxxxxxxxxxxaa 16-bit, aa != 11
 	if b[0]&0x03 != 0x03 {
@@ -31,6 +29,6 @@ func InstructionLengthEncoding(b []byte) uint64 {
 		return 10 + 2*uint64(n)
 	}
 	// x111xxxxx1111111 Reserved for ≥192-bits
-	log.Panicln("Reserved for ≥192-bits")
+	Panicln("Reserved for ≥192-bits")
 	return 0
 }
