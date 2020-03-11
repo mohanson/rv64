@@ -30,19 +30,6 @@ func (c *CPU) pushUint64(v uint64) {
 	c.Inner.GetMemory().SetByte(c.Inner.GetRegister(rv64.Rsp), mem)
 }
 
-func (c *CPU) FetchInstruction() []byte {
-	a, err := c.Inner.GetMemory().GetByte(c.Inner.GetPC(), 2)
-	if err != nil {
-		log.Panicln(err)
-	}
-	b := rv64.InstructionLengthEncoding(a)
-	instructionBytes, err := c.Inner.GetMemory().GetByte(c.Inner.GetPC(), uint64(b))
-	if err != nil {
-		log.Panicln(err)
-	}
-	return instructionBytes
-}
-
 var (
 	cStep  = flag.Int64("steps", -1, "")
 	cDebug = flag.Bool("d", false, "Debug")
@@ -59,7 +46,10 @@ func (c *CPU) Run() uint8 {
 		if i > int(*cStep) && *cStep > 0 {
 			break
 		}
-		data := c.FetchInstruction()
+		data, err := c.Inner.PipelineInstructionFetch()
+		if err != nil {
+			rv64.Panicln(err)
+		}
 		rv64.Debugln("==========")
 		if len(data) == 2 {
 			rv64.Debugln(fmt.Sprintf("%08b %08b", data[1], data[0]))

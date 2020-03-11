@@ -4,38 +4,6 @@ import (
 	"encoding/binary"
 )
 
-// Fasten is the interface that groups the basic Get, Set and Len methods.
-type Fasten interface {
-	Get(uint64) (byte, error)
-	Set(uint64, byte) error
-	Len() uint64
-}
-
-// Linear is a very simple memory implementation that maps data completely into a byte array
-type Linear struct {
-	data []byte
-}
-
-func (l *Linear) Get(a uint64) (byte, error) {
-	if a >= l.Len() {
-		return 0x00, ErrOutOfMemory
-	}
-	return l.data[a], nil
-}
-
-func (l *Linear) Set(a uint64, v byte) error {
-	if a >= l.Len() {
-		return ErrOutOfMemory
-	}
-	l.data[a] = v
-	return nil
-}
-
-func (l *Linear) Len() uint64 {
-	return uint64(len(l.data))
-}
-
-// Memory is a package for Fasten.
 type Memory struct {
 	Fasten
 }
@@ -63,15 +31,15 @@ func (m *Memory) SetByte(a uint64, b []byte) error {
 }
 
 func (m *Memory) GetUint8(a uint64) (uint8, error) {
-	mem, err := m.GetByte(a, 1)
+	mem, err := m.Get(a)
 	if err != nil {
 		return 0, err
 	}
-	return mem[0], nil
+	return mem, nil
 }
 
 func (m *Memory) SetUint8(a uint64, n uint8) error {
-	return m.SetByte(a, []byte{n})
+	return m.Set(a, n)
 }
 
 func (m *Memory) GetUint16(a uint64) (uint16, error) {
