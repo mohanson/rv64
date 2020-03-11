@@ -19,7 +19,7 @@ func (c *CPU) pushString(s string) {
 	bs := append([]byte(s), 0x00)
 	c.Inner.SetRegister(rv64.Rsp, c.Inner.GetRegister(rv64.Rsp)-uint64(len(bs)))
 	for i, b := range bs {
-		c.Inner.GetMemory().Set(c.Inner.GetRegister(rv64.Rsp)+uint64(i), []byte{b})
+		c.Inner.GetMemory().SetByte(c.Inner.GetRegister(rv64.Rsp)+uint64(i), []byte{b})
 	}
 }
 
@@ -27,16 +27,16 @@ func (c *CPU) pushUint64(v uint64) {
 	c.Inner.SetRegister(rv64.Rsp, c.Inner.GetRegister(rv64.Rsp)-8)
 	mem := make([]byte, 8)
 	binary.LittleEndian.PutUint64(mem, v)
-	c.Inner.GetMemory().Set(c.Inner.GetRegister(rv64.Rsp), mem)
+	c.Inner.GetMemory().SetByte(c.Inner.GetRegister(rv64.Rsp), mem)
 }
 
 func (c *CPU) FetchInstruction() []byte {
-	a, err := c.Inner.GetMemory().Get(c.Inner.GetPC(), 2)
+	a, err := c.Inner.GetMemory().GetByte(c.Inner.GetPC(), 2)
 	if err != nil {
 		log.Panicln(err)
 	}
 	b := rv64.InstructionLengthEncoding(a)
-	instructionBytes, err := c.Inner.GetMemory().Get(c.Inner.GetPC(), uint64(b))
+	instructionBytes, err := c.Inner.GetMemory().GetByte(c.Inner.GetPC(), uint64(b))
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -150,7 +150,7 @@ func main() {
 			if _, err := s.ReadAt(mem, 0); err != nil {
 				log.Panicln(err)
 			}
-			cpu.Inner.GetMemory().Set(s.Addr, mem)
+			cpu.Inner.GetMemory().SetByte(s.Addr, mem)
 		}
 	}
 	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetMemory().Len())

@@ -100,11 +100,11 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 		imm = SignExtend(imm, 11)
 		DebuglnIType("LB", rd, rs1, imm)
 		a := c.GetRegister(rs1) + imm
-		mem, err := c.GetMemory().Get(a, 1)
+		mem, err := c.GetMemory().GetUint8(a)
 		if err != nil {
 			return 0, err
 		}
-		c.SetRegister(rd, SignExtend(uint64(mem[0]), 7))
+		c.SetRegister(rd, SignExtend(uint64(mem), 7))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_0011: // LH
