@@ -9,7 +9,7 @@ type CPU struct {
 	status    uint64
 	system    System
 	fregister [32]float64
-	Fcsr      *FCSR
+	// Fcsr      *FCSR
 }
 
 func (c *CPU) GetCSR(i uint64) uint64               { return c.csr[i] }
