@@ -1,5 +1,78 @@
 package rv64
 
+// Floating-Point Control and Status Register
+// https://content.riscv.org/wp-content/uploads/2017/05/riscv-spec-v2.2.pdf
+// Chapter 8.2
+type FCSR struct {
+	data uint32
+}
+
+func (f *FCSR) GetFrm() uint32 {
+	return (f.data & 0x03e0) >> 5
+}
+
+func (f *FCSR) SetFrm(a uint32) {
+	if a > 7 {
+		Panicln("Unreachable")
+	}
+	f.data = f.data&(^uint32(0x03e0)) | (a << 5)
+}
+
+func (f *FCSR) GetNV() bool {
+	return f.data&0x10 != 0x00
+}
+func (f *FCSR) SetNV(b bool) {
+	if b {
+		f.data |= 0x10
+	} else {
+		f.data &= ^uint32(0x10)
+	}
+}
+
+func (f *FCSR) GetDZ() bool {
+	return f.data&0x08 != 0x00
+}
+func (f *FCSR) SetDZ(b bool) {
+	if b {
+		f.data |= 0x08
+	} else {
+		f.data &= ^uint32(0x08)
+	}
+}
+
+func (f *FCSR) GetOF() bool {
+	return f.data&0x04 != 0x00
+}
+func (f *FCSR) SetOF(b bool) {
+	if b {
+		f.data |= 0x04
+	} else {
+		f.data &= ^uint32(0x04)
+	}
+}
+
+func (f *FCSR) GetUF() bool {
+	return f.data&0x02 != 0x00
+}
+func (f *FCSR) SetUF(b bool) {
+	if b {
+		f.data |= 0x02
+	} else {
+		f.data &= ^uint32(0x02)
+	}
+}
+
+func (f *FCSR) GetNX() bool {
+	return f.data&0x01 != 0x00
+}
+func (f *FCSR) SetNX(b bool) {
+	if b {
+		f.data |= 0x01
+	} else {
+		f.data &= ^uint32(0x01)
+	}
+}
+
 func ExecuterF(c *CPU, i uint64) (uint64, error) {
 	switch {
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0000_0111: // FLW
@@ -28,6 +101,10 @@ func ExecuterF(c *CPU, i uint64) (uint64, error) {
 	case i&0b_1111_1111_1111_0000_0000_0000_0111_1111 == 0b_1101_0000_0000_0000_0000_0000_0101_0011: // FCVT.S.W
 	case i&0b_1111_1111_1111_0000_0000_0000_0111_1111 == 0b_1101_0000_0001_0000_0000_0000_0101_0011: // FCVT.S.WU
 	case i&0b_1111_1111_1111_0000_0111_0000_0111_1111 == 0b_1111_0000_0000_0000_0000_0000_0101_0011: // FMV.W.X
+	case i&0b_1111_1111_1111_0000_0000_0000_0111_1111 == 0b_1100_0000_0010_0000_0000_0000_0101_0011: // FCVT.L.S
+	case i&0b_1111_1111_1111_0000_0000_0000_0111_1111 == 0b_1100_0000_0011_0000_0000_0000_0101_0011: // FCVT.LU.S
+	case i&0b_1111_1111_1111_0000_0000_0000_0111_1111 == 0b_1101_0000_0010_0000_0000_0000_0101_0011: // FCVT.S.L
+	case i&0b_1111_1111_1111_0000_0000_0000_0111_1111 == 0b_1101_0000_0011_0000_0000_0000_0101_0011: // FCVT.S.LU
 	}
 	return 0, nil
 }

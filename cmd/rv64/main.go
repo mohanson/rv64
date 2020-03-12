@@ -104,6 +104,18 @@ func (c *CPU) Run() uint8 {
 				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
 				continue
 			}
+
+			n, err = rv64.ExecuterF(c.Inner, s)
+			if err != nil {
+				log.Panicln(err)
+			}
+			if n != 0 {
+				i += 1
+				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
+				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
+				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
+				continue
+			}
 		}
 		log.Panicln("")
 	}
@@ -120,7 +132,9 @@ func main() {
 	if *cDebug == true {
 		rv64.LogLevel = 1
 	}
-	inner := &rv64.CPU{}
+	inner := &rv64.CPU{
+		Fcsr: &rv64.FCSR{},
+	}
 	inner.SetMemory(rv64.NewMemoryLinear(4 * 1024 * 1024))
 	inner.SetSystem(rv64.NewSystemStandard())
 	cpu := &CPU{
