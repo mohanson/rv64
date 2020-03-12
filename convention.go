@@ -79,9 +79,12 @@ const (
 )
 
 const (
-	Rdcycle   = 0xc00
-	Rdtime    = 0xc01
-	Rdinstret = 0xc02
+	CSRfflags  = 0x001 // Floating-Point Accrued Exceptions.
+	CSRfrm     = 0x002 // Floating-Point Dynamic Rounding Mode.
+	CSRfcsr    = 0x003 // Floating-Point Control and Status Register (frm + fflags).
+	CSRcycle   = 0xc00 // Cycle counter for RDCYCLE instruction.
+	CSRtime    = 0xc01 // Timer for RDTIME instruction.
+	CSRinstret = 0xc02 // Instructions-retired counter for RDINSTRET instruction.
 )
 
 var (
