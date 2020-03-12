@@ -79,9 +79,9 @@ const (
 )
 
 const (
-	Rdcycle   = 0xC00
-	Rdtime    = 0xC01
-	Rdinstret = 0xC02
+	Rdcycle   = 0xc00
+	Rdtime    = 0xc01
+	Rdinstret = 0xc02
 )
 
 var (
