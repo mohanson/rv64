@@ -64,6 +64,15 @@ func (c *CPU) Run() uint8 {
 		}
 		rv64.Debugln(i, c.Inner.GetPC(), s)
 
+		n, err := c.Inner.PipelineExecute(data)
+		if err != nil {
+			log.Panicln(err)
+		}
+		if n != 0 {
+			i += 1
+			continue
+		}
+
 		if len(data) == 4 {
 			var s uint64 = 0
 			for i := len(data) - 1; i >= 0; i-- {
@@ -75,9 +84,9 @@ func (c *CPU) Run() uint8 {
 			}
 			if n != 0 {
 				i += 1
-				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
-				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
-				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
+				// c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
+				// c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
+				// c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
 				continue
 			}
 
@@ -87,9 +96,9 @@ func (c *CPU) Run() uint8 {
 			}
 			if n != 0 {
 				i += 1
-				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
-				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
-				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
+				// c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
+				// c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
+				// c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
 				continue
 			}
 
@@ -99,9 +108,9 @@ func (c *CPU) Run() uint8 {
 			}
 			if n != 0 {
 				i += 1
-				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
-				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
-				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
+				// c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
+				// c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
+				// c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
 				continue
 			}
 
@@ -111,9 +120,9 @@ func (c *CPU) Run() uint8 {
 			}
 			if n != 0 {
 				i += 1
-				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
-				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
-				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
+				// c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
+				// c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
+				// c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
 				continue
 			}
 		}

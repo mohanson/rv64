@@ -7,154 +7,154 @@ import (
 
 func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 	switch {
-	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_0111: // LUI
-		rd, imm := UType(i)
-		imm = SignExtend(imm, 31)
-		DebuglnUType("LUI", rd, imm)
-		c.SetRegister(rd, imm)
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_00010_111: // AUIPC
-		rd, imm := UType(i)
-		imm = SignExtend(imm, 31)
-		DebuglnUType("AUIPC", rd, imm)
-		c.SetRegister(rd, c.GetPC()+imm)
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_1111: // JAL
-		rd, imm := JType(i)
-		imm = SignExtend(imm, 19)
-		DebuglnJType("JAL", rd, imm)
-		c.SetRegister(rd, c.GetPC()+4)
-		c.SetPC(c.GetPC() + imm)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0111: // JALR
-		rd, rs1, imm := IType(i)
-		imm = SignExtend(imm, 11)
-		DebuglnIType("JALR", rd, rs1, imm)
-		c.SetRegister(rd, c.GetPC()+4)
-		c.SetPC(((c.GetRegister(rs1) + imm) >> 1) << 1)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0011: // BEQ
-		rs1, rs2, imm := BType(i)
-		imm = SignExtend(imm, 12)
-		DebuglnBType("BEQ", rs1, rs2, imm)
-		if c.GetRegister(rs1) == c.GetRegister(rs2) {
-			c.SetPC(c.GetPC() + imm)
-		} else {
-			c.SetPC(c.GetPC() + 4)
-		}
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0110_0011: // BNE
-		rs1, rs2, imm := BType(i)
-		imm = SignExtend(imm, 12)
-		DebuglnBType("BNE", rs1, rs2, imm)
-		if c.GetRegister(rs1) != c.GetRegister(rs2) {
-			c.SetPC(c.GetPC() + imm)
-		} else {
-			c.SetPC(c.GetPC() + 4)
-		}
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0110_0011: // BLT
-		rs1, rs2, imm := BType(i)
-		imm = SignExtend(imm, 12)
-		DebuglnBType("BLT", rs1, rs2, imm)
-		if int64(c.GetRegister(rs1)) < int64(c.GetRegister(rs2)) {
-			c.SetPC(c.GetPC() + imm)
-		} else {
-			c.SetPC(c.GetPC() + 4)
-		}
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0110_0011: // BGE
-		rs1, rs2, imm := BType(i)
-		imm = SignExtend(imm, 12)
-		DebuglnBType("BGE", rs1, rs2, imm)
-		if int64(c.GetRegister(rs1)) >= int64(c.GetRegister(rs2)) {
-			c.SetPC(c.GetPC() + imm)
-		} else {
-			c.SetPC(c.GetPC() + 4)
-		}
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0110_0011: // BLTU
-		rs1, rs2, imm := BType(i)
-		imm = SignExtend(imm, 12)
-		DebuglnBType("BLTU", rs1, rs2, imm)
-		if c.GetRegister(rs1) < c.GetRegister(rs2) {
-			c.SetPC(c.GetPC() + imm)
-		} else {
-			c.SetPC(c.GetPC() + 4)
-		}
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0111_0000_0110_0011: // BGEU
-		rs1, rs2, imm := BType(i)
-		imm = SignExtend(imm, 12)
-		DebuglnBType("BGEU", rs1, rs2, imm)
-		if c.GetRegister(rs1) >= c.GetRegister(rs2) {
-			c.SetPC(c.GetPC() + imm)
-		} else {
-			c.SetPC(c.GetPC() + 4)
-		}
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0000_0011: // LB
-		rd, rs1, imm := IType(i)
-		imm = SignExtend(imm, 11)
-		DebuglnIType("LB", rd, rs1, imm)
-		a := c.GetRegister(rs1) + imm
-		mem, err := c.GetMemory().GetUint8(a)
-		if err != nil {
-			return 0, err
-		}
-		c.SetRegister(rd, SignExtend(uint64(mem), 7))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_0011: // LH
-		rd, rs1, imm := IType(i)
-		imm = SignExtend(imm, 11)
-		DebuglnIType("LH", rd, rs1, imm)
-		a := c.GetRegister(rs1) + imm
-		v, err := c.GetMemory().GetUint16(a)
-		if err != nil {
-			return 0, err
-		}
-		c.SetRegister(rd, SignExtend(uint64(v), 15))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0000_0011: // LW
-		rd, rs1, imm := IType(i)
-		imm = SignExtend(imm, 11)
-		DebuglnIType("LW", rd, rs1, imm)
-		a := c.GetRegister(rs1) + imm
-		v, err := c.GetMemory().GetUint32(a)
-		if err != nil {
-			return 0, err
-		}
-		c.SetRegister(rd, SignExtend(uint64(v), 31))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0000_0011: // LBU
-		rd, rs1, imm := IType(i)
-		imm = SignExtend(imm, 11)
-		DebuglnIType("LBU", rd, rs1, imm)
-		a := c.GetRegister(rs1) + imm
-		v, err := c.GetMemory().GetUint8(a)
-		if err != nil {
-			return 0, err
-		}
-		c.SetRegister(rd, uint64(v))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0000_0011: // LHU
-		rd, rs1, imm := IType(i)
-		imm = SignExtend(imm, 11)
-		DebuglnIType("LH", rd, rs1, imm)
-		a := c.GetRegister(rs1) + imm
-		v, err := c.GetMemory().GetUint16(a)
-		if err != nil {
-			return 0, err
-		}
-		c.SetRegister(rd, uint64(v))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
+	// case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_0111: // LUI
+	// 	rd, imm := UType(i)
+	// 	imm = SignExtend(imm, 31)
+	// 	DebuglnUType("LUI", rd, imm)
+	// 	c.SetRegister(rd, imm)
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_0111: // AUIPC
+	// 	rd, imm := UType(i)
+	// 	imm = SignExtend(imm, 31)
+	// 	DebuglnUType("AUIPC", rd, imm)
+	// 	c.SetRegister(rd, c.GetPC()+imm)
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_1111: // JAL
+	// 	rd, imm := JType(i)
+	// 	imm = SignExtend(imm, 19)
+	// 	DebuglnJType("JAL", rd, imm)
+	// 	c.SetRegister(rd, c.GetPC()+4)
+	// 	c.SetPC(c.GetPC() + imm)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0111: // JALR
+	// 	rd, rs1, imm := IType(i)
+	// 	imm = SignExtend(imm, 11)
+	// 	DebuglnIType("JALR", rd, rs1, imm)
+	// 	c.SetRegister(rd, c.GetPC()+4)
+	// 	c.SetPC(((c.GetRegister(rs1) + imm) >> 1) << 1)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0110_0011: // BEQ
+	// 	rs1, rs2, imm := BType(i)
+	// 	imm = SignExtend(imm, 12)
+	// 	DebuglnBType("BEQ", rs1, rs2, imm)
+	// 	if c.GetRegister(rs1) == c.GetRegister(rs2) {
+	// 		c.SetPC(c.GetPC() + imm)
+	// 	} else {
+	// 		c.SetPC(c.GetPC() + 4)
+	// 	}
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0110_0011: // BNE
+	// 	rs1, rs2, imm := BType(i)
+	// 	imm = SignExtend(imm, 12)
+	// 	DebuglnBType("BNE", rs1, rs2, imm)
+	// 	if c.GetRegister(rs1) != c.GetRegister(rs2) {
+	// 		c.SetPC(c.GetPC() + imm)
+	// 	} else {
+	// 		c.SetPC(c.GetPC() + 4)
+	// 	}
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0110_0011: // BLT
+	// 	rs1, rs2, imm := BType(i)
+	// 	imm = SignExtend(imm, 12)
+	// 	DebuglnBType("BLT", rs1, rs2, imm)
+	// 	if int64(c.GetRegister(rs1)) < int64(c.GetRegister(rs2)) {
+	// 		c.SetPC(c.GetPC() + imm)
+	// 	} else {
+	// 		c.SetPC(c.GetPC() + 4)
+	// 	}
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0110_0011: // BGE
+	// 	rs1, rs2, imm := BType(i)
+	// 	imm = SignExtend(imm, 12)
+	// 	DebuglnBType("BGE", rs1, rs2, imm)
+	// 	if int64(c.GetRegister(rs1)) >= int64(c.GetRegister(rs2)) {
+	// 		c.SetPC(c.GetPC() + imm)
+	// 	} else {
+	// 		c.SetPC(c.GetPC() + 4)
+	// 	}
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0110_0011: // BLTU
+	// 	rs1, rs2, imm := BType(i)
+	// 	imm = SignExtend(imm, 12)
+	// 	DebuglnBType("BLTU", rs1, rs2, imm)
+	// 	if c.GetRegister(rs1) < c.GetRegister(rs2) {
+	// 		c.SetPC(c.GetPC() + imm)
+	// 	} else {
+	// 		c.SetPC(c.GetPC() + 4)
+	// 	}
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0111_0000_0110_0011: // BGEU
+	// 	rs1, rs2, imm := BType(i)
+	// 	imm = SignExtend(imm, 12)
+	// 	DebuglnBType("BGEU", rs1, rs2, imm)
+	// 	if c.GetRegister(rs1) >= c.GetRegister(rs2) {
+	// 		c.SetPC(c.GetPC() + imm)
+	// 	} else {
+	// 		c.SetPC(c.GetPC() + 4)
+	// 	}
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0000_0011: // LB
+	// 	rd, rs1, imm := IType(i)
+	// 	imm = SignExtend(imm, 11)
+	// 	DebuglnIType("LB", rd, rs1, imm)
+	// 	a := c.GetRegister(rs1) + imm
+	// 	mem, err := c.GetMemory().GetUint8(a)
+	// 	if err != nil {
+	// 		return 0, err
+	// 	}
+	// 	c.SetRegister(rd, SignExtend(uint64(mem), 7))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_0011: // LH
+	// 	rd, rs1, imm := IType(i)
+	// 	imm = SignExtend(imm, 11)
+	// 	DebuglnIType("LH", rd, rs1, imm)
+	// 	a := c.GetRegister(rs1) + imm
+	// 	v, err := c.GetMemory().GetUint16(a)
+	// 	if err != nil {
+	// 		return 0, err
+	// 	}
+	// 	c.SetRegister(rd, SignExtend(uint64(v), 15))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0000_0011: // LW
+	// 	rd, rs1, imm := IType(i)
+	// 	imm = SignExtend(imm, 11)
+	// 	DebuglnIType("LW", rd, rs1, imm)
+	// 	a := c.GetRegister(rs1) + imm
+	// 	v, err := c.GetMemory().GetUint32(a)
+	// 	if err != nil {
+	// 		return 0, err
+	// 	}
+	// 	c.SetRegister(rd, SignExtend(uint64(v), 31))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0100_0000_0000_0011: // LBU
+	// 	rd, rs1, imm := IType(i)
+	// 	imm = SignExtend(imm, 11)
+	// 	DebuglnIType("LBU", rd, rs1, imm)
+	// 	a := c.GetRegister(rs1) + imm
+	// 	v, err := c.GetMemory().GetUint8(a)
+	// 	if err != nil {
+	// 		return 0, err
+	// 	}
+	// 	c.SetRegister(rd, uint64(v))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0000_0011: // LHU
+	// 	rd, rs1, imm := IType(i)
+	// 	imm = SignExtend(imm, 11)
+	// 	DebuglnIType("LH", rd, rs1, imm)
+	// 	a := c.GetRegister(rs1) + imm
+	// 	v, err := c.GetMemory().GetUint16(a)
+	// 	if err != nil {
+	// 		return 0, err
+	// 	}
+	// 	c.SetRegister(rd, uint64(v))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0010_0011: // SB
 		rs1, rs2, imm := SType(i)
 		imm = SignExtend(imm, 11)
@@ -388,30 +388,30 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 		c.SetCSR(csr, c.GetCSR(csr)&(math.MaxUint64-rs1))
 		c.SetPC(c.GetPC() + 4)
 		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0000_0011: // LWU
-		rd, rs1, imm := IType(i)
-		imm = SignExtend(imm, 11)
-		DebuglnIType("LWU", rd, rs1, imm)
-		a := c.GetRegister(rs1) + imm
-		v, err := c.GetMemory().GetUint32(a)
-		if err != nil {
-			return 0, err
-		}
-		c.SetRegister(rd, uint64(v))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0000_0011: // LD
-		rd, rs1, imm := IType(i)
-		imm = SignExtend(imm, 11)
-		DebuglnIType("LD", rd, rs1, imm)
-		a := c.GetRegister(rs1) + imm
-		v, err := c.GetMemory().GetUint64(a)
-		if err != nil {
-			return 0, err
-		}
-		c.SetRegister(rd, v)
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0000_0011: // LWU
+	// 	rd, rs1, imm := IType(i)
+	// 	imm = SignExtend(imm, 11)
+	// 	DebuglnIType("LWU", rd, rs1, imm)
+	// 	a := c.GetRegister(rs1) + imm
+	// 	v, err := c.GetMemory().GetUint32(a)
+	// 	if err != nil {
+	// 		return 0, err
+	// 	}
+	// 	c.SetRegister(rd, uint64(v))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0000_0011: // LD
+	// 	rd, rs1, imm := IType(i)
+	// 	imm = SignExtend(imm, 11)
+	// 	DebuglnIType("LD", rd, rs1, imm)
+	// 	a := c.GetRegister(rs1) + imm
+	// 	v, err := c.GetMemory().GetUint64(a)
+	// 	if err != nil {
+	// 		return 0, err
+	// 	}
+	// 	c.SetRegister(rd, v)
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0010_0011: // SD
 		rs1, rs2, imm := SType(i)
 		imm = SignExtend(imm, 11)
