@@ -1,7 +1,6 @@
 package rv64
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -327,29 +326,29 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 	// 	c.SetRegister(rd, c.GetRegister(rs1)&c.GetRegister(rs2))
 	// 	c.SetPC(c.GetPC() + 4)
 	// 	return 1, nil
-	case i&0b_1111_0000_0000_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0000_1111: // FENCE
-		Debugln(fmt.Sprintf("Instr: % 10s |", "FENCE"))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_1111: // FENCE.I
-		Debugln(fmt.Sprintf("Instr: % 10s |", "FENCE.I"))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0111_0011: // ECALL
-		rd, rs1, imm := IType(i)
-		DebuglnIType("ECALL", rd, rs1, imm)
-		return c.GetSystem().HandleCall(c)
-	case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0001_0000_0000_0000_0111_0011: // EBREAK
-		rd, rs1, imm := IType(i)
-		DebuglnIType("EBREAK", rd, rs1, imm)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0111_0011: // CSRRW
-		rd, rs1, csr := IType(i)
-		DebuglnIType("CSRRW", rd, rs1, csr)
-		c.SetRegister(rd, c.GetCSR(csr))
-		c.SetCSR(csr, c.GetRegister(rs1))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
+	// case i&0b_1111_0000_0000_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0000_1111: // FENCE
+	// 	Debugln(fmt.Sprintf("Instr: % 10s |", "FENCE"))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0001_0000_0000_1111: // FENCE.I
+	// 	Debugln(fmt.Sprintf("Instr: % 10s |", "FENCE.I"))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0000_0000_0000_0000_0111_0011: // ECALL
+	// 	rd, rs1, imm := IType(i)
+	// 	DebuglnIType("ECALL", rd, rs1, imm)
+	// 	return c.GetSystem().HandleCall(c)
+	// case i&0b_1111_1111_1111_1111_1111_1111_1111_1111 == 0b_0000_0000_0001_0000_0000_0000_0111_0011: // EBREAK
+	// 	rd, rs1, imm := IType(i)
+	// 	DebuglnIType("EBREAK", rd, rs1, imm)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0111_0011: // CSRRW
+	// 	rd, rs1, csr := IType(i)
+	// 	DebuglnIType("CSRRW", rd, rs1, csr)
+	// 	c.SetRegister(rd, c.GetCSR(csr))
+	// 	c.SetCSR(csr, c.GetRegister(rs1))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
 	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0111_0011: // CSRRS
 		rd, rs1, csr := IType(i)
 		DebuglnIType("CSRRS", rd, rs1, csr)

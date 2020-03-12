@@ -1,6 +1,7 @@
 package rv64
 
 import (
+	"fmt"
 	"math"
 	"math/big"
 )
@@ -421,6 +422,34 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				}
+			}
+		case 0b0001111:
+			switch InstructionPart(s, 12, 14) {
+			case 0b000: // ---------------------------------------------------------------------- FENCE
+				Debugln(fmt.Sprintf("Instr: % 10s |", "FENCE"))
+			case 0b001: // ---------------------------------------------------------------------- FENCE.I
+				Debugln(fmt.Sprintf("Instr: % 10s |", "FENCE.I"))
+			}
+			c.SetPC(c.GetPC() + 4)
+			return 1, nil
+		case 0b1110011:
+			rd, rs1, imm := IType(i)
+			switch InstructionPart(s, 12, 14) {
+			case 0b000:
+				switch InstructionPart(s, 20, 31) {
+				case 0b000000000000: // ----------------------------------------------------------- ECALL
+					DebuglnIType("ECALL", rd, rs1, imm)
+					return c.GetSystem().HandleCall(c)
+				case 0b000000000001: // ----------------------------------------------------------- EBREAK
+					DebuglnIType("EBREAK", rd, rs1, imm)
+					return 1, nil
+				}
+			case 0b001: // ------------------------------------------------------------------------ CSRRW
+				DebuglnIType("CSRRW", rd, rs1, imm)
+				c.SetRegister(rd, c.GetCSR(imm))
+				c.SetCSR(imm, c.GetRegister(rs1))
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
 			}
 		}
 	}
