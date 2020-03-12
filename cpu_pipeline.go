@@ -523,7 +523,82 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				}
-
+			}
+		case 0b0111011:
+			rd, rs1, rs2 := RType(s)
+			switch InstructionPart(s, 12, 14) {
+			case 0b000:
+				switch InstructionPart(s, 25, 31) {
+				case 0b0000000: // ---------------------------------------------------------------- ADDW
+					DebuglnRType("ADDW", rd, rs1, rs2)
+					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(c.GetRegister(rs2))))
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
+				case 0b0000001: // ---------------------------------------------------------------- MULW
+					DebuglnRType("MULW", rd, rs1, rs2)
+					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))*int32(c.GetRegister(rs2))))
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
+				case 0b0100000: // ---------------------------------------------------------------- SUBW
+					DebuglnRType("SUBW", rd, rs1, rs2)
+					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))-int32(c.GetRegister(rs2))))
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
+				}
+			case 0b001: // ------------------------------------------------------------------------ SLLW
+				DebuglnRType("SLLW", rd, rs1, rs2)
+				c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<InstructionPart(c.GetRegister(rs2), 0, 4)), 31))
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
+			case 0b100: // ------------------------------------------------------------------------ DIVW
+				DebuglnRType("DIVW", rd, rs1, rs2)
+				if c.GetRegister(rs2) == 0 {
+					c.SetRegister(rd, math.MaxUint64)
+				} else {
+					c.SetRegister(rd, SignExtend(uint64(int32(c.GetRegister(rs1))/int32(c.GetRegister(rs2))), 31))
+				}
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
+			case 0b101:
+				switch InstructionPart(s, 25, 31) {
+				case 0b0000000: // ---------------------------------------------------------------- SRLW
+					DebuglnRType("SRLW", rd, rs1, rs2)
+					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 4)), 31))
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
+				case 0b0000001: // ---------------------------------------------------------------- DIVUW
+					DebuglnRType("DIVUW", rd, rs1, rs2)
+					if c.GetRegister(rs2) == 0 {
+						c.SetRegister(rd, math.MaxUint64)
+					} else {
+						c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))/uint32(c.GetRegister(rs2))), 31))
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
+				case 0b0100000: // ---------------------------------------------------------------- SRAW
+					DebuglnRType("SRAW", rd, rs1, rs2)
+					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 4)))
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
+				}
+			case 0b110: // ------------------------------------------------------------------------ REMW
+				DebuglnRType("REMW", rd, rs1, rs2)
+				if c.GetRegister(rs2) == 0 {
+					c.SetRegister(rd, c.GetRegister(rs1))
+				} else {
+					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))%int32(c.GetRegister(rs2))))
+				}
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
+			case 0b111: // ------------------------------------------------------------------------ REMUW
+				DebuglnRType("REMUW", rd, rs1, rs2)
+				if c.GetRegister(rs2) == 0 {
+					c.SetRegister(rd, c.GetRegister(rs1))
+				} else {
+					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))%uint32(c.GetRegister(rs2))), 31))
+				}
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
 			}
 		}
 	}

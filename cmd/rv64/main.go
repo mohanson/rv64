@@ -78,29 +78,6 @@ func (c *CPU) Run() uint8 {
 			for i := len(data) - 1; i >= 0; i-- {
 				s += uint64(data[i]) << (8 * i)
 			}
-			n, err := rv64.ExecuterRV64I(c.Inner, s)
-			if err != nil {
-				log.Panicln(err)
-			}
-			if n != 0 {
-				i += 1
-				// c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
-				// c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
-				// c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
-				continue
-			}
-
-			n, err = rv64.ExecuterM(c.Inner, s)
-			if err != nil {
-				log.Panicln(err)
-			}
-			if n != 0 {
-				i += 1
-				// c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
-				// c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
-				// c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
-				continue
-			}
 
 			n, err = rv64.ExecuterA(c.Inner, s)
 			if err != nil {
