@@ -484,6 +484,47 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			}
+		case 0b0011011:
+			rd, rs1, imm := IType(s)
+			switch InstructionPart(s, 12, 14) {
+			case 0b000: // ------------------------------------------------------------------------ ADDIW
+				imm = SignExtend(imm, 11)
+				DebuglnIType("ADDIW", rd, rs1, imm)
+				c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(imm)))
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
+			case 0b001: // ------------------------------------------------------------------------ SLLIW
+				if InstructionPart(imm, 5, 5) != 0x00 {
+					return 0, ErrAbnormalInstruction
+				}
+				imm = InstructionPart(imm, 0, 4)
+				DebuglnIType("SLLIW", rd, rs1, imm)
+				c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<imm), 31))
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
+			case 0b101:
+				switch InstructionPart(s, 25, 31) {
+				case 0b0000000: // ---------------------------------------------------------------- SRLIW
+					if InstructionPart(imm, 5, 5) != 0x00 {
+						return 0, ErrAbnormalInstruction
+					}
+					imm = InstructionPart(imm, 0, 4)
+					DebuglnIType("SRLIW", rd, rs1, imm)
+					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>imm), 31))
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
+				case 0b0100000: // ---------------------------------------------------------------- SRAIW
+					if InstructionPart(imm, 5, 5) != 0x00 {
+						return 0, ErrAbnormalInstruction
+					}
+					imm = InstructionPart(imm, 0, 4)
+					DebuglnIType("SRAIW", rd, rs1, imm)
+					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>imm))
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
+				}
+
+			}
 		}
 	}
 	return 0, nil

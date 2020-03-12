@@ -415,43 +415,43 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 	// 	c.GetMemory().SetUint64(a, c.GetRegister(rs2))
 	// 	c.SetPC(c.GetPC() + 4)
 	// 	return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_1011: // ADDIW
-		rd, rs1, imm := IType(i)
-		imm = SignExtend(imm, 11)
-		DebuglnIType("ADDIW", rd, rs1, imm)
-		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(imm)))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0001_1011: // SLLIW
-		rd, rs1, imm := IType(i)
-		if InstructionPart(imm, 5, 5) != 0x00 {
-			return 0, ErrAbnormalInstruction
-		}
-		imm = InstructionPart(imm, 0, 4)
-		DebuglnIType("SLLIW", rd, rs1, imm)
-		c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<imm), 31))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0001_1011: // SRLIW
-		rd, rs1, imm := IType(i)
-		if InstructionPart(imm, 5, 5) != 0x00 {
-			return 0, ErrAbnormalInstruction
-		}
-		imm = InstructionPart(imm, 0, 4)
-		DebuglnIType("SRLIW", rd, rs1, imm)
-		c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>imm), 31))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0001_1011: // SRAIW
-		rd, rs1, imm := IType(i)
-		if InstructionPart(imm, 5, 5) != 0x00 {
-			return 0, ErrAbnormalInstruction
-		}
-		imm = InstructionPart(imm, 0, 4)
-		DebuglnIType("SRAIW", rd, rs1, imm)
-		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>imm))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0001_1011: // ADDIW
+	// 	rd, rs1, imm := IType(i)
+	// 	imm = SignExtend(imm, 11)
+	// 	DebuglnIType("ADDIW", rd, rs1, imm)
+	// 	c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(imm)))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0001_0000_0001_1011: // SLLIW
+	// 	rd, rs1, imm := IType(i)
+	// 	if InstructionPart(imm, 5, 5) != 0x00 {
+	// 		return 0, ErrAbnormalInstruction
+	// 	}
+	// 	imm = InstructionPart(imm, 0, 4)
+	// 	DebuglnIType("SLLIW", rd, rs1, imm)
+	// 	c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<imm), 31))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0001_1011: // SRLIW
+	// 	rd, rs1, imm := IType(i)
+	// 	if InstructionPart(imm, 5, 5) != 0x00 {
+	// 		return 0, ErrAbnormalInstruction
+	// 	}
+	// 	imm = InstructionPart(imm, 0, 4)
+	// 	DebuglnIType("SRLIW", rd, rs1, imm)
+	// 	c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>imm), 31))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0100_0000_0000_0000_0101_0000_0001_1011: // SRAIW
+	// 	rd, rs1, imm := IType(i)
+	// 	if InstructionPart(imm, 5, 5) != 0x00 {
+	// 		return 0, ErrAbnormalInstruction
+	// 	}
+	// 	imm = InstructionPart(imm, 0, 4)
+	// 	DebuglnIType("SRAIW", rd, rs1, imm)
+	// 	c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>imm))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
 	case i&0b_1111_1110_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_1011: // ADDW
 		rd, rs1, rs2 := RType(i)
 		DebuglnRType("ADDW", rd, rs1, rs2)
