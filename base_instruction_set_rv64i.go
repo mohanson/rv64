@@ -1,9 +1,5 @@
 package rv64
 
-import (
-	"math"
-)
-
 func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 	switch {
 	// case i&0b_0000_0000_0000_0000_0000_0000_0111_1111 == 0b_0000_0000_0000_0000_0000_0000_0011_0111: // LUI
@@ -349,44 +345,44 @@ func ExecuterRV64I(c *CPU, i uint64) (uint64, error) {
 	// 	c.SetCSR(csr, c.GetRegister(rs1))
 	// 	c.SetPC(c.GetPC() + 4)
 	// 	return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0111_0011: // CSRRS
-		rd, rs1, csr := IType(i)
-		DebuglnIType("CSRRS", rd, rs1, csr)
-		c.SetRegister(rd, c.GetCSR(csr))
-		c.SetCSR(csr, c.GetCSR(csr)|c.GetRegister(rs1))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0111_0011: // CSRRC
-		rd, rs1, csr := IType(i)
-		DebuglnIType("CSRRC", rd, rs1, csr)
-		c.SetRegister(rd, c.GetCSR(csr))
-		c.SetCSR(csr, c.GetCSR(csr)&(math.MaxUint64-c.GetRegister(rs1)))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0111_0011: // CSRRWI
-		rd, rs1, csr := IType(i)
-		rs1 = SignExtend(rs1, 4)
-		DebuglnIType("CSRRWI", rd, rs1, csr)
-		c.SetRegister(rd, c.GetCSR(csr))
-		c.SetCSR(csr, rs1)
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0111_0011: // CSRRSI
-		rd, rs1, csr := IType(i)
-		rs1 = SignExtend(rs1, 4)
-		DebuglnIType("CSRRSI", rd, rs1, csr)
-		c.SetRegister(rd, c.GetCSR(csr))
-		c.SetCSR(csr, c.GetCSR(csr)|rs1)
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
-	case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0111_0000_0111_0011: // CSRRCI
-		rd, rs1, csr := IType(i)
-		rs1 = SignExtend(rs1, 4)
-		DebuglnIType("CSRRCI", rd, rs1, csr)
-		c.SetRegister(rd, c.GetCSR(csr))
-		c.SetCSR(csr, c.GetCSR(csr)&(math.MaxUint64-rs1))
-		c.SetPC(c.GetPC() + 4)
-		return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0010_0000_0111_0011: // CSRRS
+	// 	rd, rs1, csr := IType(i)
+	// 	DebuglnIType("CSRRS", rd, rs1, csr)
+	// 	c.SetRegister(rd, c.GetCSR(csr))
+	// 	c.SetCSR(csr, c.GetCSR(csr)|c.GetRegister(rs1))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0011_0000_0111_0011: // CSRRC
+	// 	rd, rs1, csr := IType(i)
+	// 	DebuglnIType("CSRRC", rd, rs1, csr)
+	// 	c.SetRegister(rd, c.GetCSR(csr))
+	// 	c.SetCSR(csr, c.GetCSR(csr)&(math.MaxUint64-c.GetRegister(rs1)))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0101_0000_0111_0011: // CSRRWI
+	// 	rd, rs1, csr := IType(i)
+	// 	rs1 = SignExtend(rs1, 4)
+	// 	DebuglnIType("CSRRWI", rd, rs1, csr)
+	// 	c.SetRegister(rd, c.GetCSR(csr))
+	// 	c.SetCSR(csr, rs1)
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0111_0011: // CSRRSI
+	// 	rd, rs1, csr := IType(i)
+	// 	rs1 = SignExtend(rs1, 4)
+	// 	DebuglnIType("CSRRSI", rd, rs1, csr)
+	// 	c.SetRegister(rd, c.GetCSR(csr))
+	// 	c.SetCSR(csr, c.GetCSR(csr)|rs1)
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
+	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0111_0000_0111_0011: // CSRRCI
+	// 	rd, rs1, csr := IType(i)
+	// 	rs1 = SignExtend(rs1, 4)
+	// 	DebuglnIType("CSRRCI", rd, rs1, csr)
+	// 	c.SetRegister(rd, c.GetCSR(csr))
+	// 	c.SetCSR(csr, c.GetCSR(csr)&(math.MaxUint64-rs1))
+	// 	c.SetPC(c.GetPC() + 4)
+	// 	return 1, nil
 	// case i&0b_0000_0000_0000_0000_0111_0000_0111_1111 == 0b_0000_0000_0000_0000_0110_0000_0000_0011: // LWU
 	// 	rd, rs1, imm := IType(i)
 	// 	imm = SignExtend(imm, 11)
