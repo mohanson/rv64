@@ -968,6 +968,48 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			}
 		case 0b1010011:
 			rd, rs1, rs2 := RType(s)
+			switch InstructionPart(s, 25, 26) {
+			case 0b00:
+				switch InstructionPart(s, 27, 31) {
+				case 0b00000: // FADD.S
+				case 0b00001: // FSUB.S
+				case 0b00010: // FMUL.S
+				case 0b00011: // FDIV.S
+				case 0b01011: // FSQRT.S
+				case 0b00100:
+					switch InstructionPart(s, 12, 14) {
+					case 0b000: // FSGNJ.S
+					case 0b001: // FSGNJN.S
+					case 0b010: // FSGNJX.S
+					}
+				case 0b00101:
+					switch InstructionPart(s, 12, 14) {
+					case 0b000: // FMIN.S
+					case 0b001: // FMAX.S
+					}
+				}
+			case 0b01:
+				switch InstructionPart(s, 27, 31) {
+				case 0b00000: // FADD.D
+				case 0b00001: // FSUB.D
+				case 0b00010: // FMUL.D
+				case 0b00011: // FDIV.D
+				case 0b01011: // FSQRT.D
+				case 0b00100:
+					switch InstructionPart(s, 12, 14) {
+					case 0b000: // FSGNJ.D
+					case 0b001: // FSGNJN.D
+					case 0b010: // FSGNJX.D
+					}
+				case 0b00101:
+					switch InstructionPart(s, 12, 14) {
+					case 0b000: // FMIN.D
+					case 0b001: // FMAX.D
+					}
+				}
+			}
+
+			// old
 			switch InstructionPart(s, 25, 31) {
 			case 0b0000000: // FADD.S
 				DebuglnRType("FADD.S", rd, rs1, rs2)
