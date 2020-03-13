@@ -987,10 +987,41 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					case 0b000: // FMIN.S
 					case 0b001: // FMAX.S
 					}
+				case 0b11000:
+					switch InstructionPart(s, 20, 24) {
+					case 0b00000: // FCVT.W.S
+					case 0b00001: // FCVT.WU.S
+					case 0b00010: // FCVT.L.S
+					case 0b00011: // FCVT.LU.S
+					}
+				case 0b01000: // FCVT.S.D
+				case 0b11100:
+					switch InstructionPart(s, 12, 14) {
+					case 0b000: //  FMV.X.W
+					case 0b001: //  FCLASS.S
+					}
+				case 0b10100:
+					switch InstructionPart(s, 12, 14) {
+					case 0b010: //  FEQ.S
+					case 0b001: //  FLT.S
+					case 0b000: // FLE.S
+					}
+				case 0b11010:
+					switch InstructionPart(s, 20, 24) {
+					case 0b00000: // FCVT.S.W
+					case 0b00001: // FCVT.S.WU
+					case 0b00010: // FCVT.S.L
+					case 0b00011: //FCVT.S.LU
+					}
+				case 0b11110: // FMV.W.X
 				}
 			case 0b01:
 				switch InstructionPart(s, 27, 31) {
 				case 0b00000: // FADD.D
+					DebuglnRType("FADD.D", rd, rs1, rs2)
+					c.SetRegisterFloatAsFloat64(rd, c.GetRegisterFloatAsFLoat64(rs1)+c.GetRegisterFloatAsFLoat64(rs2))
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b00001: // FSUB.D
 				case 0b00010: // FMUL.D
 				case 0b00011: // FDIV.D
@@ -1006,155 +1037,38 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					case 0b000: // FMIN.D
 					case 0b001: // FMAX.D
 					}
+				case 0b11000:
+					switch InstructionPart(s, 20, 24) {
+					case 0b00000: // FCVT.W.D
+					case 0b00001: // FCVT.WU.D
+					case 0b00010: //FCVT.L.D
+					case 0b00011: //FCVT.LU.D
+					}
+				case 0b01000: // FCVT.D.S
+				case 0b10100:
+					switch InstructionPart(s, 12, 14) {
+					case 0b010: //  FEQ.D
+					case 0b001: //  FLT.D
+					case 0b000: // FLE.D
+					}
+				case 0b11100:
+					switch InstructionPart(s, 12, 14) {
+					case 0b000: // FMV.X.D
+						DebuglnRType("FMV.X.D", rd, rs1, rs2)
+						c.SetRegister(rd, c.GetRegisterFloat(rs1))
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
+					case 0b001: // FCLASS.D
+					}
+				case 0b11010:
+					switch InstructionPart(s, 20, 24) {
+					case 0b00000: // FCVT.D.W
+					case 0b00001: // FCVT.D.WU
+					case 0b00010: // FCVT.D.L
+					case 0b00011: // FCVT.D.LU
+					}
+				case 0b11110: // FMV.D.X
 				}
-			}
-
-			// old
-			switch InstructionPart(s, 25, 31) {
-			case 0b0000000: // FADD.S
-				DebuglnRType("FADD.S", rd, rs1, rs2)
-			case 0b0000001: // -------------------------------------------------------------------- FADD.D
-				DebuglnRType("FADD.D", rd, rs1, rs2)
-				c.SetRegisterFloatAsFloat64(rd, c.GetRegisterFloatAsFLoat64(rs1)+c.GetRegisterFloatAsFLoat64(rs2))
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
-			case 0b0000100: // FSUB.S
-				DebuglnRType("FSUB.S", rd, rs1, rs2)
-			case 0b0000101: // FSUB.D
-				DebuglnRType("FSUB.D", rd, rs1, rs2)
-			case 0b0001000: // FMUL.S
-				DebuglnRType("FMUL.S", rd, rs1, rs2)
-			case 0b0001001: // FMUL.D
-				DebuglnRType("FMUL.D", rd, rs1, rs2)
-			case 0b0001100: // FDIV.S
-				DebuglnRType("FDIV.S", rd, rs1, rs2)
-			case 0b0001101: // FDIV.D
-				DebuglnRType("FDIV.D", rd, rs1, rs2)
-			case 0b0101100: // FSQRT.S
-				DebuglnRType("FSQRT.S", rd, rs1, rs2)
-			case 0b0101101: // FSQRT.D
-				DebuglnRType("FSQRT.D", rd, rs1, rs2)
-			case 0b0010000:
-				switch InstructionPart(s, 12, 14) {
-				case 0b000: // FSGNJ.S
-					DebuglnRType("FSGNJ.S", rd, rs1, rs2)
-				case 0b001: // FSGNJN.S
-					DebuglnRType("FSGNJN.S", rd, rs1, rs2)
-				case 0b010: // FSGNJX.S
-					DebuglnRType("FSGNJX.S", rd, rs1, rs2)
-				}
-			case 0b0010001:
-				switch InstructionPart(s, 12, 14) {
-				case 0b000: // FSGNJ.D
-					DebuglnRType("FSGNJ.D", rd, rs1, rs2)
-				case 0b001: // FSGNJN.D
-					DebuglnRType("FSGNJN.D", rd, rs1, rs2)
-				case 0b010: // FSGNJX.D
-					DebuglnRType("FSGNJX.D", rd, rs1, rs2)
-				}
-			case 0b0010100:
-				switch InstructionPart(s, 12, 14) {
-				case 0b000: // FMIN.S
-					DebuglnRType("FMIN.S", rd, rs1, rs2)
-				case 0b001: // FMAX.S
-					DebuglnRType("FMAX.S", rd, rs1, rs2)
-				}
-			case 0b0010101:
-				switch InstructionPart(s, 12, 14) {
-				case 0b000: // FMIN.D
-					DebuglnRType("FMIN.D", rd, rs1, rs2)
-				case 0b001: // FMAX.D
-					DebuglnRType("FMAX.D", rd, rs1, rs2)
-				}
-			case 0b1100000:
-				switch InstructionPart(s, 20, 24) {
-				case 0b00000: // FCVT.W.S
-					DebuglnRType("FCVT.W.S", rd, rs1, rs2)
-				case 0b00001: // FCVT.WU.S
-					DebuglnRType("FCVT.WU.S", rd, rs1, rs2)
-				case 0b00010: // FCVT.L.S
-					DebuglnRType("FCVT.L.S", rd, rs1, rs2)
-				case 0b00011: //  FCVT.LU.S
-					DebuglnRType("FCVT.LU.S", rd, rs1, rs2)
-				}
-			case 0b0100000: // FCVT.S.D
-				rd, rs1, rs2 := RType(s)
-				DebuglnRType("FCVT.S.D", rd, rs1, rs2)
-			case 0b0100001: //  FCVT.D.S
-				rd, rs1, rs2 := RType(s)
-				DebuglnRType("FCVT.D.S", rd, rs1, rs2)
-			case 0b1110000:
-				switch InstructionPart(s, 12, 14) {
-				case 0b000: // FMV.X.W
-					DebuglnRType("FMV.X.W", rd, rs1, rs2)
-				case 0b001: // FCLASS.S
-					DebuglnRType("FCLASS.S", rd, rs1, rs2)
-				}
-			case 0b1110001:
-				switch InstructionPart(s, 12, 14) {
-				case 0b000: // FMV.X.D
-					DebuglnRType("FMV.X.D", rd, rs1, rs2)
-					c.SetRegister(rd, c.GetRegisterFloat(rs1))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
-				case 0b001: // FCLASS.D
-					DebuglnRType("FCLASS.D", rd, rs1, rs2)
-				}
-			case 0b1010000:
-				switch InstructionPart(s, 12, 14) {
-				case 0b010: // FEQ.S
-					DebuglnRType("FEQ.S", rd, rs1, rs2)
-				case 0b001: // FLT.S
-					DebuglnRType("FLT.S", rd, rs1, rs2)
-				case 0b000: //  FLE.S
-					DebuglnRType("FLE.S", rd, rs1, rs2)
-				}
-			case 0b1010001:
-				switch InstructionPart(s, 12, 14) {
-				case 0b010: // FEQ.D
-					DebuglnRType("FEQ.D", rd, rs1, rs2)
-				case 0b001: // FLT.D
-					DebuglnRType("FLT.D", rd, rs1, rs2)
-				case 0b000: //  FLE.S
-					DebuglnRType("FLE.D", rd, rs1, rs2)
-				}
-			case 0b1101000:
-				switch InstructionPart(s, 20, 24) {
-				case 0b00000: // FCVT.S.W
-					DebuglnRType("FCVT.S.W", rd, rs1, rs2)
-				case 0b00001: //  FCVT.S.WU
-					DebuglnRType("FCVT.S.WU", rd, rs1, rs2)
-				case 0b00010: //  FCVT.S.L
-					DebuglnRType("FCVT.S.L", rd, rs1, rs2)
-				case 0b00011: //  FCVT.S.LU
-					DebuglnRType("FCVT.S.LU", rd, rs1, rs2)
-				}
-			case 0b1100001:
-				switch InstructionPart(s, 20, 24) {
-				case 0b00000: // FCVT.W.D
-					DebuglnRType("FCVT.W.D", rd, rs1, rs2)
-				case 0b00001: //  FCVT.WU.D
-					DebuglnRType("FCVT.WU.D", rd, rs1, rs2)
-				case 0b00010: //  FCVT.L.D
-					DebuglnRType("FCVT.L.D", rd, rs1, rs2)
-				case 0b00011: //   FCVT.LU.D
-					DebuglnRType(" FCVT.LU.D ", rd, rs1, rs2)
-				}
-			case 0b1101001:
-				switch InstructionPart(s, 20, 24) {
-				case 0b00000: //  FCVT.D.W
-					DebuglnRType("FCVT.D.W", rd, rs1, rs2)
-				case 0b00001: //  FCVT.D.WU
-					DebuglnRType("FCVT.D.WU", rd, rs1, rs2)
-				case 0b00010: //  FCVT.D.L
-					DebuglnRType("FCVT.D.L", rd, rs1, rs2)
-				case 0b00011: //   FCVT.D.LU
-					DebuglnRType("FCVT.D.LU", rd, rs1, rs2)
-				}
-			case 0b1111000: // FMV.W.X
-				DebuglnRType("FMV.W.X", rd, rs1, rs2)
-			case 0b1111001: // FMV.D.X
-				DebuglnRType("FMV.D.X", rd, rs1, rs2)
 			}
 		}
 	}
