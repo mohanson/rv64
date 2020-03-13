@@ -907,18 +907,24 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			imm = SignExtend(imm, 11)
 			a := c.GetRegister(rs1) + imm
 			switch InstructionPart(s, 12, 14) {
-			case 0b010: // FLW
+			case 0b010: // ------------------------------------------------------------------------ FLW
 				DebuglnIType("FLW", rd, rs1, imm)
-				b, err := c.GetMemory().GetUint32(a)
+				v, err := c.GetMemory().GetUint32(a)
 				if err != nil {
 					return 0, err
 				}
-				v := math.Float64frombits((uint64(math.MaxUint32) << 32) | uint64(b))
+				c.SetRegisterFloat(rd, uint64(math.MaxUint32)<<32|uint64(v))
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
+			case 0b011: // ------------------------------------------------------------------------ FLD
+				DebuglnIType("FLD", rd, rs1, imm)
+				v, err := c.GetMemory().GetUint64(a)
+				if err != nil {
+					return 0, err
+				}
 				c.SetRegisterFloat(rd, v)
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
-			case 0b011: // FLD
-				DebuglnIType("FLD", rd, rs1, imm)
 			}
 		case 0b0100111:
 			rs1, rs2, imm := SType(s)
@@ -929,44 +935,63 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				DebuglnSType("FSD", rs1, rs2, imm)
 			}
 		case 0b1000011:
+			rs1, rs2, imm := SType(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00: // FMADD.S
+				DebuglnSType("FMADD.S", rs1, rs2, imm)
 			case 0b01: // FMADD.D
+				DebuglnSType("FMADD.D", rs1, rs2, imm)
 			}
 		case 0b1000111:
+			rs1, rs2, imm := SType(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00: // FMSUB.S
+				DebuglnSType("FMSUB.S", rs1, rs2, imm)
 			case 0b01: // FMSUB.D
+				DebuglnSType("FMSUB.D", rs1, rs2, imm)
 			}
 		case 0b1001011:
+			rs1, rs2, imm := SType(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00: // FNMSUB.S
+				DebuglnSType("FNMSUB.S", rs1, rs2, imm)
 			case 0b01: // FNMSUB.D
+				DebuglnSType("FNMSUB.D", rs1, rs2, imm)
 			}
 		case 0b1001111:
+			rs1, rs2, imm := SType(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00: // FNMADD.S
+				DebuglnSType("FNMADD.S", rs1, rs2, imm)
 			case 0b01: // FNMADD.D
+				DebuglnSType("FNMADD.D", rs1, rs2, imm)
 			}
 		case 0b1010011:
 			rd, rs1, rs2 := RType(s)
 			switch InstructionPart(s, 25, 31) {
 			case 0b0000000: // FADD.S
 				DebuglnRType("FADD.S", rd, rs1, rs2)
-				a := math.Float32frombits(uint32(math.Float64bits(c.GetRegisterFloat(rs1))))
-				b := math.Float32frombits(uint32(math.Float64bits(c.GetRegisterFloat(rs2))))
-				v := math.Float64frombits((uint64(math.MaxUint32) << 32) | uint64(math.Float32bits(a+b)))
-				c.SetRegisterFloat(rd, v)
+			case 0b0000001: // -------------------------------------------------------------------- FADD.D
+				DebuglnRType("FADD.D", rd, rs1, rs2)
+				c.SetRegisterFloatAsFloat64(rd, c.GetRegisterFloatAsFLoat64(rs1)+c.GetRegisterFloatAsFLoat64(rs2))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b0000100: // FSUB.S
 				DebuglnRType("FSUB.S", rd, rs1, rs2)
+			case 0b0000101: // FSUB.D
+				DebuglnRType("FSUB.D", rd, rs1, rs2)
 			case 0b0001000: // FMUL.S
 				DebuglnRType("FMUL.S", rd, rs1, rs2)
+			case 0b0001001: // FMUL.D
+				DebuglnRType("FMUL.D", rd, rs1, rs2)
 			case 0b0001100: // FDIV.S
 				DebuglnRType("FDIV.S", rd, rs1, rs2)
+			case 0b0001101: // FDIV.D
+				DebuglnRType("FDIV.D", rd, rs1, rs2)
 			case 0b0101100: // FSQRT.S
 				DebuglnRType("FSQRT.S", rd, rs1, rs2)
+			case 0b0101101: // FSQRT.D
+				DebuglnRType("FSQRT.D", rd, rs1, rs2)
 			case 0b0010000:
 				switch InstructionPart(s, 12, 14) {
 				case 0b000: // FSGNJ.S
@@ -976,12 +1001,28 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b010: // FSGNJX.S
 					DebuglnRType("FSGNJX.S", rd, rs1, rs2)
 				}
+			case 0b0010001:
+				switch InstructionPart(s, 12, 14) {
+				case 0b000: // FSGNJ.D
+					DebuglnRType("FSGNJ.D", rd, rs1, rs2)
+				case 0b001: // FSGNJN.D
+					DebuglnRType("FSGNJN.D", rd, rs1, rs2)
+				case 0b010: // FSGNJX.D
+					DebuglnRType("FSGNJX.D", rd, rs1, rs2)
+				}
 			case 0b0010100:
 				switch InstructionPart(s, 12, 14) {
 				case 0b000: // FMIN.S
 					DebuglnRType("FMIN.S", rd, rs1, rs2)
 				case 0b001: // FMAX.S
 					DebuglnRType("FMAX.S", rd, rs1, rs2)
+				}
+			case 0b0010101:
+				switch InstructionPart(s, 12, 14) {
+				case 0b000: // FMIN.D
+					DebuglnRType("FMIN.D", rd, rs1, rs2)
+				case 0b001: // FMAX.D
+					DebuglnRType("FMAX.D", rd, rs1, rs2)
 				}
 			case 0b1100000:
 				switch InstructionPart(s, 20, 24) {
@@ -994,24 +1035,30 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b00011: //  FCVT.LU.S
 					DebuglnRType("FCVT.LU.S", rd, rs1, rs2)
 				}
+			case 0b0100000: // FCVT.S.D
+				rd, rs1, rs2 := RType(s)
+				DebuglnRType("FCVT.S.D", rd, rs1, rs2)
+			case 0b0100001: //  FCVT.D.S
+				rd, rs1, rs2 := RType(s)
+				DebuglnRType("FCVT.D.S", rd, rs1, rs2)
 			case 0b1110000:
 				switch InstructionPart(s, 12, 14) {
 				case 0b000: // FMV.X.W
 					DebuglnRType("FMV.X.W", rd, rs1, rs2)
-					a := uint32(math.Float64bits(c.GetRegisterFloat(rs1)))
-					var b uint64
-					if int32(math.Float64bits(c.GetRegisterFloat(rs1))) < 0 {
-						b = (uint64(math.MaxUint32))<<31 | uint64(a)
-					} else {
-						b = uint64(a)
-					}
-					c.SetRegister(rd, b)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
 				case 0b001: // FCLASS.S
 					DebuglnRType("FCLASS.S", rd, rs1, rs2)
 				}
-			case 0b101000:
+			case 0b1110001:
+				switch InstructionPart(s, 12, 14) {
+				case 0b000: // FMV.X.D
+					DebuglnRType("FMV.X.D", rd, rs1, rs2)
+					c.SetRegister(rd, c.GetRegisterFloat(rs1))
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
+				case 0b001: // FCLASS.D
+					DebuglnRType("FCLASS.D", rd, rs1, rs2)
+				}
+			case 0b1010000:
 				switch InstructionPart(s, 12, 14) {
 				case 0b010: // FEQ.S
 					DebuglnRType("FEQ.S", rd, rs1, rs2)
@@ -1019,6 +1066,15 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					DebuglnRType("FLT.S", rd, rs1, rs2)
 				case 0b000: //  FLE.S
 					DebuglnRType("FLE.S", rd, rs1, rs2)
+				}
+			case 0b1010001:
+				switch InstructionPart(s, 12, 14) {
+				case 0b010: // FEQ.D
+					DebuglnRType("FEQ.D", rd, rs1, rs2)
+				case 0b001: // FLT.D
+					DebuglnRType("FLT.D", rd, rs1, rs2)
+				case 0b000: //  FLE.S
+					DebuglnRType("FLE.D", rd, rs1, rs2)
 				}
 			case 0b1101000:
 				switch InstructionPart(s, 20, 24) {
@@ -1031,8 +1087,32 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b00011: //  FCVT.S.LU
 					DebuglnRType("FCVT.S.LU", rd, rs1, rs2)
 				}
-			case 0b1111000: //  FMV.W.X
+			case 0b1100001:
+				switch InstructionPart(s, 20, 24) {
+				case 0b00000: // FCVT.W.D
+					DebuglnRType("FCVT.W.D", rd, rs1, rs2)
+				case 0b00001: //  FCVT.WU.D
+					DebuglnRType("FCVT.WU.D", rd, rs1, rs2)
+				case 0b00010: //  FCVT.L.D
+					DebuglnRType("FCVT.L.D", rd, rs1, rs2)
+				case 0b00011: //   FCVT.LU.D
+					DebuglnRType(" FCVT.LU.D ", rd, rs1, rs2)
+				}
+			case 0b1101001:
+				switch InstructionPart(s, 20, 24) {
+				case 0b00000: //  FCVT.D.W
+					DebuglnRType("FCVT.D.W", rd, rs1, rs2)
+				case 0b00001: //  FCVT.D.WU
+					DebuglnRType("FCVT.D.WU", rd, rs1, rs2)
+				case 0b00010: //  FCVT.D.L
+					DebuglnRType("FCVT.D.L", rd, rs1, rs2)
+				case 0b00011: //   FCVT.D.LU
+					DebuglnRType("FCVT.D.LU", rd, rs1, rs2)
+				}
+			case 0b1111000: // FMV.W.X
 				DebuglnRType("FMV.W.X", rd, rs1, rs2)
+			case 0b1111001: // FMV.D.X
+				DebuglnRType("FMV.D.X", rd, rs1, rs2)
 			}
 		}
 	}
