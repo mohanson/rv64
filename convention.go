@@ -87,11 +87,63 @@ const (
 	CSRinstret = 0xc02 // Instructions-retired counter for RDINSTRET instruction.
 )
 
+const (
+	// Invalid Operation
+	// This exception is raised if the given operands are invalid for the operation to be performed. Examples are
+	// (see IEEE 754, section 7):
+	// Addition or subtraction: &infin; - &infin;. (But &infin; + &infin; = &infin;).
+	// Multiplication: 0 &middot; &infin;.
+	// Division: 0/0 or &infin;/&infin;.
+	// Remainder: x REM y, where y is zero or x is infinite.
+	// Square root if the operand is less than zero. More generally, any mathematical function evaluated outside its
+	// domain produces this exception.
+	// Conversion of a floating-point number to an integer or decimal string, when the number cannot be represented in
+	// the target format (due to overflow, infinity, or NaN).
+	// Conversion of an unrecognizable input string.
+	// Comparison via predicates involving < or >, when one or other of the operands is NaN. You can prevent this
+	// exception by using the unordered comparison functions instead; see FP Comparison Functions.
+	// If the exception does not trap, the result of the operation is NaN.
+	FFlagsNV uint64 = 0x10
+	// Division by Zero
+	// This exception is raised when a finite nonzero number is divided by zero. If no trap occurs the result is
+	// either +&infin; or -&infin;, depending on the signs of the operands.
+	FFlagsDZ uint64 = 0x08
+	// Overflow
+	// This exception is raised whenever the result cannot be represented as a finite value in the precision format of
+	// the destination. If no trap occurs the result depends on the sign of the intermediate result and the current
+	// rounding mode (IEEE 754, section 7.3):
+	// Round to nearest carries all overflows to &infin; with the sign of the intermediate result.
+	// Round toward 0 carries all overflows to the largest representable finite number with the sign of the
+	// intermediate result.
+	// Round toward -&infin; carries positive overflows to the largest representable finite number and negative
+	// overflows to -&infin;.
+	// Round toward &infin; carries negative overflows to the most negative representable finite number and positive
+	// overflows to &infin;.
+	// Whenever the overflow exception is raised, the inexact exception is also raised.
+	FFlagsOF uint64 = 0x04
+	// Underflow
+	// The underflow exception is raised when an intermediate result is too small to be calculated accurately, or if
+	// the operation’s result rounded to the destination precision is too small to be normalized.
+	// When no trap is installed for the underflow exception, underflow is signaled (via the underflow flag) only when
+	// both tininess and loss of accuracy have been detected. If no trap handler is installed the operation continues
+	// with an imprecise small value, or zero if the destination precision cannot hold the small exact result.
+	FFlagsUF uint64 = 0x02
+	// Inexact
+	// This exception is signalled if a rounded result is not exact (such as when calculating the square root of two)
+	// or a result overflows without an overflow trap.
+	FFlagsNX uint64 = 0x01
+)
+
 var (
 	ErrAbnormalEcall       = errors.New("Abnormal ecall")
 	ErrAbnormalInstruction = errors.New("Abnormal instruction")
 	ErrOutOfMemory         = errors.New("Out of memory")
 	ErrReservedInstruction = errors.New("Reserved instruction")
+)
+
+var (
+	NaN32 uint32 = 0x7fc00000
+	NaN64 uint64 = 0x7ff8000000000000
 )
 
 var (

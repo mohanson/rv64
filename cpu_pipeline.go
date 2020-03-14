@@ -2,6 +2,7 @@ package rv64
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"math/big"
 )
@@ -1016,14 +1017,42 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b11110: // FMV.W.X
 				}
 			case 0b01:
+				a := c.GetRegisterFloatAsFLoat64(rs1)
+				b := c.GetRegisterFloatAsFLoat64(rs2)
+				log.Println(a, b)
 				switch InstructionPart(s, 27, 31) {
-				case 0b00000: // FADD.D
+				case 0b00000: // ------------------------------------------------------------------ FADD.D
 					DebuglnRType("FADD.D", rd, rs1, rs2)
-					c.SetRegisterFloatAsFloat64(rd, c.GetRegisterFloatAsFLoat64(rs1)+c.GetRegisterFloatAsFLoat64(rs2))
+					c.ClrFloatFlag()
+					c.SetRegisterFloatAsFloat64(rd, a+b)
+					if big.NewFloat(0).Add(big.NewFloat(a), big.NewFloat(b)).Acc() != big.Exact {
+						c.SetFloatFlag(FFlagsNX, 1)
+					}
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00001: // FSUB.D
-				case 0b00010: // FMUL.D
+					DebuglnRType("FSUB.D", rd, rs1, rs2)
+					c.ClrFloatFlag()
+					if (math.Signbit(a) == math.Signbit(b)) && math.IsInf(a, 0) && math.IsInf(b, 0) {
+						c.SetRegisterFloat(rd, NaN64)
+						c.SetFloatFlag(FFlagsNV, 1)
+					} else {
+						c.SetRegisterFloatAsFloat64(rd, a-b)
+						if big.NewFloat(0).Sub(big.NewFloat(a), big.NewFloat(b)).Acc() != big.Exact {
+							c.SetFloatFlag(FFlagsNX, 1)
+						}
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
+				case 0b00010: // ------------------------------------------------------------------ FMUL.D
+					DebuglnRType("FMUL.D", rd, rs1, rs2)
+					c.ClrFloatFlag()
+					c.SetRegisterFloatAsFloat64(rd, a*b)
+					if big.NewFloat(0).Add(big.NewFloat(a), big.NewFloat(b)).Acc() != big.Exact {
+						c.SetFloatFlag(FFlagsNX, 1)
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b00011: // FDIV.D
 				case 0b01011: // FSQRT.D
 				case 0b00100:
