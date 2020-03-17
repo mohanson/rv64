@@ -2,7 +2,6 @@ package rv64
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"math/big"
 )
@@ -930,41 +929,41 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b0100111:
 			rs1, rs2, imm := SType(s)
 			switch InstructionPart(s, 12, 14) {
-			case 0b010: // FSW
+			case 0b010: // ------------------------------------------------------------------------ FSW
 				DebuglnSType("FSW", rs1, rs2, imm)
-			case 0b011: // FSD
+			case 0b011: // ------------------------------------------------------------------------ FSD
 				DebuglnSType("FSD", rs1, rs2, imm)
 			}
 		case 0b1000011:
 			rs1, rs2, imm := SType(s)
 			switch InstructionPart(s, 25, 26) {
-			case 0b00: // FMADD.S
+			case 0b00: // ------------------------------------------------------------------------- FMADD.S
 				DebuglnSType("FMADD.S", rs1, rs2, imm)
-			case 0b01: // FMADD.D
+			case 0b01: // ------------------------------------------------------------------------- FMADD.D
 				DebuglnSType("FMADD.D", rs1, rs2, imm)
 			}
 		case 0b1000111:
 			rs1, rs2, imm := SType(s)
 			switch InstructionPart(s, 25, 26) {
-			case 0b00: // FMSUB.S
+			case 0b00: // ------------------------------------------------------------------------- FMSUB.S
 				DebuglnSType("FMSUB.S", rs1, rs2, imm)
-			case 0b01: // FMSUB.D
+			case 0b01: // ------------------------------------------------------------------------- FMSUB.D
 				DebuglnSType("FMSUB.D", rs1, rs2, imm)
 			}
 		case 0b1001011:
 			rs1, rs2, imm := SType(s)
 			switch InstructionPart(s, 25, 26) {
-			case 0b00: // FNMSUB.S
+			case 0b00: // ------------------------------------------------------------------------- FNMSUB.S
 				DebuglnSType("FNMSUB.S", rs1, rs2, imm)
-			case 0b01: // FNMSUB.D
+			case 0b01: // ------------------------------------------------------------------------- FNMSUB.D
 				DebuglnSType("FNMSUB.D", rs1, rs2, imm)
 			}
 		case 0b1001111:
 			rs1, rs2, imm := SType(s)
 			switch InstructionPart(s, 25, 26) {
-			case 0b00: // FNMADD.S
+			case 0b00: // ------------------------------------------------------------------------- FNMADD.S
 				DebuglnSType("FNMADD.S", rs1, rs2, imm)
-			case 0b01: // FNMADD.D
+			case 0b01: // ------------------------------------------------------------------------- FNMADD.D
 				DebuglnSType("FNMADD.D", rs1, rs2, imm)
 			}
 		case 0b1010011:
@@ -972,54 +971,53 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			switch InstructionPart(s, 25, 26) {
 			case 0b00:
 				switch InstructionPart(s, 27, 31) {
-				case 0b00000: // FADD.S
-				case 0b00001: // FSUB.S
-				case 0b00010: // FMUL.S
-				case 0b00011: // FDIV.S
-				case 0b01011: // FSQRT.S
+				case 0b00000: // ------------------------------------------------------------------ FADD.S
+				case 0b00001: // ------------------------------------------------------------------ FSUB.S
+				case 0b00010: // ------------------------------------------------------------------ FMUL.S
+				case 0b00011: // ------------------------------------------------------------------ FDIV.S
+				case 0b01011: // ------------------------------------------------------------------ FSQRT.S
 				case 0b00100:
 					switch InstructionPart(s, 12, 14) {
-					case 0b000: // FSGNJ.S
-					case 0b001: // FSGNJN.S
-					case 0b010: // FSGNJX.S
+					case 0b000: // ---------------------------------------------------------------- FSGNJ.S
+					case 0b001: // ---------------------------------------------------------------- FSGNJN.S
+					case 0b010: // ---------------------------------------------------------------- FSGNJX.S
 					}
 				case 0b00101:
 					switch InstructionPart(s, 12, 14) {
-					case 0b000: // FMIN.S
-					case 0b001: // FMAX.S
+					case 0b000: // ---------------------------------------------------------------- FMIN.S
+					case 0b001: // ---------------------------------------------------------------- FMAX.S
 					}
 				case 0b11000:
 					switch InstructionPart(s, 20, 24) {
-					case 0b00000: // FCVT.W.S
-					case 0b00001: // FCVT.WU.S
-					case 0b00010: // FCVT.L.S
-					case 0b00011: // FCVT.LU.S
+					case 0b00000: // -------------------------------------------------------------- FCVT.W.S
+					case 0b00001: // -------------------------------------------------------------- FCVT.WU.S
+					case 0b00010: // -------------------------------------------------------------- FCVT.L.S
+					case 0b00011: // -------------------------------------------------------------- FCVT.LU.S
 					}
-				case 0b01000: // FCVT.S.D
+				case 0b01000: // ------------------------------------------------------------------ FCVT.S.D
 				case 0b11100:
 					switch InstructionPart(s, 12, 14) {
-					case 0b000: //  FMV.X.W
-					case 0b001: //  FCLASS.S
+					case 0b000: // ---------------------------------------------------------------- FMV.X.W
+					case 0b001: // ---------------------------------------------------------------- FCLASS.S
 					}
 				case 0b10100:
 					switch InstructionPart(s, 12, 14) {
-					case 0b010: //  FEQ.S
-					case 0b001: //  FLT.S
-					case 0b000: // FLE.S
+					case 0b010: // ---------------------------------------------------------------- FEQ.S
+					case 0b001: // ---------------------------------------------------------------- FLT.S
+					case 0b000: // ---------------------------------------------------------------- FLE.S
 					}
 				case 0b11010:
 					switch InstructionPart(s, 20, 24) {
-					case 0b00000: // FCVT.S.W
-					case 0b00001: // FCVT.S.WU
-					case 0b00010: // FCVT.S.L
-					case 0b00011: //FCVT.S.LU
+					case 0b00000: // -------------------------------------------------------------- FCVT.S.W
+					case 0b00001: // -------------------------------------------------------------- FCVT.S.WU
+					case 0b00010: // -------------------------------------------------------------- FCVT.S.L
+					case 0b00011: // -------------------------------------------------------------- FCVT.S.LU
 					}
-				case 0b11110: // FMV.W.X
+				case 0b11110: // ------------------------------------------------------------------ FMV.W.X
 				}
 			case 0b01:
 				a := c.GetRegisterFloatAsFLoat64(rs1)
 				b := c.GetRegisterFloatAsFLoat64(rs2)
-				log.Println(a, b)
 				switch InstructionPart(s, 27, 31) {
 				case 0b00000: // ------------------------------------------------------------------ FADD.D
 					DebuglnRType("FADD.D", rd, rs1, rs2)
@@ -1030,7 +1028,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					}
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
-				case 0b00001: // FSUB.D
+				case 0b00001: // ------------------------------------------------------------------ FSUB.D
 					DebuglnRType("FSUB.D", rd, rs1, rs2)
 					c.ClrFloatFlag()
 					if (math.Signbit(a) == math.Signbit(b)) && math.IsInf(a, 0) && math.IsInf(b, 0) {
@@ -1053,50 +1051,51 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					}
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
-				case 0b00011: // FDIV.D
-				case 0b01011: // FSQRT.D
+				case 0b00011: // ------------------------------------------------------------------ FDIV.D
+				case 0b01011: // ------------------------------------------------------------------ FSQRT.D
 				case 0b00100:
 					switch InstructionPart(s, 12, 14) {
-					case 0b000: // FSGNJ.D
-					case 0b001: // FSGNJN.D
-					case 0b010: // FSGNJX.D
+					case 0b000: // ---------------------------------------------------------------- FSGNJ.D
+					case 0b001: // ---------------------------------------------------------------- FSGNJN.D
+					case 0b010: // ---------------------------------------------------------------- FSGNJX.D
 					}
 				case 0b00101:
 					switch InstructionPart(s, 12, 14) {
-					case 0b000: // FMIN.D
-					case 0b001: // FMAX.D
+					case 0b000: // ---------------------------------------------------------------- FMIN.D
+					case 0b001: // ---------------------------------------------------------------- FMAX.D
 					}
 				case 0b11000:
 					switch InstructionPart(s, 20, 24) {
-					case 0b00000: // FCVT.W.D
-					case 0b00001: // FCVT.WU.D
-					case 0b00010: //FCVT.L.D
-					case 0b00011: //FCVT.LU.D
+					case 0b00000: // -------------------------------------------------------------- FCVT.W.D
+					case 0b00001: // -------------------------------------------------------------- FCVT.WU.D
+					case 0b00010: // -------------------------------------------------------------- FCVT.L.D
+					case 0b00011: // -------------------------------------------------------------- FCVT.LU.D
 					}
-				case 0b01000: // FCVT.D.S
+				case 0b01000: // ------------------------------------------------------------------ FCVT.D.S
 				case 0b10100:
 					switch InstructionPart(s, 12, 14) {
-					case 0b010: //  FEQ.D
-					case 0b001: //  FLT.D
-					case 0b000: // FLE.D
+					case 0b010: // ---------------------------------------------------------------- FEQ.D
+					case 0b001: // ---------------------------------------------------------------- FLT.D
+					case 0b000: // ---------------------------------------------------------------- FLE.D
 					}
 				case 0b11100:
 					switch InstructionPart(s, 12, 14) {
-					case 0b000: // FMV.X.D
+					case 0b000: // ---------------------------------------------------------------- FMV.X.D
 						DebuglnRType("FMV.X.D", rd, rs1, rs2)
 						c.SetRegister(rd, c.GetRegisterFloat(rs1))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
-					case 0b001: // FCLASS.D
+					case 0b001: // ---------------------------------------------------------------- FCLASS.D
+						DebuglnRType("FCLASS.D", rd, rs1, rs2)
 					}
 				case 0b11010:
 					switch InstructionPart(s, 20, 24) {
-					case 0b00000: // FCVT.D.W
-					case 0b00001: // FCVT.D.WU
-					case 0b00010: // FCVT.D.L
-					case 0b00011: // FCVT.D.LU
+					case 0b00000: // -------------------------------------------------------------- FCVT.D.W
+					case 0b00001: // -------------------------------------------------------------- FCVT.D.WU
+					case 0b00010: // -------------------------------------------------------------- FCVT.D.L
+					case 0b00011: // -------------------------------------------------------------- FCVT.D.LU
 					}
-				case 0b11110: // FMV.D.X
+				case 0b11110: // ------------------------------------------------------------------ FMV.D.X
 				}
 			}
 		}
