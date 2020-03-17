@@ -1073,11 +1073,37 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					}
 				case 0b01000: // ------------------------------------------------------------------ FCVT.D.S
 				case 0b10100:
+					var cond bool
 					switch InstructionPart(s, 12, 14) {
 					case 0b010: // ---------------------------------------------------------------- FEQ.D
+						DebuglnRType("FEQ.D", rd, rs1, rs2)
+						if IsSNaN64(a) || IsSNaN64(b) {
+							c.SetFloatFlag(FFlagsNV, 1)
+						} else {
+							cond = a == b
+						}
 					case 0b001: // ---------------------------------------------------------------- FLT.D
+						DebuglnRType("FLT.D", rd, rs1, rs2)
+						if math.IsNaN(a) || math.IsNaN(b) {
+							c.SetFloatFlag(FFlagsNV, 1)
+						} else {
+							cond = a < b
+						}
 					case 0b000: // ---------------------------------------------------------------- FLE.D
+						DebuglnRType("FLE.D", rd, rs1, rs2)
+						if math.IsNaN(a) || math.IsNaN(b) {
+							c.SetFloatFlag(FFlagsNV, 1)
+						} else {
+							cond = a <= b
+						}
 					}
+					if cond {
+						c.SetRegister(rd, 1)
+					} else {
+						c.SetRegister(rd, 0)
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b11100:
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FMV.X.D
@@ -1101,4 +1127,12 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		}
 	}
 	return 0, nil
+}
+
+func IsQNaN64(f float64) bool {
+	return math.IsNaN(f) && math.Float64bits(f)&0x0008000000000000 != 0x00
+}
+
+func IsSNaN64(f float64) bool {
+	return math.IsNaN(f) && math.Float64bits(f)&0x0008000000000000 == 0x00
 }
