@@ -1034,11 +1034,12 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					if (math.Signbit(a) == math.Signbit(b)) && math.IsInf(a, 0) && math.IsInf(b, 0) {
 						c.SetRegisterFloat(rd, NaN64)
 						c.SetFloatFlag(FFlagsNV, 1)
-					} else {
-						c.SetRegisterFloatAsFloat64(rd, a-b)
-						if big.NewFloat(0).Sub(big.NewFloat(a), big.NewFloat(b)).Acc() != big.Exact {
-							c.SetFloatFlag(FFlagsNX, 1)
-						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
+					}
+					c.SetRegisterFloatAsFloat64(rd, a-b)
+					if big.NewFloat(0).Sub(big.NewFloat(a), big.NewFloat(b)).Acc() != big.Exact {
+						c.SetFloatFlag(FFlagsNX, 1)
 					}
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
@@ -1052,6 +1053,20 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00011: // ------------------------------------------------------------------ FDIV.D
+					DebuglnRType("FDIV.D", rd, rs1, rs2)
+					c.ClrFloatFlag()
+					if b == 0 {
+						c.SetRegisterFloat(rd, NaN64)
+						c.SetFloatFlag(FFlagsDZ, 1)
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
+					}
+					c.SetRegisterFloatAsFloat64(rd, a/b)
+					if big.NewFloat(0).Quo(big.NewFloat(a), big.NewFloat(b)).Acc() != big.Exact {
+						c.SetFloatFlag(FFlagsNX, 1)
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b01011: // ------------------------------------------------------------------ FSQRT.D
 				case 0b00100:
 					switch InstructionPart(s, 12, 14) {
