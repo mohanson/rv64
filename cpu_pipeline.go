@@ -1212,9 +1212,25 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b11010:
 					switch InstructionPart(s, 20, 24) {
 					case 0b00000: // -------------------------------------------------------------- FCVT.D.W
+						DebuglnRType("FCVT.D.W", rd, rs1, rs2)
+						c.SetRegisterFloatAsFloat64(rd, float64(int32(c.GetRegister(rs1))))
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b00001: // -------------------------------------------------------------- FCVT.D.WU
+						DebuglnRType("FCVT.D.WU", rd, rs1, rs2)
+						c.SetRegisterFloatAsFloat64(rd, float64(uint32(c.GetRegister(rs1))))
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b00010: // -------------------------------------------------------------- FCVT.D.L
+						DebuglnRType("FCVT.D.L", rd, rs1, rs2)
+						c.SetRegisterFloatAsFloat64(rd, float64(int64(c.GetRegister(rs1))))
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b00011: // -------------------------------------------------------------- FCVT.D.LU
+						DebuglnRType("FCVT.D.LU", rd, rs1, rs2)
+						c.SetRegisterFloatAsFloat64(rd, float64(uint64(c.GetRegister(rs1))))
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					}
 				case 0b11110: // ------------------------------------------------------------------ FMV.D.X
 				}
