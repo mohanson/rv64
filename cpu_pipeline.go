@@ -1068,6 +1068,21 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b01011: // ------------------------------------------------------------------ FSQRT.D
+					DebuglnRType("FSQRT.D", rd, rs1, rs2)
+					c.ClrFloatFlag()
+					if a < 0 {
+						c.SetRegisterFloat(rd, NaN64)
+						c.SetFloatFlag(FFlagsNV, 1)
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
+					}
+					c.SetRegisterFloatAsFloat64(rd, math.Sqrt(a))
+					d := big.NewFloat(0).Sqrt(big.NewFloat(a))
+					if big.NewFloat(0).Mul(d, d).Acc() != big.Exact {
+						c.SetFloatFlag(FFlagsNX, 1)
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b00100:
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FSGNJ.D
@@ -1124,6 +1139,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					case 0b000: // ---------------------------------------------------------------- FMV.X.D
 						DebuglnRType("FMV.X.D", rd, rs1, rs2)
 						c.SetRegister(rd, c.GetRegisterFloat(rs1))
+						c.SetRegisterFloat(rs1, 0x00)
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FCLASS.D
