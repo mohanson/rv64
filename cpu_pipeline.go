@@ -2,7 +2,6 @@ package rv64
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"math/big"
 )
@@ -84,7 +83,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				cond = c.GetRegister(rs1) == c.GetRegister(rs2)
 			case 0b001: // ------------------------------------------------------------------------ BNE
 				DebuglnBType("BNE", rs1, rs2, imm)
-				log.Println(c.GetRegister(rs1), c.GetRegister(rs2))
 				cond = c.GetRegister(rs1) != c.GetRegister(rs2)
 			case 0b100: // ------------------------------------------------------------------------ BLT
 				DebuglnBType("BLT", rs1, rs2, imm)

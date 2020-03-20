@@ -16,7 +16,7 @@ $ make
 ```sh
 $ mkdir bin
 $ go build -o bin github.com/mohanson/rv64/cmd/make
-$ ./bin/make make
+$ ./bin/make
 ```
 
 The binary file `rv64` will be located at the `./bin` directory. Could test it with the following command:
