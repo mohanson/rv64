@@ -2,6 +2,7 @@ package rv64
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"math/big"
 )
@@ -83,6 +84,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				cond = c.GetRegister(rs1) == c.GetRegister(rs2)
 			case 0b001: // ------------------------------------------------------------------------ BNE
 				DebuglnBType("BNE", rs1, rs2, imm)
+				log.Println(c.GetRegister(rs1), c.GetRegister(rs2))
 				cond = c.GetRegister(rs1) != c.GetRegister(rs2)
 			case 0b100: // ------------------------------------------------------------------------ BLT
 				DebuglnBType("BLT", rs1, rs2, imm)
@@ -1214,9 +1216,109 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b11000:
 					switch InstructionPart(s, 20, 24) {
 					case 0b00000: // -------------------------------------------------------------- FCVT.W.D
+						DebuglnRType("FCVT.W.D", rd, rs1, rs2)
+						d := c.GetRegisterFloatAsFLoat64(rs1)
+						if math.IsNaN(d) {
+							c.SetRegister(rd, 0x7fffffff)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d > float64(math.MaxInt32) {
+							c.SetRegister(rd, SignExtend(0x7fffffff, 31))
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d < float64(math.MinInt32) {
+							c.SetRegister(rd, SignExtend(0x80000000, 31))
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						c.SetRegister(rd, SignExtend(uint64(int32(d)), 31))
+						if math.Ceil(d) != d {
+							c.SetFloatFlag(FFlagsNX, 1)
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b00001: // -------------------------------------------------------------- FCVT.WU.D
+						DebuglnRType("FCVT.WU.D", rd, rs1, rs2)
+						d := c.GetRegisterFloatAsFLoat64(rs1)
+						if math.IsNaN(d) {
+							c.SetRegister(rd, 0xffffffffffffffff)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d > float64(math.MaxUint32) {
+							c.SetRegister(rd, SignExtend(0xffffffff, 31))
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d <= float64(-1) {
+							c.SetRegister(rd, SignExtend(0x00000000, 31))
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						c.SetRegister(rd, SignExtend(uint64(uint32(d)), 31))
+						if math.Ceil(d) != d {
+							c.SetFloatFlag(FFlagsNX, 1)
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b00010: // -------------------------------------------------------------- FCVT.L.D
+						DebuglnRType("FCVT.L.D", rd, rs1, rs2)
+						d := c.GetRegisterFloatAsFLoat64(rs1)
+						if math.IsNaN(d) {
+							c.SetRegister(rd, 0x7fffffffffffffff)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d > float64(math.MaxInt64) {
+							c.SetRegister(rd, 0x7fffffffffffffff)
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d < float64(math.MinInt64) {
+							c.SetRegister(rd, 0x8000000000000000)
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						c.SetRegister(rd, uint64(int64(d)))
+						if math.Ceil(d) != d {
+							c.SetFloatFlag(FFlagsNX, 1)
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b00011: // -------------------------------------------------------------- FCVT.LU.D
+						DebuglnRType("FCVT.LU.D", rd, rs1, rs2)
+						d := c.GetRegisterFloatAsFLoat64(rs1)
+						if math.IsNaN(d) {
+							c.SetRegister(rd, 0xffffffffffffffff)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d > float64(math.MaxUint64) {
+							c.SetRegister(rd, 0xffffffffffffffff)
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d <= float64(-1) {
+							c.SetRegister(rd, 0x0000000000000000)
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						c.SetRegister(rd, uint64(d))
+						if math.Ceil(d) != d {
+							c.SetFloatFlag(FFlagsNX, 1)
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					}
 				case 0b01000: // ------------------------------------------------------------------ FCVT.D.S
 					DebuglnRType("FCVT.D.S", rd, rs1, rs2)
