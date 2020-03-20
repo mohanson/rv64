@@ -77,6 +77,10 @@ func main() {
 		log.Panicln("$RISCV undefined")
 	}
 	flag.Parse()
+	if flag.NArg() == 0 {
+		makeBinary()
+		return
+	}
 	for _, e := range flag.Args() {
 		switch e {
 		case "example", "examples":

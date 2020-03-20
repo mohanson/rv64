@@ -1031,7 +1031,12 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					}
 				case 0b01000: // ------------------------------------------------------------------ FCVT.S.D
 					DebuglnRType("FCVT.S.D", rd, rs1, rs2)
-					c.SetRegisterFloatAsFloat64(rd, float64(c.GetRegisterFloatAsFLoat32(rs1)))
+					d := c.GetRegisterFloatAsFLoat64(rs1)
+					if math.IsNaN(d) {
+						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
+					} else {
+						c.SetRegisterFloatAsFloat32(rd, float32(d))
+					}
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b11100:
@@ -1214,6 +1219,15 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					case 0b00011: // -------------------------------------------------------------- FCVT.LU.D
 					}
 				case 0b01000: // ------------------------------------------------------------------ FCVT.D.S
+					DebuglnRType("FCVT.D.S", rd, rs1, rs2)
+					d := c.GetRegisterFloatAsFLoat32(rs1)
+					if math.IsNaN(float64(d)) {
+						c.SetRegisterFloat(rd, NaN64)
+					} else {
+						c.SetRegisterFloatAsFloat64(rd, float64(d))
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b10100:
 					var cond bool
 					switch InstructionPart(s, 12, 14) {
@@ -1281,6 +1295,11 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					}
 				case 0b11110: // ------------------------------------------------------------------ FMV.D.X
+					DebuglnRType("FMV.D.X", rd, rs1, rs2)
+					c.SetRegisterFloat(rd, c.GetRegister(rs1))
+					c.SetRegister(rs1, 0x00)
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				}
 			}
 		}
