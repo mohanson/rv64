@@ -33,6 +33,12 @@ func (c *CPU) SetRegisterFloat(i uint64, f uint64)           { c.reg1[i] = f }
 func (c *CPU) GetRegisterFloat(i uint64) uint64              { return c.reg1[i] }
 func (c *CPU) SetRegisterFloatAsFloat64(i uint64, f float64) { c.reg1[i] = math.Float64bits(f) }
 func (c *CPU) GetRegisterFloatAsFLoat64(i uint64) float64    { return math.Float64frombits(c.reg1[i]) }
+func (c *CPU) SetRegisterFloatAsFloat32(i uint64, f float32) {
+	c.reg1[i] = math.MaxUint64 & uint64(math.Float32bits(f))
+}
+func (c *CPU) GetRegisterFloatAsFLoat32(i uint64) float32 {
+	return math.Float32frombits(uint32(c.reg1[i]))
+}
 
 func Cond(b bool, y uint64, f uint64) uint64 {
 	if b {

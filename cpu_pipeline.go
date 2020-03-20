@@ -970,10 +970,45 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			rd, rs1, rs2 := RType(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00:
+				a := c.GetRegisterFloatAsFLoat32(rs1)
+				b := c.GetRegisterFloatAsFLoat32(rs2)
 				switch InstructionPart(s, 27, 31) {
 				case 0b00000: // ------------------------------------------------------------------ FADD.S
+					DebuglnRType("FADD.S", rd, rs1, rs2)
+					c.ClrFloatFlag()
+					d := a + b
+					c.SetRegisterFloatAsFloat32(rd, d)
+					if d-a != b || d-b != a {
+						c.SetFloatFlag(FFlagsNX, 1)
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b00001: // ------------------------------------------------------------------ FSUB.S
+					DebuglnRType("FSUB.S", rd, rs1, rs2)
+					c.ClrFloatFlag()
+					if (math.Signbit(float64(a)) == math.Signbit(float64(b))) && math.IsInf(float64(a), 0) && math.IsInf(float64(b), 0) {
+						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
+						c.SetFloatFlag(FFlagsNV, 1)
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
+					}
+					d := a - b
+					c.SetRegisterFloatAsFloat32(rd, d)
+					if a-d != b || b+d != a {
+						c.SetFloatFlag(FFlagsNX, 1)
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b00010: // ------------------------------------------------------------------ FMUL.S
+					DebuglnRType("FMUL.S", rd, rs1, rs2)
+					c.ClrFloatFlag()
+					d := a * b
+					c.SetRegisterFloatAsFloat32(rd, d)
+					if d/a != b || d/b != a || float64(a)*float64(b) != float64(d) {
+						c.SetFloatFlag(FFlagsNX, 1)
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b00011: // ------------------------------------------------------------------ FDIV.S
 				case 0b01011: // ------------------------------------------------------------------ FSQRT.S
 				case 0b00100:
@@ -995,9 +1030,22 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					case 0b00011: // -------------------------------------------------------------- FCVT.LU.S
 					}
 				case 0b01000: // ------------------------------------------------------------------ FCVT.S.D
+					DebuglnRType("FCVT.S.D", rd, rs1, rs2)
+					c.SetRegisterFloatAsFloat64(rd, float64(c.GetRegisterFloatAsFLoat32(rs1)))
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b11100:
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FMV.X.W
+						DebuglnRType("FMV.X.W", rd, rs1, rs2)
+						if math.Signbit(float64(a)) {
+							c.SetRegister(rd, 0xffffffff00000000|uint64(math.Float32bits(a)))
+						} else {
+							c.SetRegister(rd, uint64(math.Float32bits(a)))
+						}
+						c.SetRegisterFloat(rs1, 0x00)
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FCLASS.S
 					}
 				case 0b10100:
