@@ -1112,7 +1112,37 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00011: // ------------------------------------------------------------------ FDIV.S
+					DebuglnRType("FDIV.S", rd, rs1, rs2)
+					c.ClrFloatFlag()
+					if b == 0 {
+						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
+						c.SetFloatFlag(FFlagsDZ, 1)
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
+					}
+					d := a / b
+					c.SetRegisterFloatAsFloat32(rd, d)
+					if a/d != b || b*d != a || float64(b)*float64(d) != float64(a) {
+						c.SetFloatFlag(FFlagsNX, 1)
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b01011: // ------------------------------------------------------------------ FSQRT.S
+					DebuglnRType("FSQRT.D", rd, rs1, rs2)
+					c.ClrFloatFlag()
+					if a < 0 {
+						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
+						c.SetFloatFlag(FFlagsNV, 1)
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
+					}
+					d := float32(math.Sqrt(float64(a)))
+					c.SetRegisterFloatAsFloat32(rd, d)
+					if a/d != d || d*d != a || float64(d)*float64(d) != float64(a) {
+						c.SetFloatFlag(FFlagsNX, 1)
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b00100:
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FSGNJ.S
