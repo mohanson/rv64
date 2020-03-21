@@ -27,7 +27,7 @@ call("./bin/rv64 /tmp/riscv-tests/isa/rv64uf-u-fmadd")
 # call("./bin/rv64 /tmp/riscv-tests/isa/rv64uf-u-recoding")
 
 call("./bin/rv64 /tmp/riscv-tests/isa/rv64ud-u-fadd")
-# call("./bin/rv64 /tmp/riscv-tests/isa/rv64ud-u-fclass")
+call("./bin/rv64 /tmp/riscv-tests/isa/rv64ud-u-fclass")
 call("./bin/rv64 /tmp/riscv-tests/isa/rv64ud-u-fcmp")
 call("./bin/rv64 /tmp/riscv-tests/isa/rv64ud-u-fcvt")
 call("./bin/rv64 /tmp/riscv-tests/isa/rv64ud-u-fcvt_w")

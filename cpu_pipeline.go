@@ -1534,6 +1534,10 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FCLASS.D
 						DebuglnRType("FCLASS.D", rd, rs1, rs2)
+						a := c.GetRegisterFloatAsFLoat64(rs1)
+						c.SetRegister(rd, FClassD(a))
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					}
 				case 0b11010:
 					switch InstructionPart(s, 20, 24) {
@@ -1578,10 +1582,50 @@ func IsSNaN32(f float32) bool {
 	return math.IsNaN(float64(f)) && math.Float32bits(f)&0x00400000 == 0x00
 }
 
+func IsSubmoduleFloat32(f float32) bool {
+	b := math.Float32bits(f)
+	return b&0x7f800000 == 0 && b&0x000fffff != 0
+}
+
 func IsQNaN64(f float64) bool {
 	return math.IsNaN(f) && math.Float64bits(f)&0x0008000000000000 != 0x00
 }
 
 func IsSNaN64(f float64) bool {
 	return math.IsNaN(f) && math.Float64bits(f)&0x0008000000000000 == 0x00
+}
+
+func IsSubmoduleFloat64(f float64) bool {
+	b := math.Float64bits(f)
+	return b&0x7ff0000000000000 == 0 && b&0x000fffffffffffff != 0
+}
+
+func FClassD(f float64) uint64 {
+	s := math.Signbit(f)
+	if IsSNaN64(f) {
+		return 0b01_00000000
+	}
+	if IsQNaN64(f) {
+		return 0b10_00000000
+	}
+	if s {
+		if math.IsInf(f, 0) {
+			return 0b00_00000001
+		} else if f == 0 {
+			return 0b00_00001000
+		} else if IsSubmoduleFloat64(f) {
+			return 0b00_00000100
+		} else {
+			return 0b00_00000010
+		}
+	}
+	if math.IsInf(f, 0) {
+		return 0b00_10000000
+	} else if f == 0 {
+		return 0b00_00010000
+	} else if IsSubmoduleFloat64(f) {
+		return 0b00_00100000
+	} else {
+		return 0b00_01000000
+	}
 }
