@@ -949,36 +949,80 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return 1, nil
 			}
 		case 0b1000011:
-			rs1, rs2, imm := SType(s)
+			rd, rs1, rs2, rs3 := R4Type(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00: // ------------------------------------------------------------------------- FMADD.S
-				DebuglnSType("FMADD.S", rs1, rs2, imm)
+				DebuglnR4Type("FMADD.S", rd, rs1, rs2, rs3)
 			case 0b01: // ------------------------------------------------------------------------- FMADD.D
-				DebuglnSType("FMADD.D", rs1, rs2, imm)
+				DebuglnR4Type("FMADD.D", rd, rs1, rs2, rs3)
+				c.ClrFloatFlag()
+				a := c.GetRegisterFloatAsFLoat64(rs1)
+				b := c.GetRegisterFloatAsFLoat64(rs2)
+				d := c.GetRegisterFloatAsFLoat64(rs3)
+				r := a*b + d
+				c.SetRegisterFloatAsFloat64(rd, r)
+				if r-d != a*b || r-a*b != d || (r-d)/a != b || (r-d)/b != a {
+					c.SetFloatFlag(FFlagsNX, 1)
+				}
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
 			}
 		case 0b1000111:
-			rs1, rs2, imm := SType(s)
+			rd, rs1, rs2, rs3 := R4Type(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00: // ------------------------------------------------------------------------- FMSUB.S
-				DebuglnSType("FMSUB.S", rs1, rs2, imm)
+				DebuglnR4Type("FMSUB.S", rd, rs1, rs2, rs3)
 			case 0b01: // ------------------------------------------------------------------------- FMSUB.D
-				DebuglnSType("FMSUB.D", rs1, rs2, imm)
+				DebuglnR4Type("FMSUB.D", rd, rs1, rs2, rs3)
+				c.ClrFloatFlag()
+				a := c.GetRegisterFloatAsFLoat64(rs1)
+				b := c.GetRegisterFloatAsFLoat64(rs2)
+				d := c.GetRegisterFloatAsFLoat64(rs3)
+				r := a*b - d
+				c.SetRegisterFloatAsFloat64(rd, r)
+				if r+d != a*b || a*b-r != d || (r+d)/a != b || (r+d)/b != a {
+					c.SetFloatFlag(FFlagsNX, 1)
+				}
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
 			}
 		case 0b1001011:
-			rs1, rs2, imm := SType(s)
+			rd, rs1, rs2, rs3 := R4Type(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00: // ------------------------------------------------------------------------- FNMSUB.S
-				DebuglnSType("FNMSUB.S", rs1, rs2, imm)
+				DebuglnR4Type("FNMSUB.S", rd, rs1, rs2, rs3)
 			case 0b01: // ------------------------------------------------------------------------- FNMSUB.D
-				DebuglnSType("FNMSUB.D", rs1, rs2, imm)
+				DebuglnR4Type("FNMSUB.D", rd, rs1, rs2, rs3)
+				c.ClrFloatFlag()
+				a := c.GetRegisterFloatAsFLoat64(rs1)
+				b := c.GetRegisterFloatAsFLoat64(rs2)
+				d := c.GetRegisterFloatAsFLoat64(rs3)
+				r := a*b - d
+				c.SetRegisterFloatAsFloat64(rd, -r)
+				if r+d != a*b || a*b-r != d || (r+d)/a != b || (r+d)/b != a {
+					c.SetFloatFlag(FFlagsNX, 1)
+				}
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
 			}
 		case 0b1001111:
-			rs1, rs2, imm := SType(s)
+			rd, rs1, rs2, rs3 := R4Type(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00: // ------------------------------------------------------------------------- FNMADD.S
-				DebuglnSType("FNMADD.S", rs1, rs2, imm)
+				DebuglnR4Type("FNMADD.S", rd, rs1, rs2, rs3)
 			case 0b01: // ------------------------------------------------------------------------- FNMADD.D
-				DebuglnSType("FNMADD.D", rs1, rs2, imm)
+				DebuglnR4Type("FNMADD.D", rd, rs1, rs2, rs3)
+				c.ClrFloatFlag()
+				a := c.GetRegisterFloatAsFLoat64(rs1)
+				b := c.GetRegisterFloatAsFLoat64(rs2)
+				d := c.GetRegisterFloatAsFLoat64(rs3)
+				r := a*b + d
+				c.SetRegisterFloatAsFloat64(rd, -r)
+				if r-d != a*b || r-a*b != d || (r-d)/a != b || (r-d)/b != a {
+					c.SetFloatFlag(FFlagsNX, 1)
+				}
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
 			}
 		case 0b1010011:
 			rd, rs1, rs2 := RType(s)

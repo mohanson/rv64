@@ -10,7 +10,7 @@ func RType(i uint64) (rd uint64, rs1 uint64, rs2 uint64) {
 	return
 }
 
-func R4Type(i uint64) (rd, uint64, rs1 uint64, rs2 uint64, rs3 uint64) {
+func R4Type(i uint64) (rd uint64, rs1 uint64, rs2 uint64, rs3 uint64) {
 	rd = InstructionPart(i, 7, 11)
 	rs1 = InstructionPart(i, 15, 19)
 	rs2 = InstructionPart(i, 20, 24)
