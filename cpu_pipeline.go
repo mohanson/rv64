@@ -1184,7 +1184,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					case 0b000: // ---------------------------------------------------------------- FMV.X.W
 						DebuglnRType("FMV.X.W", rd, rs1, rs2)
 						c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegisterFloat(rs1))), 31))
-						c.SetRegisterFloat(rs1, 0x00)
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FCLASS.S
@@ -1230,8 +1229,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					}
 				case 0b11110: // ------------------------------------------------------------------ FMV.W.X
 					DebuglnRType("FMV.W.X", rd, rs1, rs2)
-					c.SetRegisterFloat(rd, c.GetRegisterFloat(rd)&0xffffffff00000000|uint64(uint32(c.GetRegister(rs1))))
-					c.SetRegister(rs1, 0x00)
+					c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(uint32(c.GetRegister(rs1))))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				}
@@ -1532,7 +1530,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					case 0b000: // ---------------------------------------------------------------- FMV.X.D
 						DebuglnRType("FMV.X.D", rd, rs1, rs2)
 						c.SetRegister(rd, c.GetRegisterFloat(rs1))
-						c.SetRegisterFloat(rs1, 0x00)
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FCLASS.D
@@ -1564,7 +1561,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b11110: // ------------------------------------------------------------------ FMV.D.X
 					DebuglnRType("FMV.D.X", rd, rs1, rs2)
 					c.SetRegisterFloat(rd, c.GetRegister(rs1))
-					c.SetRegister(rs1, 0x00)
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				}
