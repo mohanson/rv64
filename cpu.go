@@ -34,7 +34,7 @@ func (c *CPU) GetRegisterFloat(i uint64) uint64              { return c.reg1[i] 
 func (c *CPU) SetRegisterFloatAsFloat64(i uint64, f float64) { c.reg1[i] = math.Float64bits(f) }
 func (c *CPU) GetRegisterFloatAsFLoat64(i uint64) float64    { return math.Float64frombits(c.reg1[i]) }
 func (c *CPU) SetRegisterFloatAsFloat32(i uint64, f float32) {
-	c.reg1[i] = math.MaxUint64 & uint64(math.Float32bits(f))
+	c.reg1[i] = 0xffffffff00000000 | uint64(math.Float32bits(f))
 }
 func (c *CPU) GetRegisterFloatAsFLoat32(i uint64) float32 {
 	// The n least-significant bits of the input are used as the input value, otherwise the input value is treated as

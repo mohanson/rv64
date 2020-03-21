@@ -2,7 +2,6 @@ package rv64
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"math/big"
 )
@@ -84,7 +83,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				cond = c.GetRegister(rs1) == c.GetRegister(rs2)
 			case 0b001: // ------------------------------------------------------------------------ BNE
 				DebuglnBType("BNE", rs1, rs2, imm)
-				log.Println("!!", c.GetRegister(rs1), c.GetRegister(rs2))
 				cond = c.GetRegister(rs1) != c.GetRegister(rs2)
 			case 0b100: // ------------------------------------------------------------------------ BLT
 				DebuglnBType("BLT", rs1, rs2, imm)
@@ -1017,7 +1015,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FSGNJ.S
 						DebuglnRType("FSGNJ.S", rd, rs1, rs2)
-						log.Println("!!", a, b, c.GetRegisterFloat(rs1), c.GetRegisterFloat(rs2))
 						if math.Signbit(float64(b)) {
 							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)|0x80000000))
 						} else {
@@ -1054,13 +1051,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FMV.X.W
 						DebuglnRType("FMV.X.W", rd, rs1, rs2)
-						if math.Signbit(float64(a)) {
-							log.Println(0xffffffff00000000 | uint64(math.Float32bits(a)))
-							c.SetRegister(rd, 0xffffffff00000000|uint64(math.Float32bits(a)))
-						} else {
-							log.Println(uint64(math.Float32bits(a)))
-							c.SetRegister(rd, uint64(math.Float32bits(a)))
-						}
+						c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegisterFloat(rs1))), 31))
 						c.SetRegisterFloat(rs1, 0x00)
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
@@ -1071,9 +1062,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					switch InstructionPart(s, 12, 14) {
 					case 0b010: // ---------------------------------------------------------------- FEQ.S
 						DebuglnRType("FEQ.S", rd, rs1, rs2)
-						log.Println(rs1, rs2, c.GetRegisterFloat(rs1), c.GetRegisterFloat(rs2))
 						if IsSNaN32(a) || IsSNaN32(b) {
-							log.Println("Invalid")
 							c.SetFloatFlag(FFlagsNV, 1)
 						} else {
 							cond = a == b
