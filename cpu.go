@@ -37,6 +37,11 @@ func (c *CPU) SetRegisterFloatAsFloat32(i uint64, f float32) {
 	c.reg1[i] = math.MaxUint64 & uint64(math.Float32bits(f))
 }
 func (c *CPU) GetRegisterFloatAsFLoat32(i uint64) float32 {
+	// The n least-significant bits of the input are used as the input value, otherwise the input value is treated as
+	// an n-bit canonical NaN.
+	if (c.reg1[i] >> 32) != 0xffffffff {
+		return math.Float32frombits(NaN32)
+	}
 	return math.Float32frombits(uint32(c.reg1[i]))
 }
 

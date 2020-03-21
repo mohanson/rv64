@@ -2,6 +2,7 @@ package rv64
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"math/big"
 )
@@ -83,6 +84,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				cond = c.GetRegister(rs1) == c.GetRegister(rs2)
 			case 0b001: // ------------------------------------------------------------------------ BNE
 				DebuglnBType("BNE", rs1, rs2, imm)
+				log.Println("!!", c.GetRegister(rs1), c.GetRegister(rs2))
 				cond = c.GetRegister(rs1) != c.GetRegister(rs2)
 			case 0b100: // ------------------------------------------------------------------------ BLT
 				DebuglnBType("BLT", rs1, rs2, imm)
@@ -1014,6 +1016,15 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b00100:
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FSGNJ.S
+						DebuglnRType("FSGNJ.S", rd, rs1, rs2)
+						log.Println("!!", a, b, c.GetRegisterFloat(rs1), c.GetRegisterFloat(rs2))
+						if math.Signbit(float64(b)) {
+							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)|0x80000000))
+						} else {
+							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)&0x7fffffff))
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FSGNJN.S
 					case 0b010: // ---------------------------------------------------------------- FSGNJX.S
 					}
@@ -1044,8 +1055,10 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					case 0b000: // ---------------------------------------------------------------- FMV.X.W
 						DebuglnRType("FMV.X.W", rd, rs1, rs2)
 						if math.Signbit(float64(a)) {
+							log.Println(0xffffffff00000000 | uint64(math.Float32bits(a)))
 							c.SetRegister(rd, 0xffffffff00000000|uint64(math.Float32bits(a)))
 						} else {
+							log.Println(uint64(math.Float32bits(a)))
 							c.SetRegister(rd, uint64(math.Float32bits(a)))
 						}
 						c.SetRegisterFloat(rs1, 0x00)
@@ -1067,6 +1080,11 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					case 0b00011: // -------------------------------------------------------------- FCVT.S.LU
 					}
 				case 0b11110: // ------------------------------------------------------------------ FMV.W.X
+					DebuglnRType("FMV.W.X", rd, rs1, rs2)
+					c.SetRegisterFloat(rd, c.GetRegisterFloat(rd)&0xffffffff00000000|uint64(uint32(c.GetRegister(rs1))))
+					c.SetRegister(rs1, 0x00)
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				}
 			case 0b01:
 				a := c.GetRegisterFloatAsFLoat64(rs1)
