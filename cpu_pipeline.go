@@ -1067,11 +1067,39 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					case 0b001: // ---------------------------------------------------------------- FCLASS.S
 					}
 				case 0b10100:
+					var cond bool
 					switch InstructionPart(s, 12, 14) {
 					case 0b010: // ---------------------------------------------------------------- FEQ.S
+						DebuglnRType("FEQ.S", rd, rs1, rs2)
+						log.Println(rs1, rs2, c.GetRegisterFloat(rs1), c.GetRegisterFloat(rs2))
+						if IsSNaN32(a) || IsSNaN32(b) {
+							log.Println("Invalid")
+							c.SetFloatFlag(FFlagsNV, 1)
+						} else {
+							cond = a == b
+						}
 					case 0b001: // ---------------------------------------------------------------- FLT.S
+						DebuglnRType("FLT.S", rd, rs1, rs2)
+						if math.IsNaN(float64(a)) || math.IsNaN(float64(b)) {
+							c.SetFloatFlag(FFlagsNV, 1)
+						} else {
+							cond = a < b
+						}
 					case 0b000: // ---------------------------------------------------------------- FLE.S
+						DebuglnRType("FLE.S", rd, rs1, rs2)
+						if math.IsNaN(float64(a)) || math.IsNaN(float64(b)) {
+							c.SetFloatFlag(FFlagsNV, 1)
+						} else {
+							cond = a <= b
+						}
 					}
+					if cond {
+						c.SetRegister(rd, 1)
+					} else {
+						c.SetRegister(rd, 0)
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b11010:
 					switch InstructionPart(s, 20, 24) {
 					case 0b00000: // -------------------------------------------------------------- FCVT.S.W
@@ -1423,6 +1451,14 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		}
 	}
 	return 0, nil
+}
+
+func IsQNaN32(f float32) bool {
+	return math.IsNaN(float64(f)) && math.Float32bits(f)&0x00400000 != 0x00
+}
+
+func IsSNaN32(f float32) bool {
+	return math.IsNaN(float64(f)) && math.Float32bits(f)&0x00400000 == 0x00
 }
 
 func IsQNaN64(f float64) bool {
