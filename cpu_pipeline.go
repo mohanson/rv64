@@ -913,7 +913,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				if err != nil {
 					return 0, err
 				}
-				c.SetRegisterFloat(rd, uint64(math.MaxUint32)<<32|uint64(v))
+				c.SetRegisterFloatAsFloat32(rd, math.Float32frombits(v))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b011: // ------------------------------------------------------------------------ FLD
@@ -928,11 +928,25 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			}
 		case 0b0100111:
 			rs1, rs2, imm := SType(s)
+			imm = SignExtend(imm, 11)
+			a := c.GetRegister(rs1) + imm
 			switch InstructionPart(s, 12, 14) {
 			case 0b010: // ------------------------------------------------------------------------ FSW
 				DebuglnSType("FSW", rs1, rs2, imm)
+				err := c.GetMemory().SetUint32(a, uint32(c.GetRegisterFloat(rs2)))
+				if err != nil {
+					return 0, err
+				}
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
 			case 0b011: // ------------------------------------------------------------------------ FSD
 				DebuglnSType("FSD", rs1, rs2, imm)
+				err := c.GetMemory().SetUint64(a, c.GetRegisterFloat(rs2))
+				if err != nil {
+					return 0, err
+				}
+				c.SetPC(c.GetPC() + 4)
+				return 1, nil
 			}
 		case 0b1000011:
 			rs1, rs2, imm := SType(s)
