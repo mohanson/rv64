@@ -60,7 +60,7 @@ func makeRiscvTests() {
 }
 
 func testRiscvTests() {
-	m, err := filepath.Glob(filepath.Join(*cTmp, "riscv-tests", "isa", "rv64u[ima]-u-*"))
+	m, err := filepath.Glob(filepath.Join(*cTmp, "riscv-tests", "isa", "rv64u[imafd]-u-*"))
 	if err != nil {
 		log.Panicln(err)
 	}
