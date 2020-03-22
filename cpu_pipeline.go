@@ -1786,7 +1786,7 @@ func FClassS(f float32) uint64 {
 		return 0b10_00000000
 	}
 	if s {
-		if math.IsInf(float64(f), 0) {
+		if f < -math.MaxFloat32 {
 			return 0b00_00000001
 		} else if f == 0 {
 			return 0b00_00001000
@@ -1796,7 +1796,7 @@ func FClassS(f float32) uint64 {
 			return 0b00_00000010
 		}
 	}
-	if math.IsInf(float64(f), 0) {
+	if f > math.MaxFloat32 {
 		return 0b00_10000000
 	} else if f == 0 {
 		return 0b00_00010000
@@ -1816,7 +1816,7 @@ func FClassD(f float64) uint64 {
 		return 0b10_00000000
 	}
 	if s {
-		if math.IsInf(f, 0) {
+		if f < -math.MaxFloat64 {
 			return 0b00_00000001
 		} else if f == 0 {
 			return 0b00_00001000
@@ -1826,7 +1826,7 @@ func FClassD(f float64) uint64 {
 			return 0b00_00000010
 		}
 	}
-	if math.IsInf(f, 0) {
+	if f > math.MaxFloat64 {
 		return 0b00_10000000
 	} else if f == 0 {
 		return 0b00_00010000
