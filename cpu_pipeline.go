@@ -1155,13 +1155,69 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FSGNJN.S
+						DebuglnRType("FSGNJ.S", rd, rs1, rs2)
+						if math.Signbit(float64(b)) {
+							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)&0x7fffffff))
+						} else {
+							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)|0x80000000))
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b010: // ---------------------------------------------------------------- FSGNJX.S
+						DebuglnRType("FSGNJ.S", rd, rs1, rs2)
+						if math.Signbit(float64(a)) != math.Signbit(float64(b)) {
+							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)|0x80000000))
+						} else {
+							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)&0x7fffffff))
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					}
 				case 0b00101:
 					switch InstructionPart(s, 12, 14) {
-					case 0b000: // ---------------------------------------------------------------- FMIN.S
-					case 0b001: // ---------------------------------------------------------------- FMAX.S
+					case 0b000: // ---------------------------------------------------------------- FMIN.D
+						DebuglnRType("FMIN.D", rd, rs1, rs2)
+					case 0b001: // ---------------------------------------------------------------- FMAX.D
+						DebuglnRType("FMAX.D", rd, rs1, rs2)
 					}
+					c.ClrFloatFlag()
+					if math.IsNaN(float64(a)) && math.IsNaN(float64(b)) {
+						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
+					}
+					if math.IsNaN(float64(a)) {
+						c.SetRegisterFloatAsFloat32(rd, b)
+						if IsSNaN32(a) {
+							c.SetFloatFlag(FFlagsNV, 1)
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
+					}
+					if math.IsNaN(float64(b)) {
+						c.SetRegisterFloatAsFloat32(rd, a)
+						if IsSNaN32(b) {
+							c.SetFloatFlag(FFlagsNV, 1)
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
+					}
+					switch InstructionPart(s, 12, 14) {
+					case 0b000:
+						if (math.Signbit(float64(a)) && !math.Signbit(float64(b))) || a < b {
+							c.SetRegisterFloatAsFloat32(rd, a)
+						} else {
+							c.SetRegisterFloatAsFloat32(rd, b)
+						}
+					case 0b001:
+						if (!math.Signbit(float64(a)) && math.Signbit(float64(b))) || a > b {
+							c.SetRegisterFloatAsFloat32(rd, a)
+						} else {
+							c.SetRegisterFloatAsFloat32(rd, b)
+						}
+					}
+					c.SetPC(c.GetPC() + 4)
+					return 1, nil
 				case 0b11000:
 					switch InstructionPart(s, 20, 24) {
 					case 0b00000: // -------------------------------------------------------------- FCVT.W.S
