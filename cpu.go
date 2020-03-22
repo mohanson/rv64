@@ -10,37 +10,13 @@ type CPU struct {
 	reg0   [32]uint64
 	reg1   [32]uint64
 	pc     uint64
-	csr    [4096]uint64
+	csr    *CSR
 	lraddr uint64
 	status uint64
 }
 
-func (c *CPU) GetCSR(i uint64) uint64 {
-	if i == CSRfflags {
-		return c.csr[CSRfcsr] & 0x1f
-	}
-	if i == CSRfrm {
-		return (c.csr[CSRfcsr] & 0xe0) >> 5
-	}
-	return c.csr[i]
-}
-func (c *CPU) SetCSR(i uint64, u uint64) {
-	if i == CSRfcsr {
-		c.csr[i] = u & 0xff
-		return
-	}
-	if i == CSRfflags {
-		c.csr[i] = u & 0x1f
-		c.csr[CSRfcsr] = (c.csr[CSRfcsr] >> 5 << 5) | (u & 0x1f)
-		return
-	}
-	if i == CSRfrm {
-		c.csr[i] = u & 0x07
-		c.csr[CSRfcsr] = c.csr[CSRfcsr]&0xffffffffffffff1f | ((u & 0x07) << 5)
-		return
-	}
-	c.csr[i] = u
-}
+func (c *CPU) GetCSR(i uint64) uint64                        { return c.csr.Get(i) }
+func (c *CPU) SetCSR(i uint64, u uint64)                     { c.csr.Set(i, u) }
 func (c *CPU) GetLoadReservation() uint64                    { return c.lraddr }
 func (c *CPU) SetLoadReservation(a uint64)                   { c.lraddr = a }
 func (c *CPU) GetMemory() *Memory                            { return c.memory }
@@ -74,4 +50,10 @@ func Cond(b bool, y uint64, f uint64) uint64 {
 		return y
 	}
 	return f
+}
+
+func NewCPU() *CPU {
+	return &CPU{
+		csr: &CSR{},
+	}
 }

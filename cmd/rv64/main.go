@@ -106,9 +106,7 @@ func main() {
 	if *cDebug == true {
 		rv64.LogLevel = 1
 	}
-	inner := &rv64.CPU{
-		// Fcsr: &rv64.FCSR{},
-	}
+	inner := rv64.NewCPU()
 	inner.SetMemory(rv64.NewMemoryLinear(4 * 1024 * 1024))
 	inner.SetSystem(rv64.NewSystemStandard())
 	cpu := &CPU{
