@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	cTmp = flag.String("tmp", "/tmp", "")
+	cTmp = flag.String("tmp", os.TempDir(), "")
 	cGCC = flag.String("gcc", filepath.Join(cRiscvTool, "bin", "riscv64-unknown-elf-gcc"), "")
 )
 
@@ -36,6 +36,14 @@ func makeBinary() {
 	call("go", "build", "-o", "bin", "github.com/mohanson/rv64/cmd/rv64")
 }
 
+func makeExamples() {
+	os.Mkdir("bin", 0755)
+	os.Mkdir("bin/res", 0755)
+	os.Mkdir("bin/res/program", 0755)
+	call(*cGCC, "-o", "bin/res/program/fib", "res/program/fib.c")
+	call(*cGCC, "-o", "bin/res/program/minimal", "res/program/minimal.c")
+}
+
 func makeRiscvTests() {
 	os.Chdir(*cTmp)
 	defer os.Chdir(cPwd)
@@ -52,7 +60,7 @@ func makeRiscvTests() {
 }
 
 func testRiscvTests() {
-	m, err := filepath.Glob(filepath.Join(*cTmp, "riscv-tests", "isa", "rv64u[ima]-u-*"))
+	m, err := filepath.Glob(filepath.Join(*cTmp, "riscv-tests", "isa", "rv64u[imafd]-u-*"))
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -69,11 +77,17 @@ func main() {
 		log.Panicln("$RISCV undefined")
 	}
 	flag.Parse()
+	if flag.NArg() == 0 {
+		makeBinary()
+		return
+	}
 	for _, e := range flag.Args() {
-		if e == "make" {
+		switch e {
+		case "example", "examples":
+			makeExamples()
+		case "make":
 			makeBinary()
-		}
-		if e == "test" {
+		case "test":
 			makeRiscvTests()
 			testRiscvTests()
 		}

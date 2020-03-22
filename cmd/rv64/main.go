@@ -19,7 +19,7 @@ func (c *CPU) pushString(s string) {
 	bs := append([]byte(s), 0x00)
 	c.Inner.SetRegister(rv64.Rsp, c.Inner.GetRegister(rv64.Rsp)-uint64(len(bs)))
 	for i, b := range bs {
-		c.Inner.GetMemory().Set(c.Inner.GetRegister(rv64.Rsp)+uint64(i), []byte{b})
+		c.Inner.GetMemory().SetByte(c.Inner.GetRegister(rv64.Rsp)+uint64(i), []byte{b})
 	}
 }
 
@@ -27,20 +27,7 @@ func (c *CPU) pushUint64(v uint64) {
 	c.Inner.SetRegister(rv64.Rsp, c.Inner.GetRegister(rv64.Rsp)-8)
 	mem := make([]byte, 8)
 	binary.LittleEndian.PutUint64(mem, v)
-	c.Inner.GetMemory().Set(c.Inner.GetRegister(rv64.Rsp), mem)
-}
-
-func (c *CPU) FetchInstruction() []byte {
-	a, err := c.Inner.GetMemory().Get(c.Inner.GetPC(), 2)
-	if err != nil {
-		log.Panicln(err)
-	}
-	b := rv64.InstructionLengthEncoding(a)
-	instructionBytes, err := c.Inner.GetMemory().Get(c.Inner.GetPC(), uint64(b))
-	if err != nil {
-		log.Panicln(err)
-	}
-	return instructionBytes
+	c.Inner.GetMemory().SetByte(c.Inner.GetRegister(rv64.Rsp), mem)
 }
 
 var (
@@ -59,7 +46,10 @@ func (c *CPU) Run() uint8 {
 		if i > int(*cStep) && *cStep > 0 {
 			break
 		}
-		data := c.FetchInstruction()
+		data, err := c.Inner.PipelineInstructionFetch()
+		if err != nil {
+			rv64.Panicln(err)
+		}
 		rv64.Debugln("==========")
 		if len(data) == 2 {
 			rv64.Debugln(fmt.Sprintf("%08b %08b", data[1], data[0]))
@@ -74,46 +64,32 @@ func (c *CPU) Run() uint8 {
 		}
 		rv64.Debugln(i, c.Inner.GetPC(), s)
 
+		n, err := c.Inner.PipelineExecute(data)
+		if err != nil {
+			log.Panicln(err)
+		}
+		if n != 0 {
+			i += 1
+			continue
+		}
+
 		if len(data) == 4 {
 			var s uint64 = 0
 			for i := len(data) - 1; i >= 0; i-- {
 				s += uint64(data[i]) << (8 * i)
 			}
-			n, err := rv64.ExecuterRV64I(c.Inner, s)
-			if err != nil {
-				log.Panicln(err)
-			}
-			if n != 0 {
-				i += 1
-				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
-				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
-				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
-				continue
-			}
 
-			n, err = rv64.ExecuterM(c.Inner, s)
-			if err != nil {
-				log.Panicln(err)
-			}
-			if n != 0 {
-				i += 1
-				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
-				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
-				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
-				continue
-			}
-
-			n, err = rv64.ExecuterA(c.Inner, s)
-			if err != nil {
-				log.Panicln(err)
-			}
-			if n != 0 {
-				i += 1
-				c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
-				c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
-				c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
-				continue
-			}
+			// n, err = rv64.ExecuterF(c.Inner, s)
+			// if err != nil {
+			// 	log.Panicln(err)
+			// }
+			// if n != 0 {
+			// 	i += 1
+			// 	// c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
+			// 	// c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
+			// 	// c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
+			// 	continue
+			// }
 		}
 		log.Panicln("")
 	}
@@ -130,7 +106,9 @@ func main() {
 	if *cDebug == true {
 		rv64.LogLevel = 1
 	}
-	inner := &rv64.CPU{}
+	inner := &rv64.CPU{
+		// Fcsr: &rv64.FCSR{},
+	}
 	inner.SetMemory(rv64.NewMemoryLinear(4 * 1024 * 1024))
 	inner.SetSystem(rv64.NewSystemStandard())
 	cpu := &CPU{
@@ -150,7 +128,7 @@ func main() {
 			if _, err := s.ReadAt(mem, 0); err != nil {
 				log.Panicln(err)
 			}
-			cpu.Inner.GetMemory().Set(s.Addr, mem)
+			cpu.Inner.GetMemory().SetByte(s.Addr, mem)
 		}
 	}
 	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetMemory().Len())
