@@ -1221,9 +1221,109 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b11000:
 					switch InstructionPart(s, 20, 24) {
 					case 0b00000: // -------------------------------------------------------------- FCVT.W.S
+						DebuglnRType("FCVT.W.S", rd, rs1, rs2)
+						d := c.GetRegisterFloatAsFLoat32(rs1)
+						if math.IsNaN(float64(d)) {
+							c.SetRegister(rd, 0x7fffffff)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d > float32(math.MaxInt32) {
+							c.SetRegister(rd, SignExtend(0x7fffffff, 31))
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d < float32(math.MinInt32) {
+							c.SetRegister(rd, SignExtend(0x80000000, 31))
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						c.SetRegister(rd, SignExtend(uint64(int32(d)), 31))
+						if math.Ceil(float64(d)) != float64(d) {
+							c.SetFloatFlag(FFlagsNX, 1)
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b00001: // -------------------------------------------------------------- FCVT.WU.S
+						DebuglnRType("FCVT.WU.S", rd, rs1, rs2)
+						d := c.GetRegisterFloatAsFLoat32(rs1)
+						if math.IsNaN(float64(d)) {
+							c.SetRegister(rd, 0xffffffffffffffff)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d > float32(math.MaxUint32) {
+							c.SetRegister(rd, SignExtend(0xffffffff, 31))
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d <= float32(-1) {
+							c.SetRegister(rd, SignExtend(0x00000000, 31))
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						c.SetRegister(rd, SignExtend(uint64(uint32(d)), 31))
+						if math.Ceil(float64(d)) != float64(d) {
+							c.SetFloatFlag(FFlagsNX, 1)
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b00010: // -------------------------------------------------------------- FCVT.L.S
+						DebuglnRType("FCVT.L.S", rd, rs1, rs2)
+						d := c.GetRegisterFloatAsFLoat32(rs1)
+						if math.IsNaN(float64(d)) {
+							c.SetRegister(rd, 0x7fffffffffffffff)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d > float32(math.MaxInt64) {
+							c.SetRegister(rd, 0x7fffffffffffffff)
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d < float32(math.MinInt64) {
+							c.SetRegister(rd, 0x8000000000000000)
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						c.SetRegister(rd, uint64(int64(d)))
+						if math.Ceil(float64(d)) != float64(d) {
+							c.SetFloatFlag(FFlagsNX, 1)
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b00011: // -------------------------------------------------------------- FCVT.LU.S
+						DebuglnRType("FCVT.LU.D", rd, rs1, rs2)
+						d := c.GetRegisterFloatAsFLoat32(rs1)
+						if math.IsNaN(float64(d)) {
+							c.SetRegister(rd, 0xffffffffffffffff)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d > float32(math.MaxUint64) {
+							c.SetRegister(rd, 0xffffffffffffffff)
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						if d <= float32(-1) {
+							c.SetRegister(rd, 0x0000000000000000)
+							c.SetFloatFlag(FFlagsNV, 1)
+							c.SetPC(c.GetPC() + 4)
+							return 1, nil
+						}
+						c.SetRegister(rd, uint64(d))
+						if math.Ceil(float64(d)) != float64(d) {
+							c.SetFloatFlag(FFlagsNX, 1)
+						}
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					}
 				case 0b01000: // ------------------------------------------------------------------ FCVT.S.D
 					DebuglnRType("FCVT.S.D", rd, rs1, rs2)
@@ -1243,6 +1343,11 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FCLASS.S
+						DebuglnRType("FCLASS.S", rd, rs1, rs2)
+						a := c.GetRegisterFloatAsFLoat32(rs1)
+						c.SetRegister(rd, FClassS(a))
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					}
 				case 0b10100:
 					var cond bool
@@ -1279,9 +1384,25 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b11010:
 					switch InstructionPart(s, 20, 24) {
 					case 0b00000: // -------------------------------------------------------------- FCVT.S.W
+						DebuglnRType("FCVT.S.W", rd, rs1, rs2)
+						c.SetRegisterFloatAsFloat32(rd, float32(int32(c.GetRegister(rs1))))
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b00001: // -------------------------------------------------------------- FCVT.S.WU
+						DebuglnRType("FCVT.S.WU", rd, rs1, rs2)
+						c.SetRegisterFloatAsFloat32(rd, float32(uint32(c.GetRegister(rs1))))
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b00010: // -------------------------------------------------------------- FCVT.S.L
+						DebuglnRType("FCVT.S.L", rd, rs1, rs2)
+						c.SetRegisterFloatAsFloat32(rd, float32(int64(c.GetRegister(rs1))))
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					case 0b00011: // -------------------------------------------------------------- FCVT.S.LU
+						DebuglnRType("FCVT.S.LU", rd, rs1, rs2)
+						c.SetRegisterFloatAsFloat32(rd, float32(uint64(c.GetRegister(rs1))))
+						c.SetPC(c.GetPC() + 4)
+						return 1, nil
 					}
 				case 0b11110: // ------------------------------------------------------------------ FMV.W.X
 					DebuglnRType("FMV.W.X", rd, rs1, rs2)
@@ -1654,6 +1775,36 @@ func IsSNaN64(f float64) bool {
 func IsSubmoduleFloat64(f float64) bool {
 	b := math.Float64bits(f)
 	return b&0x7ff0000000000000 == 0 && b&0x000fffffffffffff != 0
+}
+
+func FClassS(f float32) uint64 {
+	s := math.Float32bits(f)&(1<<31) != 0
+	if IsSNaN32(f) {
+		return 0b01_00000000
+	}
+	if IsQNaN32(f) {
+		return 0b10_00000000
+	}
+	if s {
+		if math.IsInf(float64(f), 0) {
+			return 0b00_00000001
+		} else if f == 0 {
+			return 0b00_00001000
+		} else if IsSubmoduleFloat32(f) {
+			return 0b00_00000100
+		} else {
+			return 0b00_00000010
+		}
+	}
+	if math.IsInf(float64(f), 0) {
+		return 0b00_10000000
+	} else if f == 0 {
+		return 0b00_00010000
+	} else if IsSubmoduleFloat32(f) {
+		return 0b00_00100000
+	} else {
+		return 0b00_01000000
+	}
 }
 
 func FClassD(f float64) uint64 {
