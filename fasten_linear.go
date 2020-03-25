@@ -23,3 +23,9 @@ func (l *Linear) Set(a uint64, v byte) error {
 func (l *Linear) Len() uint64 {
 	return uint64(len(l.data))
 }
+
+func NewLinear(n uint64) Fasten {
+	return &Linear{
+		data: make([]byte, n),
+	}
+}

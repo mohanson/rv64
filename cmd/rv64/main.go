@@ -107,8 +107,10 @@ func main() {
 		rv64.LogLevel = 1
 	}
 	inner := rv64.NewCPU()
-	inner.SetMemory(rv64.NewMemoryLinear(4 * 1024 * 1024))
+	inner.SetFasten(rv64.NewLinear(4 * 1024 * 1024))
 	inner.SetSystem(rv64.NewSystemStandard())
+	inner.SetCSR(&rv64.CSRDaze{})
+
 	cpu := &CPU{
 		Inner: inner,
 	}
