@@ -13,11 +13,16 @@ package rv64
 // 0xC81  Read-only  timeh    Upper 32 bits of time, RV32I only.
 // 0xC82  Read-only  instreth Upper 32 bits of instret, RV32I only.
 
-type CSR struct {
+type CSR interface {
+	Get(uint64) uint64
+	Set(uint64, uint64)
+}
+
+type CSRDaze struct {
 	m [0x1000]uint64
 }
 
-func (c *CSR) Get(i uint64) uint64 {
+func (c *CSRDaze) Get(i uint64) uint64 {
 	switch {
 	case i == CSRfflags:
 		return c.m[CSRfcsr] & 0x1f
@@ -29,7 +34,7 @@ func (c *CSR) Get(i uint64) uint64 {
 	return c.m[i]
 }
 
-func (c *CSR) Set(i uint64, u uint64) {
+func (c *CSRDaze) Set(i uint64, u uint64) {
 	switch {
 	case i == CSRfcsr:
 		c.m[i] = u & 0xff

@@ -7,16 +7,16 @@ import (
 type CPU struct {
 	memory *Memory
 	system System
+	csr    CSR
 	reg0   [32]uint64
 	reg1   [32]uint64
 	pc     uint64
-	csr    *CSR
 	lraddr uint64
 	status uint64
 }
 
-func (c *CPU) GetCSR(i uint64) uint64                        { return c.csr.Get(i) }
-func (c *CPU) SetCSR(i uint64, u uint64)                     { c.csr.Set(i, u) }
+func (c *CPU) GetCSR() CSR                                   { return c.csr }
+func (c *CPU) SetCSR(csr CSR)                                { c.csr = csr }
 func (c *CPU) GetLoadReservation() uint64                    { return c.lraddr }
 func (c *CPU) SetLoadReservation(a uint64)                   { c.lraddr = a }
 func (c *CPU) GetMemory() *Memory                            { return c.memory }
@@ -45,6 +45,18 @@ func (c *CPU) GetRegisterFloatAsFLoat32(i uint64) float32 {
 	return math.Float32frombits(uint32(c.reg1[i]))
 }
 
+func (c *CPU) SetFloatFlag(flag uint64, b int) {
+	if b == 0 {
+		c.csr.Set(CSRfcsr, c.csr.Get(CSRfcsr)&(^flag))
+	} else {
+		c.csr.Set(CSRfcsr, c.csr.Get(CSRfcsr)|flag)
+	}
+}
+
+func (c *CPU) ClrFloatFlag() {
+	c.csr.Set(CSRfcsr, c.csr.Get(CSRfcsr)&0xffffffffffffffe0)
+}
+
 func Cond(b bool, y uint64, f uint64) uint64 {
 	if b {
 		return y
@@ -54,6 +66,6 @@ func Cond(b bool, y uint64, f uint64) uint64 {
 
 func NewCPU() *CPU {
 	return &CPU{
-		csr: &CSR{},
+		csr: &CSRDaze{},
 	}
 }

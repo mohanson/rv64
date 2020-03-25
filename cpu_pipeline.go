@@ -446,41 +446,41 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				}
 			case 0b001: // ------------------------------------------------------------------------ CSRRW
 				DebuglnIType("CSRRW", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR(imm))
-				c.SetCSR(imm, c.GetRegister(rs1))
+				c.SetRegister(rd, c.GetCSR().Get(imm))
+				c.GetCSR().Set(imm, c.GetRegister(rs1))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b010: // ------------------------------------------------------------------------ CSRRS
 				DebuglnIType("CSRRS", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR(imm))
-				c.SetCSR(imm, c.GetCSR(imm)|c.GetRegister(rs1))
+				c.SetRegister(rd, c.GetCSR().Get(imm))
+				c.GetCSR().Set(imm, c.GetCSR().Get(imm)|c.GetRegister(rs1))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b011: // ------------------------------------------------------------------------ CSRRC
 				DebuglnIType("CSRRC", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR(imm))
-				c.SetCSR(imm, c.GetCSR(imm)&(math.MaxUint64-c.GetRegister(rs1)))
+				c.SetRegister(rd, c.GetCSR().Get(imm))
+				c.GetCSR().Set(imm, c.GetCSR().Get(imm)&(math.MaxUint64-c.GetRegister(rs1)))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b101: // ------------------------------------------------------------------------ CSRRWI
 				rs1 = SignExtend(rs1, 4)
 				DebuglnIType("CSRRWI", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR(imm))
-				c.SetCSR(imm, rs1)
+				c.SetRegister(rd, c.GetCSR().Get(imm))
+				c.GetCSR().Set(imm, rs1)
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b110: // ------------------------------------------------------------------------ CSRRSI
 				rs1 = SignExtend(rs1, 4)
 				DebuglnIType("CSRRSI", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR(imm))
-				c.SetCSR(imm, c.GetCSR(imm)|rs1)
+				c.SetRegister(rd, c.GetCSR().Get(imm))
+				c.GetCSR().Set(imm, c.GetCSR().Get(imm)|rs1)
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b111: // ------------------------------------------------------------------------ CSRRCI
 				rs1 = SignExtend(rs1, 4)
 				DebuglnIType("CSRRCI", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR(imm))
-				c.SetCSR(imm, c.GetCSR(imm)&(math.MaxUint64-rs1))
+				c.SetRegister(rd, c.GetCSR().Get(imm))
+				c.GetCSR().Set(imm, c.GetCSR().Get(imm)&(math.MaxUint64-rs1))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			}
