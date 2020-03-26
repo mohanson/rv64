@@ -109,7 +109,7 @@ func main() {
 	inner := rv64.NewCPU()
 	inner.SetFasten(rv64.NewLinear(4 * 1024 * 1024))
 	inner.SetSystem(rv64.NewSystemStandard())
-	inner.SetCSR(&rv64.CSRDaze{})
+	inner.SetCSR(rv64.NewCSRStandard())
 
 	cpu := &CPU{
 		Inner: inner,

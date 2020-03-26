@@ -18,11 +18,11 @@ type CSR interface {
 	Set(uint64, uint64)
 }
 
-type CSRDaze struct {
+type CSRStandard struct {
 	m [0x1000]uint64
 }
 
-func (c *CSRDaze) Get(i uint64) uint64 {
+func (c *CSRStandard) Get(i uint64) uint64 {
 	switch {
 	case i == CSRfflags:
 		return c.m[CSRfcsr] & 0x1f
@@ -34,7 +34,7 @@ func (c *CSRDaze) Get(i uint64) uint64 {
 	return c.m[i]
 }
 
-func (c *CSRDaze) Set(i uint64, u uint64) {
+func (c *CSRStandard) Set(i uint64, u uint64) {
 	switch {
 	case i == CSRfcsr:
 		c.m[i] = u & 0xff
@@ -47,4 +47,8 @@ func (c *CSRDaze) Set(i uint64, u uint64) {
 	case i == i:
 		c.m[i] = u
 	}
+}
+
+func NewCSRStandard() CSR {
+	return &CSRStandard{}
 }
