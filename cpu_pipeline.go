@@ -202,7 +202,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetRegister(rd, 0)
 				}
 			case 0b011: // ------------------------------------------------------------------------ SLTIU
-				imm = uint64(SignExtend(imm, 11))
+				imm = SignExtend(imm, 11)
 				DebuglnIType("SLTIU", rd, rs1, imm)
 				if c.GetRegister(rs1) < imm {
 					c.SetRegister(rd, 1)
