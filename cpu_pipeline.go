@@ -64,14 +64,22 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			imm = SignExtend(imm, 19)
 			DebuglnJType("JAL", rd, imm)
 			c.SetRegister(rd, c.GetPC()+4)
-			c.SetPC(c.GetPC() + imm)
+			r := c.GetPC() + imm
+			if r%4 != 0x00 {
+				return 0, ErrMisalignedInstructionFetch
+			}
+			c.SetPC(r)
 			return 1, nil
 		case 0b1100111: // ----------------------------------------------------------------------- JALR
 			rd, rs1, imm := IType(s)
 			imm = SignExtend(imm, 11)
 			DebuglnIType("JALR", rd, rs1, imm)
 			c.SetRegister(rd, c.GetPC()+4)
-			c.SetPC(((c.GetRegister(rs1) + imm) >> 1) << 1)
+			r := (c.GetRegister(rs1) + imm) & 0xfffffffffffffffe
+			if r%4 != 0x00 {
+				return 0, ErrMisalignedInstructionFetch
+			}
+			c.SetPC(r)
 			return 1, nil
 		case 0b1100011:
 			rs1, rs2, imm := BType(s)
@@ -264,7 +272,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				switch InstructionPart(s, 25, 31) {
 				case 0b0000000: // ---------------------------------------------------------------- SLL
 					DebuglnRType("SLL", rd, rs1, rs2)
-					c.SetRegister(rd, c.GetRegister(rs1)<<InstructionPart(c.GetRegister(rs2), 0, 5))
+					c.SetRegister(rd, c.GetRegister(rs1)<<(c.GetRegister(rs2)&0x3f))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0000001: // ---------------------------------------------------------------- MULH
@@ -370,7 +378,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				switch InstructionPart(s, 25, 31) {
 				case 0b0000000: // ---------------------------------------------------------------- SRL
 					DebuglnRType("SRL", rd, rs1, rs2)
-					c.SetRegister(rd, c.GetRegister(rs1)>>InstructionPart(c.GetRegister(rs2), 0, 5))
+					c.SetRegister(rd, c.GetRegister(rs1)>>(c.GetRegister(rs2)&0x3f))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0000001: // ---------------------------------------------------------------- DIVU
@@ -384,7 +392,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b0100000: // ---------------------------------------------------------------- SRA
 					DebuglnRType("SRA", rd, rs1, rs2)
-					c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 5)))
+					c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))>>(c.GetRegister(rs2)&0x3f)))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				}
