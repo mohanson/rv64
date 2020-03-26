@@ -4,7 +4,7 @@ An outstanding RISC-V RV64IMAFDC(RV64GC) simulator.
 
 # Install riscv-gnu-toolchain
 
-First of all, riscv gnu toolchain must be installed. Source repo at [https://github.com/riscv/riscv-gnu-toolchain](https://github.com/riscv/riscv-gnu-toolchain), complete the build with the following commands:
+First of all, riscv gnu toolchain must be installed. Source repo is at [https://github.com/riscv/riscv-gnu-toolchain](https://github.com/riscv/riscv-gnu-toolchain), complete the build with the following commands:
 
 ```sh
 $ ./configure --prefix=/opt/riscv --with-arch=rv64g
@@ -14,6 +14,8 @@ $ make
 # Install rv64
 
 ```sh
+$ git clone https://github.com/mohanson/rv64
+$ cd rv64
 $ mkdir bin
 $ go build -o bin github.com/mohanson/rv64/cmd/make
 $ ./bin/make
@@ -26,6 +28,8 @@ $ export RISCV=/opt/riscv
 $ ./bin/make test
 ```
 
+<details>
+<summary>Test output</summary>
 ```
 [ok] $ ./bin/rv64 /tmp/riscv-tests/isa/rv64ua-u-amoadd_d
 [ok] $ ./bin/rv64 /tmp/riscv-tests/isa/rv64ua-u-amoadd_w
@@ -134,6 +138,7 @@ $ ./bin/make test
 [ok] $ ./bin/rv64 /tmp/riscv-tests/isa/rv64um-u-remuw
 [ok] $ ./bin/rv64 /tmp/riscv-tests/isa/rv64um-u-remw
 ```
+</details>
 
 # Lick it
 
