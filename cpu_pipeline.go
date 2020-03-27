@@ -84,6 +84,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b1100011:
 			rs1, rs2, imm := BType(s)
 			imm = SignExtend(imm, 12)
+			if imm%2 != 0x00 {
+				return 0, ErrMisalignedInstructionFetch
+			}
 			var cond bool
 			switch InstructionPart(s, 12, 14) {
 			case 0b000: // ------------------------------------------------------------------------ BEQ
