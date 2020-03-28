@@ -10,7 +10,6 @@ import (
 )
 
 var (
-	cTmp = flag.String("tmp", os.TempDir(), "")
 	cGCC = flag.String("gcc", filepath.Join(cRiscvTool, "bin", "riscv64-unknown-elf-gcc"), "")
 )
 
@@ -50,7 +49,7 @@ func testExamples() {
 }
 
 func makeRiscvTests() {
-	os.Chdir(*cTmp)
+	os.Chdir("res")
 	defer os.Chdir(cPwd)
 	if _, err := os.Stat("riscv-tests"); err == nil {
 		return
@@ -65,7 +64,7 @@ func makeRiscvTests() {
 }
 
 func testRiscvTests() {
-	m, err := filepath.Glob(filepath.Join(*cTmp, "riscv-tests", "isa", "rv64u[imafd]-u-*"))
+	m, err := filepath.Glob(filepath.Join("res", "riscv-tests", "isa", "rv64u[imafd]-u-*"))
 	if err != nil {
 		log.Panicln(err)
 	}
