@@ -444,54 +444,66 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			c.SetPC(c.GetPC() + 4)
 			return 1, nil
 		case 0b1110011:
-			rd, rs1, imm := IType(s)
+			rd, rs1, csr := IType(s)
 			switch InstructionPart(s, 12, 14) {
 			case 0b000:
 				switch InstructionPart(s, 20, 31) {
 				case 0b000000000000: // ----------------------------------------------------------- ECALL
-					DebuglnIType("ECALL", rd, rs1, imm)
+					DebuglnIType("ECALL", rd, rs1, csr)
 					return c.GetSystem().HandleCall(c)
 				case 0b000000000001: // ----------------------------------------------------------- EBREAK
-					DebuglnIType("EBREAK", rd, rs1, imm)
+					DebuglnIType("EBREAK", rd, rs1, csr)
 					return 1, nil
 				}
 			case 0b001: // ------------------------------------------------------------------------ CSRRW
-				DebuglnIType("CSRRW", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR().Get(imm))
-				c.GetCSR().Set(imm, c.GetRegister(rs1))
+				DebuglnIType("CSRRW", rd, rs1, csr)
+				if rd != Rzero {
+					c.SetRegister(rd, c.GetCSR().Get(csr))
+				}
+				c.GetCSR().Set(csr, c.GetRegister(rs1))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b010: // ------------------------------------------------------------------------ CSRRS
-				DebuglnIType("CSRRS", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR().Get(imm))
-				c.GetCSR().Set(imm, c.GetCSR().Get(imm)|c.GetRegister(rs1))
+				DebuglnIType("CSRRS", rd, rs1, csr)
+				c.SetRegister(rd, c.GetCSR().Get(csr))
+				if rs1 != Rzero {
+					c.GetCSR().Set(csr, c.GetCSR().Get(csr)|c.GetRegister(rs1))
+				}
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b011: // ------------------------------------------------------------------------ CSRRC
-				DebuglnIType("CSRRC", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR().Get(imm))
-				c.GetCSR().Set(imm, c.GetCSR().Get(imm)&(math.MaxUint64-c.GetRegister(rs1)))
+				DebuglnIType("CSRRC", rd, rs1, csr)
+				c.SetRegister(rd, c.GetCSR().Get(csr))
+				if rs1 != Rzero {
+					c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-c.GetRegister(rs1)))
+				}
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b101: // ------------------------------------------------------------------------ CSRRWI
-				rs1 = SignExtend(rs1, 4)
+				imm := SignExtend(rs1, 4)
 				DebuglnIType("CSRRWI", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR().Get(imm))
-				c.GetCSR().Set(imm, rs1)
+				if rd != Rzero {
+					c.SetRegister(rd, c.GetCSR().Get(csr))
+				}
+				c.GetCSR().Set(csr, rs1)
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b110: // ------------------------------------------------------------------------ CSRRSI
-				rs1 = SignExtend(rs1, 4)
-				DebuglnIType("CSRRSI", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR().Get(imm))
-				c.GetCSR().Set(imm, c.GetCSR().Get(imm)|rs1)
+				imm := SignExtend(rs1, 4)
+				DebuglnIType("CSRRSI", rd, rs1, csr)
+				c.SetRegister(rd, c.GetCSR().Get(csr))
+				if csr != 0x00 {
+					c.GetCSR().Set(csr, c.GetCSR().Get(csr)|imm)
+				}
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b111: // ------------------------------------------------------------------------ CSRRCI
-				rs1 = SignExtend(rs1, 4)
-				DebuglnIType("CSRRCI", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR().Get(imm))
-				c.GetCSR().Set(imm, c.GetCSR().Get(imm)&(math.MaxUint64-rs1))
+				imm := SignExtend(rs1, 4)
+				DebuglnIType("CSRRCI", rd, rs1, csr)
+				c.SetRegister(rd, c.GetCSR().Get(csr))
+				if csr != 0x00 {
+					c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-imm))
+				}
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			}
