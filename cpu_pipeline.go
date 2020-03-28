@@ -558,7 +558,8 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				}
 			case 0b001: // ------------------------------------------------------------------------ SLLW
 				DebuglnRType("SLLW", rd, rs1, rs2)
-				c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<InstructionPart(c.GetRegister(rs2), 0, 4)), 31))
+				s := c.GetRegister(rs2) & 0x1f
+				c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<s), 31))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b100: // ------------------------------------------------------------------------ DIVW
@@ -574,7 +575,8 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				switch InstructionPart(s, 25, 31) {
 				case 0b0000000: // ---------------------------------------------------------------- SRLW
 					DebuglnRType("SRLW", rd, rs1, rs2)
-					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 4)), 31))
+					s := c.GetRegister(rs2) & 0x1f
+					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>s), 31))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0000001: // ---------------------------------------------------------------- DIVUW
