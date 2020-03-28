@@ -44,6 +44,11 @@ func makeExamples() {
 	call(*cGCC, "-o", "bin/res/program/minimal", "res/program/minimal.c")
 }
 
+func testExamples() {
+	call(cEmu, "bin/res/program/fib")
+	call(cEmu, "bin/res/program/minimal")
+}
+
 func makeRiscvTests() {
 	os.Chdir(*cTmp)
 	defer os.Chdir(cPwd)
@@ -83,13 +88,13 @@ func main() {
 	}
 	for _, e := range flag.Args() {
 		switch e {
-		case "example", "examples":
-			makeExamples()
 		case "make":
 			makeBinary()
 		case "test":
 			makeRiscvTests()
 			testRiscvTests()
+			makeExamples()
+			testExamples()
 		}
 	}
 }
