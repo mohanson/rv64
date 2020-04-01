@@ -135,10 +135,11 @@ const (
 )
 
 var (
-	ErrAbnormalEcall       = errors.New("Abnormal ecall")
-	ErrAbnormalInstruction = errors.New("Abnormal instruction")
-	ErrOutOfMemory         = errors.New("Out of memory")
-	ErrReservedInstruction = errors.New("Reserved instruction")
+	ErrAbnormalEcall              = errors.New("Abnormal ecall")
+	ErrAbnormalInstruction        = errors.New("Abnormal instruction")
+	ErrMisalignedInstructionFetch = errors.New("Misaligned instruction fetch")
+	ErrOutOfMemory                = errors.New("Out of memory")
+	ErrReservedInstruction        = errors.New("Reserved instruction")
 )
 
 var (

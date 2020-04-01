@@ -6,5 +6,8 @@ int fib(int n) {
 }
 
 int main() {
-    return fib(10);
+    if (fib(10) == 55) {
+        return 0;
+    }
+    return 1;
 }

@@ -72,24 +72,15 @@ func (c *CPU) Run() uint8 {
 			i += 1
 			continue
 		}
+		c.Inner.GetCSR().Set(rv64.CSRcycle, c.Inner.GetCSR().Get(rv64.CSRcycle)+n)
+		c.Inner.GetCSR().Set(rv64.CSRtime, c.Inner.GetCSR().Get(rv64.CSRtime)+n)
+		c.Inner.GetCSR().Set(rv64.CSRinstret, c.Inner.GetCSR().Get(rv64.CSRinstret)+1)
 
 		if len(data) == 4 {
 			var s uint64 = 0
 			for i := len(data) - 1; i >= 0; i-- {
 				s += uint64(data[i]) << (8 * i)
 			}
-
-			// n, err = rv64.ExecuterF(c.Inner, s)
-			// if err != nil {
-			// 	log.Panicln(err)
-			// }
-			// if n != 0 {
-			// 	i += 1
-			// 	// c.Inner.SetCSR(rv64.Rdcycle, c.Inner.GetCSR(rv64.Rdcycle)+n)
-			// 	// c.Inner.SetCSR(rv64.Rdtime, c.Inner.GetCSR(rv64.Rdtime)+n)
-			// 	// c.Inner.SetCSR(rv64.Rdinstret, c.Inner.GetCSR(rv64.Rdtime)+n)
-			// 	continue
-			// }
 		}
 		log.Panicln("")
 	}
@@ -106,11 +97,11 @@ func main() {
 	if *cDebug == true {
 		rv64.LogLevel = 1
 	}
-	inner := &rv64.CPU{
-		// Fcsr: &rv64.FCSR{},
-	}
-	inner.SetMemory(rv64.NewMemoryLinear(4 * 1024 * 1024))
+	inner := rv64.NewCPU()
+	inner.SetFasten(rv64.NewLinear(4 * 1024 * 1024))
 	inner.SetSystem(rv64.NewSystemStandard())
+	inner.SetCSR(rv64.NewCSRStandard())
+
 	cpu := &CPU{
 		Inner: inner,
 	}
@@ -120,10 +111,9 @@ func main() {
 		log.Panicln(err)
 	}
 	defer f.Close()
-	cpu.Inner.SetPC(f.Entry)
 
 	for _, s := range f.Sections {
-		if s.Flags&elf.SHF_ALLOC != 0 && s.Type&elf.SHT_NOBITS == 0 {
+		if s.Flags&elf.SHF_ALLOC != 0 && s.Type != elf.SHT_NOBITS {
 			mem := make([]byte, s.Size)
 			if _, err := s.ReadAt(mem, 0); err != nil {
 				log.Panicln(err)
@@ -131,6 +121,8 @@ func main() {
 			cpu.Inner.GetMemory().SetByte(s.Addr, mem)
 		}
 	}
+
+	cpu.Inner.SetPC(f.Entry)
 	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetMemory().Len())
 
 	// Command line parameters, distribution of environment variables on the stack:

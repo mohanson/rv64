@@ -64,18 +64,29 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			imm = SignExtend(imm, 19)
 			DebuglnJType("JAL", rd, imm)
 			c.SetRegister(rd, c.GetPC()+4)
-			c.SetPC(c.GetPC() + imm)
+			r := c.GetPC() + imm
+			if r%4 != 0x00 {
+				return 0, ErrMisalignedInstructionFetch
+			}
+			c.SetPC(r)
 			return 1, nil
 		case 0b1100111: // ----------------------------------------------------------------------- JALR
 			rd, rs1, imm := IType(s)
 			imm = SignExtend(imm, 11)
 			DebuglnIType("JALR", rd, rs1, imm)
 			c.SetRegister(rd, c.GetPC()+4)
-			c.SetPC(((c.GetRegister(rs1) + imm) >> 1) << 1)
+			r := (c.GetRegister(rs1) + imm) & 0xfffffffffffffffe
+			if r%4 != 0x00 {
+				return 0, ErrMisalignedInstructionFetch
+			}
+			c.SetPC(r)
 			return 1, nil
 		case 0b1100011:
 			rs1, rs2, imm := BType(s)
 			imm = SignExtend(imm, 12)
+			if imm%2 != 0x00 {
+				return 0, ErrMisalignedInstructionFetch
+			}
 			var cond bool
 			switch InstructionPart(s, 12, 14) {
 			case 0b000: // ------------------------------------------------------------------------ BEQ
@@ -202,7 +213,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetRegister(rd, 0)
 				}
 			case 0b011: // ------------------------------------------------------------------------ SLTIU
-				imm = uint64(SignExtend(imm, 11))
+				imm = SignExtend(imm, 11)
 				DebuglnIType("SLTIU", rd, rs1, imm)
 				if c.GetRegister(rs1) < imm {
 					c.SetRegister(rd, 1)
@@ -264,7 +275,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				switch InstructionPart(s, 25, 31) {
 				case 0b0000000: // ---------------------------------------------------------------- SLL
 					DebuglnRType("SLL", rd, rs1, rs2)
-					c.SetRegister(rd, c.GetRegister(rs1)<<InstructionPart(c.GetRegister(rs2), 0, 5))
+					c.SetRegister(rd, c.GetRegister(rs1)<<(c.GetRegister(rs2)&0x3f))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0000001: // ---------------------------------------------------------------- MULH
@@ -370,7 +381,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				switch InstructionPart(s, 25, 31) {
 				case 0b0000000: // ---------------------------------------------------------------- SRL
 					DebuglnRType("SRL", rd, rs1, rs2)
-					c.SetRegister(rd, c.GetRegister(rs1)>>InstructionPart(c.GetRegister(rs2), 0, 5))
+					c.SetRegister(rd, c.GetRegister(rs1)>>(c.GetRegister(rs2)&0x3f))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0000001: // ---------------------------------------------------------------- DIVU
@@ -384,7 +395,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b0100000: // ---------------------------------------------------------------- SRA
 					DebuglnRType("SRA", rd, rs1, rs2)
-					c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 5)))
+					c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))>>(c.GetRegister(rs2)&0x3f)))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				}
@@ -433,54 +444,66 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			c.SetPC(c.GetPC() + 4)
 			return 1, nil
 		case 0b1110011:
-			rd, rs1, imm := IType(s)
+			rd, rs1, csr := IType(s)
 			switch InstructionPart(s, 12, 14) {
 			case 0b000:
 				switch InstructionPart(s, 20, 31) {
 				case 0b000000000000: // ----------------------------------------------------------- ECALL
-					DebuglnIType("ECALL", rd, rs1, imm)
+					DebuglnIType("ECALL", rd, rs1, csr)
 					return c.GetSystem().HandleCall(c)
 				case 0b000000000001: // ----------------------------------------------------------- EBREAK
-					DebuglnIType("EBREAK", rd, rs1, imm)
+					DebuglnIType("EBREAK", rd, rs1, csr)
 					return 1, nil
 				}
 			case 0b001: // ------------------------------------------------------------------------ CSRRW
-				DebuglnIType("CSRRW", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR(imm))
-				c.SetCSR(imm, c.GetRegister(rs1))
+				DebuglnIType("CSRRW", rd, rs1, csr)
+				if rd != Rzero {
+					c.SetRegister(rd, c.GetCSR().Get(csr))
+				}
+				c.GetCSR().Set(csr, c.GetRegister(rs1))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b010: // ------------------------------------------------------------------------ CSRRS
-				DebuglnIType("CSRRS", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR(imm))
-				c.SetCSR(imm, c.GetCSR(imm)|c.GetRegister(rs1))
+				DebuglnIType("CSRRS", rd, rs1, csr)
+				c.SetRegister(rd, c.GetCSR().Get(csr))
+				if rs1 != Rzero {
+					c.GetCSR().Set(csr, c.GetCSR().Get(csr)|c.GetRegister(rs1))
+				}
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b011: // ------------------------------------------------------------------------ CSRRC
-				DebuglnIType("CSRRC", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR(imm))
-				c.SetCSR(imm, c.GetCSR(imm)&(math.MaxUint64-c.GetRegister(rs1)))
+				DebuglnIType("CSRRC", rd, rs1, csr)
+				c.SetRegister(rd, c.GetCSR().Get(csr))
+				if rs1 != Rzero {
+					c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-c.GetRegister(rs1)))
+				}
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b101: // ------------------------------------------------------------------------ CSRRWI
-				rs1 = SignExtend(rs1, 4)
+				imm := SignExtend(rs1, 4)
 				DebuglnIType("CSRRWI", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR(imm))
-				c.SetCSR(imm, rs1)
+				if rd != Rzero {
+					c.SetRegister(rd, c.GetCSR().Get(csr))
+				}
+				c.GetCSR().Set(csr, rs1)
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b110: // ------------------------------------------------------------------------ CSRRSI
-				rs1 = SignExtend(rs1, 4)
-				DebuglnIType("CSRRSI", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR(imm))
-				c.SetCSR(imm, c.GetCSR(imm)|rs1)
+				imm := SignExtend(rs1, 4)
+				DebuglnIType("CSRRSI", rd, rs1, csr)
+				c.SetRegister(rd, c.GetCSR().Get(csr))
+				if csr != 0x00 {
+					c.GetCSR().Set(csr, c.GetCSR().Get(csr)|imm)
+				}
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b111: // ------------------------------------------------------------------------ CSRRCI
-				rs1 = SignExtend(rs1, 4)
-				DebuglnIType("CSRRCI", rd, rs1, imm)
-				c.SetRegister(rd, c.GetCSR(imm))
-				c.SetCSR(imm, c.GetCSR(imm)&(math.MaxUint64-rs1))
+				imm := SignExtend(rs1, 4)
+				DebuglnIType("CSRRCI", rd, rs1, csr)
+				c.SetRegister(rd, c.GetCSR().Get(csr))
+				if csr != 0x00 {
+					c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-imm))
+				}
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			}
@@ -547,7 +570,8 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				}
 			case 0b001: // ------------------------------------------------------------------------ SLLW
 				DebuglnRType("SLLW", rd, rs1, rs2)
-				c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<InstructionPart(c.GetRegister(rs2), 0, 4)), 31))
+				s := c.GetRegister(rs2) & 0x1f
+				c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<s), 31))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b100: // ------------------------------------------------------------------------ DIVW
@@ -563,7 +587,8 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				switch InstructionPart(s, 25, 31) {
 				case 0b0000000: // ---------------------------------------------------------------- SRLW
 					DebuglnRType("SRLW", rd, rs1, rs2)
-					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 4)), 31))
+					s := c.GetRegister(rs2) & 0x1f
+					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>s), 31))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0000001: // ---------------------------------------------------------------- DIVUW
@@ -604,10 +629,10 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			rd, rs1, rs2 := RType(s)
 			switch InstructionPart(s, 12, 14) {
 			case 0b010:
+				a := SignExtend(c.GetRegister(rs1), 31)
 				switch InstructionPart(s, 27, 31) {
 				case 0b00010: // ------------------------------------------------------------------ LR.W
 					DebuglnRType("LR.W", rd, rs1, rs2)
-					a := SignExtend(c.GetRegister(rs1), 31)
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -618,7 +643,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b00011: // ------------------------------------------------------------------ SC.W
 					DebuglnRType("SC.W", rd, rs1, rs2)
-					a := SignExtend(c.GetRegister(rs1), 31)
 					if a == c.GetLoadReservation() {
 						c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2)))
 						c.SetRegister(rd, 0)
@@ -630,7 +654,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b00001: // ------------------------------------------------------------------ AMOSWAP.W
 					DebuglnRType("AMOSWAP.W", rd, rs1, rs2)
-					a := SignExtend(c.GetRegister(rs1), 31)
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -641,7 +664,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b00000: // ------------------------------------------------------------------ AMOADD.W
 					DebuglnRType("AMOADD.W", rd, rs1, rs2)
-					a := SignExtend(c.GetRegister(rs1), 31)
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -652,7 +674,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b00100: // ------------------------------------------------------------------ AMOXOR.W
 					DebuglnRType("AMOXOR.W", rd, rs1, rs2)
-					a := SignExtend(c.GetRegister(rs1), 31)
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -663,7 +684,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b01100: // ------------------------------------------------------------------ AMOAND.W
 					DebuglnRType("AMOAND.W", rd, rs1, rs2)
-					a := SignExtend(c.GetRegister(rs1), 31)
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -674,7 +694,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b01000: // ------------------------------------------------------------------ AMOOR.W
 					DebuglnRType("AMOOR.W", rd, rs1, rs2)
-					a := SignExtend(c.GetRegister(rs1), 31)
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -685,7 +704,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b10000: // ------------------------------------------------------------------ AMOMIN.W
 					DebuglnRType("AMOMIN.W", rd, rs1, rs2)
-					a := SignExtend(c.GetRegister(rs1), 31)
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -702,7 +720,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b10100: // ------------------------------------------------------------------ AMOMAX.W
 					DebuglnRType("AMOMAX.W", rd, rs1, rs2)
-					a := SignExtend(c.GetRegister(rs1), 31)
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -719,7 +736,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b11000: // ------------------------------------------------------------------ AMOMINU.W
 					DebuglnRType("AMOMINU.W", rd, rs1, rs2)
-					a := SignExtend(c.GetRegister(rs1), 31)
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -736,7 +752,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b11100: // ------------------------------------------------------------------ AMOMAXU.W
 					DebuglnRType("AMOMAXU.W", rd, rs1, rs2)
-					a := SignExtend(c.GetRegister(rs1), 31)
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -753,10 +768,10 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				}
 			case 0b011:
+				a := c.GetRegister(rs1)
 				switch InstructionPart(s, 27, 31) {
 				case 0b00010: // ------------------------------------------------------------------ LR.D
 					DebuglnRType("LR.D", rd, rs1, rs2)
-					a := c.GetRegister(rs1)
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -767,7 +782,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b00011: // ------------------------------------------------------------------ SC.D
 					DebuglnRType("SC.D", rd, rs1, rs2)
-					a := c.GetRegister(rs1)
 					if a == c.GetLoadReservation() {
 						c.GetMemory().SetUint64(a, c.GetRegister(rs2))
 						c.SetRegister(rd, 0)
@@ -779,7 +793,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b00001: // ------------------------------------------------------------------ AMOSWAP.D
 					DebuglnRType("AMOSWAP.D", rd, rs1, rs2)
-					a := c.GetRegister(rs1)
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -790,7 +803,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b00000: // ------------------------------------------------------------------ AMOADD.D
 					DebuglnRType("AMOADD.D", rd, rs1, rs2)
-					a := c.GetRegister(rs1)
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -801,7 +813,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b00100: // ------------------------------------------------------------------ AMOXOR.D
 					DebuglnRType("AMOXOR.D", rd, rs1, rs2)
-					a := c.GetRegister(rs1)
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -812,7 +823,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b01100: // ------------------------------------------------------------------ AMOAND.D
 					DebuglnRType("AMOAND.D", rd, rs1, rs2)
-					a := c.GetRegister(rs1)
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -834,7 +844,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b10000: // ------------------------------------------------------------------ AMOMIN.D
 					DebuglnRType("AMOMIN.D", rd, rs1, rs2)
-					a := c.GetRegister(rs1)
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -851,7 +860,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b10100: // ------------------------------------------------------------------ AMOMAX.D
 					DebuglnRType("AMOMAX.D", rd, rs1, rs2)
-					a := c.GetRegister(rs1)
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -868,7 +876,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b11000: // ------------------------------------------------------------------ AMOMINU.D
 					DebuglnRType("AMOMINU.D", rd, rs1, rs2)
-					a := c.GetRegister(rs1)
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -885,7 +892,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b11100: // ------------------------------------------------------------------ AMOMAXU.D
 					DebuglnRType("AMOMAXU.D", rd, rs1, rs2)
-					a := c.GetRegister(rs1)
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err

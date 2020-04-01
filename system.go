@@ -1,9 +1,5 @@
 package rv64
 
-var (
-	_ System = (*SystemStandard)(nil)
-)
-
 type System interface {
 	HandleCall(*CPU) (uint64, error)
 	Code() uint8

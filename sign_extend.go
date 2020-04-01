@@ -13,6 +13,7 @@ import (
 func SignExtend(v uint64, n uint64) uint64 {
 	if v&(1<<n) != 0 {
 		return v | (uint64(math.MaxUint64) << n)
+	} else {
+		return v & (uint64(math.MaxUint64) >> (63 - n))
 	}
-	return v
 }

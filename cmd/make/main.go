@@ -10,7 +10,6 @@ import (
 )
 
 var (
-	cTmp = flag.String("tmp", os.TempDir(), "")
 	cGCC = flag.String("gcc", filepath.Join(cRiscvTool, "bin", "riscv64-unknown-elf-gcc"), "")
 )
 
@@ -44,8 +43,13 @@ func makeExamples() {
 	call(*cGCC, "-o", "bin/res/program/minimal", "res/program/minimal.c")
 }
 
+func testExamples() {
+	call(cEmu, "bin/res/program/fib")
+	call(cEmu, "bin/res/program/minimal")
+}
+
 func makeRiscvTests() {
-	os.Chdir(*cTmp)
+	os.Chdir("res")
 	defer os.Chdir(cPwd)
 	if _, err := os.Stat("riscv-tests"); err == nil {
 		return
@@ -60,7 +64,7 @@ func makeRiscvTests() {
 }
 
 func testRiscvTests() {
-	m, err := filepath.Glob(filepath.Join(*cTmp, "riscv-tests", "isa", "rv64u[imafd]-u-*"))
+	m, err := filepath.Glob(filepath.Join("res", "riscv-tests", "isa", "rv64u[imafd]-u-*"))
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -83,13 +87,13 @@ func main() {
 	}
 	for _, e := range flag.Args() {
 		switch e {
-		case "example", "examples":
-			makeExamples()
 		case "make":
 			makeBinary()
 		case "test":
 			makeRiscvTests()
 			testRiscvTests()
+			makeExamples()
+			testExamples()
 		}
 	}
 }
