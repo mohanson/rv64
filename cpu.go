@@ -1,6 +1,7 @@
 package rv64
 
 import (
+	"encoding/binary"
 	"math"
 )
 
@@ -69,6 +70,19 @@ func (c *CPU) SetFloatFlag(flag uint64, b int) {
 }
 func (c *CPU) ClrFloatFlag() {
 	c.csr.Set(CSRfcsr, c.csr.Get(CSRfcsr)&0xffffffffffffffe0)
+}
+
+func (c *CPU) PushString(s string) {
+	b := append([]byte(s), 0x00)
+	c.SetRegister(Rsp, c.GetRegister(Rsp)-uint64(len(b)))
+	c.GetMemory().SetByte(c.GetRegister(Rsp), b)
+}
+
+func (c *CPU) PushUint64(v uint64) {
+	c.SetRegister(Rsp, c.GetRegister(Rsp)-8)
+	mem := make([]byte, 8)
+	binary.LittleEndian.PutUint64(mem, v)
+	c.GetMemory().SetByte(c.GetRegister(Rsp), mem)
 }
 
 func NewCPU() *CPU {
