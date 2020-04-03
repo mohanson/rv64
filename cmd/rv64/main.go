@@ -35,13 +35,16 @@ func main() {
 	}
 	defer f.Close()
 
-	for _, s := range f.Sections {
-		if s.Flags&elf.SHF_ALLOC != 0 && s.Type != elf.SHT_NOBITS {
-			mem := make([]byte, s.Size)
-			if _, err := s.ReadAt(mem, 0); err != nil {
-				log.Panicln(err)
-			}
-			cpu.GetMemory().SetByte(s.Addr, mem)
+	for _, p := range f.Progs {
+		// Specifies a loadable segment, described by p_filesz and p_memsz. The bytes from the file are mapped to the
+		// beginning of the memory segment. If the segment's memory size (p_memsz) is larger than the file size
+		// (p_filesz), the extra bytes are defined to hold the value 0 and to follow the segment's initialized area.
+		// The file size can not be larger than the memory size. Loadable segment entries in the program header table
+		// appear in ascending order, sorted on the p_vaddr member.
+		if p.ProgHeader.Type == elf.PT_LOAD {
+			mem := make([]byte, p.Memsz)
+			p.ReadAt(mem[0:p.Filesz], 0)
+			cpu.GetMemory().SetByte(p.Vaddr, mem)
 		}
 	}
 
