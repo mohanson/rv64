@@ -95,8 +95,8 @@ func main() {
 			makeBinary()
 		case "test":
 			makeRiscvTests()
-			testRiscvTests()
 			makeExamples()
+			testRiscvTests()
 			testExamples()
 		}
 	}
