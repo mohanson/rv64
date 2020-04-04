@@ -89,5 +89,5 @@ func main() {
 	if cpu.GetRegister(rv64.Rsp) != 4194272 {
 		log.Panicln("")
 	}
-	os.Exit(int(cpu.Execute()))
+	os.Exit(int(cpu.Run()))
 }
