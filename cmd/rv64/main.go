@@ -10,18 +10,12 @@ import (
 )
 
 var (
-	cStep  = flag.Int64("steps", -1, "")
-	cDebug = flag.Bool("d", false, "Debug")
-)
-
-var (
-	cArgs = []string{"main"}
-	cEnvs = []string{}
+	flDebug = flag.Bool("d", false, "Debug")
 )
 
 func main() {
 	flag.Parse()
-	if *cDebug == true {
+	if *flDebug {
 		rv64.LogLevel = 1
 	}
 	cpu := rv64.NewCPU()
@@ -34,7 +28,6 @@ func main() {
 		log.Panicln(err)
 	}
 	defer f.Close()
-
 	for _, p := range f.Progs {
 		// Specifies a loadable segment, described by p_filesz and p_memsz. The bytes from the file are mapped to the
 		// beginning of the memory segment. If the segment's memory size (p_memsz) is larger than the file size
@@ -47,7 +40,6 @@ func main() {
 			cpu.GetMemory().SetByte(p.Vaddr, mem)
 		}
 	}
-
 	cpu.SetPC(f.Entry)
 	cpu.SetRegister(rv64.Rsp, cpu.GetMemory().Len())
 
@@ -64,30 +56,27 @@ func main() {
 	// | argv[1].ptr |
 	// | argv[0].ptr |
 	// | argc        |
+	argList := flag.Args()
+	envList := []string{}
+	envPtrs := []uint64{}
+	argPtrs := []uint64{}
+	for i := len(envList) - 1; i >= 0; i-- {
+		cpu.PushString(envList[i])
+		envPtrs = append(envPtrs, cpu.GetRegister(rv64.Rsp))
+	}
+	for i := len(argList) - 1; i >= 0; i-- {
+		cpu.PushString(argList[i])
+		argPtrs = append(argPtrs, cpu.GetRegister(rv64.Rsp))
+	}
+	cpu.PushUint8(0)
+	for i := 0; i < len(envPtrs); i++ {
+		cpu.PushUint64(envPtrs[i])
+	}
+	cpu.PushUint8(0)
+	for i := 0; i < len(argPtrs); i++ {
+		cpu.PushUint64(argPtrs[i])
+	}
+	cpu.PushUint64(uint64(len(argList)))
 
-	addr := []uint64{}
-	// for i := len(cEnvs) - 1; i >= 0; i-- {
-	// 	cpu.pushString(cEnvs[i])
-	// 	addr = append(addr, cpu.ModuleBase.RG[riscv.Rsp])
-	// }
-	// addr = append(addr, 0)
-	for i := len(cArgs) - 1; i >= 0; i-- {
-		cpu.PushString(cArgs[i])
-		addr = append(addr, cpu.GetRegister(rv64.Rsp))
-	}
-	cpu.GetMemory().SetUint8(cpu.GetRegister(rv64.Rsp), 0)
-	cpu.SetRegister(rv64.Rsp, cpu.GetRegister(rv64.Rsp)-1)
-	for i := len(addr) - 1; i >= 0; i-- {
-		cpu.PushUint64(addr[i])
-	}
-	cpu.PushUint64(uint64(len(cArgs)))
-	if cpu.GetRegister(rv64.Rsp) != 4194282 {
-		log.Panicln("")
-	}
-	// Align the stack to 16 bytes
-	cpu.SetRegister(rv64.Rsp, cpu.GetRegister(rv64.Rsp)&0xfffffff0)
-	if cpu.GetRegister(rv64.Rsp) != 4194272 {
-		log.Panicln("")
-	}
 	os.Exit(int(cpu.Run()))
 }
