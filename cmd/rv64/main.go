@@ -2,128 +2,46 @@ package main
 
 import (
 	"debug/elf"
-	"encoding/binary"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/mohanson/rv64"
 )
 
-type CPU struct {
-	Inner *rv64.CPU
-}
-
-func (c *CPU) pushString(s string) {
-	bs := append([]byte(s), 0x00)
-	c.Inner.SetRegister(rv64.Rsp, c.Inner.GetRegister(rv64.Rsp)-uint64(len(bs)))
-	for i, b := range bs {
-		c.Inner.GetMemory().SetByte(c.Inner.GetRegister(rv64.Rsp)+uint64(i), []byte{b})
-	}
-}
-
-func (c *CPU) pushUint64(v uint64) {
-	c.Inner.SetRegister(rv64.Rsp, c.Inner.GetRegister(rv64.Rsp)-8)
-	mem := make([]byte, 8)
-	binary.LittleEndian.PutUint64(mem, v)
-	c.Inner.GetMemory().SetByte(c.Inner.GetRegister(rv64.Rsp), mem)
-}
-
 var (
-	cStep  = flag.Int64("steps", -1, "")
-	cDebug = flag.Bool("d", false, "Debug")
-)
-
-func (c *CPU) Run() uint8 {
-	// log.SetFlags(log.LstdFlags | log.Lshortfile)
-	i := 0
-	for {
-		if c.Inner.GetStatus() == 1 {
-			rv64.Debugln("Exit:", c.Inner.GetSystem().Code())
-			return c.Inner.GetSystem().Code()
-		}
-		if i > int(*cStep) && *cStep > 0 {
-			break
-		}
-		data, err := c.Inner.PipelineInstructionFetch()
-		if err != nil {
-			rv64.Panicln(err)
-		}
-		rv64.Debugln("==========")
-		if len(data) == 2 {
-			rv64.Debugln(fmt.Sprintf("%08b %08b", data[1], data[0]))
-		} else if len(data) == 4 {
-			rv64.Debugln(fmt.Sprintf("%08b %08b %08b %08b", data[3], data[2], data[1], data[0]))
-		} else {
-			rv64.Panicln("")
-		}
-		var s uint64 = 0
-		for i := 0; i < 32; i++ {
-			s += c.Inner.GetRegister(uint64(i))
-		}
-		rv64.Debugln(i, c.Inner.GetPC(), s)
-
-		n, err := c.Inner.PipelineExecute(data)
-		if err != nil {
-			log.Panicln(err)
-		}
-		if n != 0 {
-			i += 1
-			continue
-		}
-		c.Inner.GetCSR().Set(rv64.CSRcycle, c.Inner.GetCSR().Get(rv64.CSRcycle)+n)
-		c.Inner.GetCSR().Set(rv64.CSRtime, c.Inner.GetCSR().Get(rv64.CSRtime)+n)
-		c.Inner.GetCSR().Set(rv64.CSRinstret, c.Inner.GetCSR().Get(rv64.CSRinstret)+1)
-
-		if len(data) == 4 {
-			var s uint64 = 0
-			for i := len(data) - 1; i >= 0; i-- {
-				s += uint64(data[i]) << (8 * i)
-			}
-		}
-		log.Panicln("")
-	}
-	return 0
-}
-
-var (
-	cArgs = []string{"main"}
-	cEnvs = []string{}
+	flDebug = flag.Bool("d", false, "Debug")
 )
 
 func main() {
 	flag.Parse()
-	if *cDebug == true {
+	if *flDebug {
 		rv64.LogLevel = 1
 	}
-	inner := rv64.NewCPU()
-	inner.SetFasten(rv64.NewLinear(4 * 1024 * 1024))
-	inner.SetSystem(rv64.NewSystemStandard())
-	inner.SetCSR(rv64.NewCSRStandard())
-
-	cpu := &CPU{
-		Inner: inner,
-	}
+	cpu := rv64.NewCPU()
+	cpu.SetFasten(rv64.NewLinear(4 * 1024 * 1024))
+	cpu.SetSystem(rv64.NewSystemStandard())
+	cpu.SetCSR(rv64.NewCSRStandard())
 
 	f, err := elf.Open(flag.Arg(0))
 	if err != nil {
 		log.Panicln(err)
 	}
 	defer f.Close()
-
-	for _, s := range f.Sections {
-		if s.Flags&elf.SHF_ALLOC != 0 && s.Type != elf.SHT_NOBITS {
-			mem := make([]byte, s.Size)
-			if _, err := s.ReadAt(mem, 0); err != nil {
-				log.Panicln(err)
-			}
-			cpu.Inner.GetMemory().SetByte(s.Addr, mem)
+	for _, p := range f.Progs {
+		// Specifies a loadable segment, described by p_filesz and p_memsz. The bytes from the file are mapped to the
+		// beginning of the memory segment. If the segment's memory size (p_memsz) is larger than the file size
+		// (p_filesz), the extra bytes are defined to hold the value 0 and to follow the segment's initialized area.
+		// The file size can not be larger than the memory size. Loadable segment entries in the program header table
+		// appear in ascending order, sorted on the p_vaddr member.
+		if p.ProgHeader.Type == elf.PT_LOAD {
+			mem := make([]byte, p.Memsz)
+			p.ReadAt(mem[0:p.Filesz], 0)
+			cpu.GetMemory().SetByte(p.Vaddr, mem)
 		}
 	}
-
-	cpu.Inner.SetPC(f.Entry)
-	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetMemory().Len())
+	cpu.SetPC(f.Entry)
+	cpu.SetRegister(rv64.Rsp, cpu.GetMemory().Len())
 
 	// Command line parameters, distribution of environment variables on the stack:
 	//
@@ -138,30 +56,27 @@ func main() {
 	// | argv[1].ptr |
 	// | argv[0].ptr |
 	// | argc        |
+	argList := flag.Args()
+	envList := []string{}
+	envPtrs := []uint64{}
+	argPtrs := []uint64{}
+	for i := len(envList) - 1; i >= 0; i-- {
+		cpu.PushString(envList[i])
+		envPtrs = append(envPtrs, cpu.GetRegister(rv64.Rsp))
+	}
+	for i := len(argList) - 1; i >= 0; i-- {
+		cpu.PushString(argList[i])
+		argPtrs = append(argPtrs, cpu.GetRegister(rv64.Rsp))
+	}
+	cpu.PushUint8(0)
+	for i := 0; i < len(envPtrs); i++ {
+		cpu.PushUint64(envPtrs[i])
+	}
+	cpu.PushUint8(0)
+	for i := 0; i < len(argPtrs); i++ {
+		cpu.PushUint64(argPtrs[i])
+	}
+	cpu.PushUint64(uint64(len(argList)))
 
-	addr := []uint64{}
-	// for i := len(cEnvs) - 1; i >= 0; i-- {
-	// 	cpu.pushString(cEnvs[i])
-	// 	addr = append(addr, cpu.ModuleBase.RG[riscv.Rsp])
-	// }
-	// addr = append(addr, 0)
-	for i := len(cArgs) - 1; i >= 0; i-- {
-		cpu.pushString(cArgs[i])
-		addr = append(addr, cpu.Inner.GetRegister(rv64.Rsp))
-	}
-	cpu.Inner.GetMemory().SetUint8(cpu.Inner.GetRegister(rv64.Rsp), 0)
-	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetRegister(rv64.Rsp)-1)
-	for i := len(addr) - 1; i >= 0; i-- {
-		cpu.pushUint64(addr[i])
-	}
-	cpu.pushUint64(uint64(len(cArgs)))
-	if cpu.Inner.GetRegister(rv64.Rsp) != 4194282 {
-		log.Panicln("")
-	}
-	// Align the stack to 16 bytes
-	cpu.Inner.SetRegister(rv64.Rsp, cpu.Inner.GetRegister(rv64.Rsp)&0xfffffff0)
-	if cpu.Inner.GetRegister(rv64.Rsp) != 4194272 {
-		log.Panicln("")
-	}
 	os.Exit(int(cpu.Run()))
 }

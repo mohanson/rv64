@@ -39,12 +39,22 @@ func makeExamples() {
 	os.Mkdir("bin", 0755)
 	os.Mkdir("bin/res", 0755)
 	os.Mkdir("bin/res/program", 0755)
+	call(*cGCC, "-o", "bin/res/program/andi", "res/program/andi.c")
+	call(*cGCC, "-o", "bin/res/program/fib_args", "res/program/fib_args.c")
 	call(*cGCC, "-o", "bin/res/program/fib", "res/program/fib.c")
+	call(*cGCC, "-o", "bin/res/program/math", "res/program/math.c")
 	call(*cGCC, "-o", "bin/res/program/minimal", "res/program/minimal.c")
 }
 
 func testExamples() {
+	call(cEmu, "bin/res/program/andi")
+	call(cEmu, "bin/res/program/fib_args", "10", "55")
+	call(cEmu, "bin/res/program/fib_args", "9", "34")
+	call(cEmu, "bin/res/program/fib_args", "8", "21")
+	call(cEmu, "bin/res/program/fib_args", "7", "13")
+	call(cEmu, "bin/res/program/fib_args", "6", "8")
 	call(cEmu, "bin/res/program/fib")
+	call(cEmu, "bin/res/program/math")
 	call(cEmu, "bin/res/program/minimal")
 }
 
@@ -91,8 +101,8 @@ func main() {
 			makeBinary()
 		case "test":
 			makeRiscvTests()
-			testRiscvTests()
 			makeExamples()
+			testRiscvTests()
 			testExamples()
 		}
 	}
