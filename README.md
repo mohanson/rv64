@@ -7,6 +7,13 @@ An outstanding RISC-V RV64IMAFDC(RV64GC) simulator.
 First of all, riscv gnu toolchain must be installed. Source repo is at [https://github.com/riscv/riscv-gnu-toolchain](https://github.com/riscv/riscv-gnu-toolchain), complete the build with the following commands:
 
 ```sh
+$ apt install autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev
+```
+
+```sh
+$ git clone --recursive https://github.com/riscv/riscv-gnu-toolchain
+$ cd riscv-gnu-toolchain
+$ git submodule update --init --recursive
 $ ./configure --prefix=/opt/riscv --with-arch=rv64g
 $ make
 ```
@@ -16,9 +23,7 @@ $ make
 ```sh
 $ git clone https://github.com/mohanson/rv64
 $ cd rv64
-$ mkdir bin
-$ go build -o bin github.com/mohanson/rv64/cmd/make
-$ ./bin/make
+$ go run cmd/make/main.go
 ```
 
 The binary file `rv64` will be located at the `./bin` directory. Could test it with the following command:
