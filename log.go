@@ -46,11 +46,3 @@ func DebuglnSType(i string, rs1 uint64, rs2 uint64, imm uint64) {
 func DebuglnBType(i string, rs1 uint64, rs2 uint64, imm uint64) {
 	Debugln(fmt.Sprintf("% 10s rs1: %#02x rs2: %#02x imm: %#04x", i, rs1, rs2, imm))
 }
-
-func DebuglnUType(i string, rd uint64, imm uint64) {
-	Debugln(fmt.Sprintf("% 10s rd: %#02x imm: %#04x", i, rd, imm))
-}
-
-func DebuglnJType(i string, rd uint64, imm uint64) {
-	Debugln(fmt.Sprintf("% 10s rd: %#02x imm: %#04x", i, rd, imm))
-}

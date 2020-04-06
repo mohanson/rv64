@@ -46,19 +46,19 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		switch InstructionPart(s, 0, 6) {
 		case 0b0110111: // ----------------------------------------------------------------------- LUI
 			rd, imm := UType(s)
-			DebuglnUType("LUI", rd, imm)
+			Debugln(fmt.Sprintf("% 10s rd: %#02x imm: %#016x", "lui", rd, imm))
 			c.SetRegister(rd, imm)
 			c.SetPC(c.GetPC() + 4)
 			return 1, nil
 		case 0b0010111: // ----------------------------------------------------------------------- AUIPC
 			rd, imm := UType(s)
-			DebuglnUType("AUIPC", rd, imm)
+			Debugln(fmt.Sprintf("% 10s rd: %#02x imm: %#016x", "auipc", rd, imm))
 			c.SetRegister(rd, c.GetPC()+imm)
 			c.SetPC(c.GetPC() + 4)
 			return 1, nil
 		case 0b1101111: // ----------------------------------------------------------------------- JAL
 			rd, imm := JType(s)
-			DebuglnJType("JAL", rd, imm)
+			Debugln(fmt.Sprintf("% 10s rd: %#02x imm: %#016x", "jal", rd, imm))
 			c.SetRegister(rd, c.GetPC()+4)
 			r := c.GetPC() + imm
 			if r%4 != 0x00 {
