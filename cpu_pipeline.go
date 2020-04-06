@@ -533,29 +533,29 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b000:
 				switch InstructionPart(s, 25, 31) {
 				case 0b0000000: // ---------------------------------------------------------------- ADDW
-					DebuglnRType("ADDW", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "addw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(c.GetRegister(rs2))))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0000001: // ---------------------------------------------------------------- MULW
-					DebuglnRType("MULW", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "mulw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))*int32(c.GetRegister(rs2))))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0100000: // ---------------------------------------------------------------- SUBW
-					DebuglnRType("SUBW", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "subw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))-int32(c.GetRegister(rs2))))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				}
 			case 0b001: // ------------------------------------------------------------------------ SLLW
-				DebuglnRType("SLLW", rd, rs1, rs2)
+				Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "sllw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 				s := c.GetRegister(rs2) & 0x1f
 				c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<s), 31))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b100: // ------------------------------------------------------------------------ DIVW
-				DebuglnRType("DIVW", rd, rs1, rs2)
+				Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "divw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 				if c.GetRegister(rs2) == 0 {
 					c.SetRegister(rd, math.MaxUint64)
 				} else {
@@ -566,13 +566,13 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b101:
 				switch InstructionPart(s, 25, 31) {
 				case 0b0000000: // ---------------------------------------------------------------- SRLW
-					DebuglnRType("SRLW", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "srlw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					s := c.GetRegister(rs2) & 0x1f
 					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>s), 31))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0000001: // ---------------------------------------------------------------- DIVUW
-					DebuglnRType("DIVUW", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "divuw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					if c.GetRegister(rs2) == 0 {
 						c.SetRegister(rd, math.MaxUint64)
 					} else {
@@ -581,13 +581,13 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0100000: // ---------------------------------------------------------------- SRAW
-					DebuglnRType("SRAW", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "sraw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 4)))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				}
 			case 0b110: // ------------------------------------------------------------------------ REMW
-				DebuglnRType("REMW", rd, rs1, rs2)
+				Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "remw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 				if c.GetRegister(rs2) == 0 {
 					c.SetRegister(rd, c.GetRegister(rs1))
 				} else {
@@ -596,7 +596,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b111: // ------------------------------------------------------------------------ REMUW
-				DebuglnRType("REMUW", rd, rs1, rs2)
+				Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "remuw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 				if c.GetRegister(rs2) == 0 {
 					c.SetRegister(rd, c.GetRegister(rs1))
 				} else {
@@ -612,7 +612,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				a := SignExtend(c.GetRegister(rs1), 31)
 				switch InstructionPart(s, 27, 31) {
 				case 0b00010: // ------------------------------------------------------------------ LR.W
-					DebuglnRType("LR.W", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "lr.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -622,7 +622,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00011: // ------------------------------------------------------------------ SC.W
-					DebuglnRType("SC.W", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "sc.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					if a == c.GetLoadReservation() {
 						c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2)))
 						c.SetRegister(rd, 0)
@@ -633,7 +633,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00001: // ------------------------------------------------------------------ AMOSWAP.W
-					DebuglnRType("AMOSWAP.W", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amoswap.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -643,7 +643,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00000: // ------------------------------------------------------------------ AMOADD.W
-					DebuglnRType("AMOADD.W", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amoadd.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -653,7 +653,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00100: // ------------------------------------------------------------------ AMOXOR.W
-					DebuglnRType("AMOXOR.W", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amoxor.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -663,7 +663,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b01100: // ------------------------------------------------------------------ AMOAND.W
-					DebuglnRType("AMOAND.W", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amoand.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -673,7 +673,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b01000: // ------------------------------------------------------------------ AMOOR.W
-					DebuglnRType("AMOOR.W", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amoor.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -683,7 +683,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b10000: // ------------------------------------------------------------------ AMOMIN.W
-					DebuglnRType("AMOMIN.W", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amomin.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -699,7 +699,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b10100: // ------------------------------------------------------------------ AMOMAX.W
-					DebuglnRType("AMOMAX.W", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amomax.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -715,7 +715,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b11000: // ------------------------------------------------------------------ AMOMINU.W
-					DebuglnRType("AMOMINU.W", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amominu.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -731,7 +731,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b11100: // ------------------------------------------------------------------ AMOMAXU.W
-					DebuglnRType("AMOMAXU.W", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amomaxu.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint32(a)
 					if err != nil {
 						return 0, err
@@ -751,7 +751,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				a := c.GetRegister(rs1)
 				switch InstructionPart(s, 27, 31) {
 				case 0b00010: // ------------------------------------------------------------------ LR.D
-					DebuglnRType("LR.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "lr.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -761,7 +761,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00011: // ------------------------------------------------------------------ SC.D
-					DebuglnRType("SC.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "sc.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					if a == c.GetLoadReservation() {
 						c.GetMemory().SetUint64(a, c.GetRegister(rs2))
 						c.SetRegister(rd, 0)
@@ -772,7 +772,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00001: // ------------------------------------------------------------------ AMOSWAP.D
-					DebuglnRType("AMOSWAP.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amoswap.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -782,7 +782,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00000: // ------------------------------------------------------------------ AMOADD.D
-					DebuglnRType("AMOADD.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amoadd.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -792,7 +792,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00100: // ------------------------------------------------------------------ AMOXOR.D
-					DebuglnRType("AMOXOR.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amoxor.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -802,7 +802,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b01100: // ------------------------------------------------------------------ AMOAND.D
-					DebuglnRType("AMOAND.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amoand.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -812,7 +812,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b01000: // ------------------------------------------------------------------ AMOOR.D
-					DebuglnRType("AMOOR.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amoor.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					a := c.GetRegister(rs1)
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
@@ -823,7 +823,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b10000: // ------------------------------------------------------------------ AMOMIN.D
-					DebuglnRType("AMOMIN.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amomin.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -839,7 +839,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b10100: // ------------------------------------------------------------------ AMOMAX.D
-					DebuglnRType("AMOMAX.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amomax.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -855,7 +855,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b11000: // ------------------------------------------------------------------ AMOMINU.D
-					DebuglnRType("AMOMINU.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amominu.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
@@ -871,7 +871,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b11100: // ------------------------------------------------------------------ AMOMAXU.D
-					DebuglnRType("AMOMAXU.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s rs2: %s", "amomaxu.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint64(a)
 					if err != nil {
 						return 0, err
