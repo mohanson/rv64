@@ -940,9 +940,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b00: // ------------------------------------------------------------------------- FMADD.S
 				DebuglnR4Type("FMADD.S", rd, rs1, rs2, rs3)
 				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFLoat32(rs1)
-				b := c.GetRegisterFloatAsFLoat32(rs2)
-				d := c.GetRegisterFloatAsFLoat32(rs3)
+				a := c.GetRegisterFloatAsFloat32(rs1)
+				b := c.GetRegisterFloatAsFloat32(rs2)
+				d := c.GetRegisterFloatAsFloat32(rs3)
 				r := a*b + d
 				c.SetRegisterFloatAsFloat32(rd, r)
 				if r-d != a*b || r-a*b != d || (r-d)/a != b || (r-d)/b != a {
@@ -953,9 +953,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b01: // ------------------------------------------------------------------------- FMADD.D
 				DebuglnR4Type("FMADD.D", rd, rs1, rs2, rs3)
 				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFLoat64(rs1)
-				b := c.GetRegisterFloatAsFLoat64(rs2)
-				d := c.GetRegisterFloatAsFLoat64(rs3)
+				a := c.GetRegisterFloatAsFloat64(rs1)
+				b := c.GetRegisterFloatAsFloat64(rs2)
+				d := c.GetRegisterFloatAsFloat64(rs3)
 				r := a*b + d
 				c.SetRegisterFloatAsFloat64(rd, r)
 				if r-d != a*b || r-a*b != d || (r-d)/a != b || (r-d)/b != a {
@@ -970,9 +970,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b00: // ------------------------------------------------------------------------- FMSUB.S
 				DebuglnR4Type("FMSUB.S", rd, rs1, rs2, rs3)
 				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFLoat32(rs1)
-				b := c.GetRegisterFloatAsFLoat32(rs2)
-				d := c.GetRegisterFloatAsFLoat32(rs3)
+				a := c.GetRegisterFloatAsFloat32(rs1)
+				b := c.GetRegisterFloatAsFloat32(rs2)
+				d := c.GetRegisterFloatAsFloat32(rs3)
 				r := a*b - d
 				c.SetRegisterFloatAsFloat32(rd, r)
 				if r+d != a*b || a*b-r != d || (r+d)/a != b || (r+d)/b != a {
@@ -983,9 +983,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b01: // ------------------------------------------------------------------------- FMSUB.D
 				DebuglnR4Type("FMSUB.D", rd, rs1, rs2, rs3)
 				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFLoat64(rs1)
-				b := c.GetRegisterFloatAsFLoat64(rs2)
-				d := c.GetRegisterFloatAsFLoat64(rs3)
+				a := c.GetRegisterFloatAsFloat64(rs1)
+				b := c.GetRegisterFloatAsFloat64(rs2)
+				d := c.GetRegisterFloatAsFloat64(rs3)
 				r := a*b - d
 				c.SetRegisterFloatAsFloat64(rd, r)
 				if r+d != a*b || a*b-r != d || (r+d)/a != b || (r+d)/b != a {
@@ -1000,9 +1000,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b00: // ------------------------------------------------------------------------- FNMSUB.S
 				DebuglnR4Type("FNMSUB.S", rd, rs1, rs2, rs3)
 				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFLoat32(rs1)
-				b := c.GetRegisterFloatAsFLoat32(rs2)
-				d := c.GetRegisterFloatAsFLoat32(rs3)
+				a := c.GetRegisterFloatAsFloat32(rs1)
+				b := c.GetRegisterFloatAsFloat32(rs2)
+				d := c.GetRegisterFloatAsFloat32(rs3)
 				r := a*b - d
 				c.SetRegisterFloatAsFloat32(rd, -r)
 				if r+d != a*b || a*b-r != d || (r+d)/a != b || (r+d)/b != a {
@@ -1013,9 +1013,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b01: // ------------------------------------------------------------------------- FNMSUB.D
 				DebuglnR4Type("FNMSUB.D", rd, rs1, rs2, rs3)
 				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFLoat64(rs1)
-				b := c.GetRegisterFloatAsFLoat64(rs2)
-				d := c.GetRegisterFloatAsFLoat64(rs3)
+				a := c.GetRegisterFloatAsFloat64(rs1)
+				b := c.GetRegisterFloatAsFloat64(rs2)
+				d := c.GetRegisterFloatAsFloat64(rs3)
 				r := a*b - d
 				c.SetRegisterFloatAsFloat64(rd, -r)
 				if r+d != a*b || a*b-r != d || (r+d)/a != b || (r+d)/b != a {
@@ -1030,9 +1030,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b00: // ------------------------------------------------------------------------- FNMADD.S
 				DebuglnR4Type("FNMADD.S", rd, rs1, rs2, rs3)
 				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFLoat32(rs1)
-				b := c.GetRegisterFloatAsFLoat32(rs2)
-				d := c.GetRegisterFloatAsFLoat32(rs3)
+				a := c.GetRegisterFloatAsFloat32(rs1)
+				b := c.GetRegisterFloatAsFloat32(rs2)
+				d := c.GetRegisterFloatAsFloat32(rs3)
 				r := a*b + d
 				c.SetRegisterFloatAsFloat32(rd, -r)
 				if r-d != a*b || r-a*b != d || (r-d)/a != b || (r-d)/b != a {
@@ -1043,9 +1043,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b01: // ------------------------------------------------------------------------- FNMADD.D
 				DebuglnR4Type("FNMADD.D", rd, rs1, rs2, rs3)
 				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFLoat64(rs1)
-				b := c.GetRegisterFloatAsFLoat64(rs2)
-				d := c.GetRegisterFloatAsFLoat64(rs3)
+				a := c.GetRegisterFloatAsFloat64(rs1)
+				b := c.GetRegisterFloatAsFloat64(rs2)
+				d := c.GetRegisterFloatAsFloat64(rs3)
 				r := a*b + d
 				c.SetRegisterFloatAsFloat64(rd, -r)
 				if r-d != a*b || r-a*b != d || (r-d)/a != b || (r-d)/b != a {
@@ -1058,8 +1058,8 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			rd, rs1, rs2 := RType(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00:
-				a := c.GetRegisterFloatAsFLoat32(rs1)
-				b := c.GetRegisterFloatAsFLoat32(rs2)
+				a := c.GetRegisterFloatAsFloat32(rs1)
+				b := c.GetRegisterFloatAsFloat32(rs2)
 				switch InstructionPart(s, 27, 31) {
 				case 0b00000: // ------------------------------------------------------------------ FADD.S
 					DebuglnRType("FADD.S", rd, rs1, rs2)
@@ -1208,7 +1208,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					switch InstructionPart(s, 20, 24) {
 					case 0b00000: // -------------------------------------------------------------- FCVT.W.S
 						DebuglnRType("FCVT.W.S", rd, rs1, rs2)
-						d := c.GetRegisterFloatAsFLoat32(rs1)
+						d := c.GetRegisterFloatAsFloat32(rs1)
 						if math.IsNaN(float64(d)) {
 							c.SetRegister(rd, 0x7fffffff)
 							c.SetPC(c.GetPC() + 4)
@@ -1234,7 +1234,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					case 0b00001: // -------------------------------------------------------------- FCVT.WU.S
 						DebuglnRType("FCVT.WU.S", rd, rs1, rs2)
-						d := c.GetRegisterFloatAsFLoat32(rs1)
+						d := c.GetRegisterFloatAsFloat32(rs1)
 						if math.IsNaN(float64(d)) {
 							c.SetRegister(rd, 0xffffffffffffffff)
 							c.SetPC(c.GetPC() + 4)
@@ -1260,7 +1260,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					case 0b00010: // -------------------------------------------------------------- FCVT.L.S
 						DebuglnRType("FCVT.L.S", rd, rs1, rs2)
-						d := c.GetRegisterFloatAsFLoat32(rs1)
+						d := c.GetRegisterFloatAsFloat32(rs1)
 						if math.IsNaN(float64(d)) {
 							c.SetRegister(rd, 0x7fffffffffffffff)
 							c.SetPC(c.GetPC() + 4)
@@ -1286,7 +1286,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					case 0b00011: // -------------------------------------------------------------- FCVT.LU.S
 						DebuglnRType("FCVT.LU.D", rd, rs1, rs2)
-						d := c.GetRegisterFloatAsFLoat32(rs1)
+						d := c.GetRegisterFloatAsFloat32(rs1)
 						if math.IsNaN(float64(d)) {
 							c.SetRegister(rd, 0xffffffffffffffff)
 							c.SetPC(c.GetPC() + 4)
@@ -1313,7 +1313,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					}
 				case 0b01000: // ------------------------------------------------------------------ FCVT.S.D
 					DebuglnRType("FCVT.S.D", rd, rs1, rs2)
-					d := c.GetRegisterFloatAsFLoat64(rs1)
+					d := c.GetRegisterFloatAsFloat64(rs1)
 					if math.IsNaN(d) {
 						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
 					} else {
@@ -1330,7 +1330,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FCLASS.S
 						DebuglnRType("FCLASS.S", rd, rs1, rs2)
-						a := c.GetRegisterFloatAsFLoat32(rs1)
+						a := c.GetRegisterFloatAsFloat32(rs1)
 						c.SetRegister(rd, FClassS(a))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
@@ -1397,8 +1397,8 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				}
 			case 0b01:
-				a := c.GetRegisterFloatAsFLoat64(rs1)
-				b := c.GetRegisterFloatAsFLoat64(rs2)
+				a := c.GetRegisterFloatAsFloat64(rs1)
+				b := c.GetRegisterFloatAsFloat64(rs2)
 				switch InstructionPart(s, 27, 31) {
 				case 0b00000: // ------------------------------------------------------------------ FADD.D
 					DebuglnRType("FADD.D", rd, rs1, rs2)
@@ -1543,7 +1543,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					switch InstructionPart(s, 20, 24) {
 					case 0b00000: // -------------------------------------------------------------- FCVT.W.D
 						DebuglnRType("FCVT.W.D", rd, rs1, rs2)
-						d := c.GetRegisterFloatAsFLoat64(rs1)
+						d := c.GetRegisterFloatAsFloat64(rs1)
 						if math.IsNaN(d) {
 							c.SetRegister(rd, 0x7fffffff)
 							c.SetPC(c.GetPC() + 4)
@@ -1569,7 +1569,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					case 0b00001: // -------------------------------------------------------------- FCVT.WU.D
 						DebuglnRType("FCVT.WU.D", rd, rs1, rs2)
-						d := c.GetRegisterFloatAsFLoat64(rs1)
+						d := c.GetRegisterFloatAsFloat64(rs1)
 						if math.IsNaN(d) {
 							c.SetRegister(rd, 0xffffffffffffffff)
 							c.SetPC(c.GetPC() + 4)
@@ -1595,7 +1595,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					case 0b00010: // -------------------------------------------------------------- FCVT.L.D
 						DebuglnRType("FCVT.L.D", rd, rs1, rs2)
-						d := c.GetRegisterFloatAsFLoat64(rs1)
+						d := c.GetRegisterFloatAsFloat64(rs1)
 						if math.IsNaN(d) {
 							c.SetRegister(rd, 0x7fffffffffffffff)
 							c.SetPC(c.GetPC() + 4)
@@ -1621,7 +1621,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					case 0b00011: // -------------------------------------------------------------- FCVT.LU.D
 						DebuglnRType("FCVT.LU.D", rd, rs1, rs2)
-						d := c.GetRegisterFloatAsFLoat64(rs1)
+						d := c.GetRegisterFloatAsFloat64(rs1)
 						if math.IsNaN(d) {
 							c.SetRegister(rd, 0xffffffffffffffff)
 							c.SetPC(c.GetPC() + 4)
@@ -1648,7 +1648,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					}
 				case 0b01000: // ------------------------------------------------------------------ FCVT.D.S
 					DebuglnRType("FCVT.D.S", rd, rs1, rs2)
-					d := c.GetRegisterFloatAsFLoat32(rs1)
+					d := c.GetRegisterFloatAsFloat32(rs1)
 					if math.IsNaN(float64(d)) {
 						c.SetRegisterFloat(rd, NaN64)
 					} else {
@@ -1697,7 +1697,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FCLASS.D
 						DebuglnRType("FCLASS.D", rd, rs1, rs2)
-						a := c.GetRegisterFloatAsFLoat64(rs1)
+						a := c.GetRegisterFloatAsFloat64(rs1)
 						c.SetRegister(rd, FClassD(a))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil

@@ -51,13 +51,13 @@ func (c *CPU) SetRegisterFloat(i uint64, f uint64) { c.reg1[i] = f }
 func (c *CPU) GetRegisterFloat(i uint64) uint64    { return c.reg1[i] }
 
 func (c *CPU) SetRegisterFloatAsFloat64(i uint64, f float64) { c.reg1[i] = math.Float64bits(f) }
-func (c *CPU) GetRegisterFloatAsFLoat64(i uint64) float64    { return math.Float64frombits(c.reg1[i]) }
+func (c *CPU) GetRegisterFloatAsFloat64(i uint64) float64    { return math.Float64frombits(c.reg1[i]) }
 
 func (c *CPU) SetRegisterFloatAsFloat32(i uint64, f float32) {
 	c.SetRegisterFloatAsFloat64(i, NaNBoxing(f))
 }
-func (c *CPU) GetRegisterFloatAsFLoat32(i uint64) float32 {
-	return NaNGnixob(c.GetRegisterFloatAsFLoat64(i))
+func (c *CPU) GetRegisterFloatAsFloat32(i uint64) float32 {
+	return NaNGnixob(c.GetRegisterFloatAsFloat64(i))
 }
 
 func (c *CPU) SetFloatFlag(flag uint64, b int) {
