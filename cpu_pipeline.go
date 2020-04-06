@@ -220,16 +220,16 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetRegister(rd, c.GetRegister(rs1)&imm)
 			case 0b001: // ------------------------------------------------------------------------ SLLI
 				shamt := InstructionPart(imm, 0, 5)
-				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s shamt:%#x", "slli", c.LogI(rd), c.LogI(rs1), shamt))
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s imm: %#016x", "slli", c.LogI(rd), c.LogI(rs1), imm))
 				c.SetRegister(rd, c.GetRegister(rs1)<<shamt)
 			case 0b101:
 				shamt := InstructionPart(imm, 0, 5)
 				switch InstructionPart(s, 26, 31) {
 				case 0b000000: // ----------------------------------------------------------------- SRLI
-					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s shamt:%#x", "srli", c.LogI(rd), c.LogI(rs1), shamt))
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s imm: %#016x", "srli", c.LogI(rd), c.LogI(rs1), imm))
 					c.SetRegister(rd, c.GetRegister(rs1)>>shamt)
 				case 0b010000: // ----------------------------------------------------------------- SRAI
-					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s shamt:%#x", "srai", c.LogI(rd), c.LogI(rs1), shamt))
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s imm: %#016x", "srai", c.LogI(rd), c.LogI(rs1), imm))
 					c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))>>shamt))
 				}
 			}
@@ -441,7 +441,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				}
 			case 0b001: // ------------------------------------------------------------------------ CSRRW
-				DebuglnIType("CSRRW", rd, rs1, csr)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s csr: %#016x", "csrrw", c.LogI(rd), c.LogI(rs1), csr))
 				if rd != Rzero {
 					c.SetRegister(rd, c.GetCSR().Get(csr))
 				}
@@ -449,7 +449,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b010: // ------------------------------------------------------------------------ CSRRS
-				DebuglnIType("CSRRS", rd, rs1, csr)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s csr: %#016x", "csrrs", c.LogI(rd), c.LogI(rs1), csr))
 				c.SetRegister(rd, c.GetCSR().Get(csr))
 				if rs1 != Rzero {
 					c.GetCSR().Set(csr, c.GetCSR().Get(csr)|c.GetRegister(rs1))
@@ -457,7 +457,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b011: // ------------------------------------------------------------------------ CSRRC
-				DebuglnIType("CSRRC", rd, rs1, csr)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s csr: %#016x", "csrrc", c.LogI(rd), c.LogI(rs1), csr))
 				c.SetRegister(rd, c.GetCSR().Get(csr))
 				if rs1 != Rzero {
 					c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-c.GetRegister(rs1)))
@@ -465,7 +465,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b101: // ------------------------------------------------------------------------ CSRRWI
-				DebuglnIType("CSRRWI", rd, rs1, csr)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s csr: %#016x", "csrrwi", c.LogI(rd), c.LogI(rs1), csr))
 				if rd != Rzero {
 					c.SetRegister(rd, c.GetCSR().Get(csr))
 				}
@@ -473,7 +473,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b110: // ------------------------------------------------------------------------ CSRRSI
-				DebuglnIType("CSRRSI", rd, rs1, csr)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s csr: %#016x", "csrrsi", c.LogI(rd), c.LogI(rs1), csr))
 				c.SetRegister(rd, c.GetCSR().Get(csr))
 				if csr != 0x00 {
 					c.GetCSR().Set(csr, c.GetCSR().Get(csr)|rs1)
@@ -481,7 +481,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b111: // ------------------------------------------------------------------------ CSRRCI
-				DebuglnIType("CSRRCI", rd, rs1, csr)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s csr: %#016x", "csrrci", c.LogI(rd), c.LogI(rs1), csr))
 				c.SetRegister(rd, c.GetCSR().Get(csr))
 				if csr != 0x00 {
 					c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-rs1))
@@ -493,37 +493,36 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			rd, rs1, imm := IType(s)
 			switch InstructionPart(s, 12, 14) {
 			case 0b000: // ------------------------------------------------------------------------ ADDIW
-				DebuglnIType("ADDIW", rd, rs1, imm)
+				Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s imm: %#016x", "addiw", c.LogI(rd), c.LogI(rs1), imm))
 				c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(imm)))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b001: // ------------------------------------------------------------------------ SLLIW
+				Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s imm: %#016x", "slliw", c.LogI(rd), c.LogI(rs1), imm))
 				if InstructionPart(imm, 5, 5) != 0x00 {
 					return 0, ErrAbnormalInstruction
 				}
-				imm = InstructionPart(imm, 0, 4)
-				DebuglnIType("SLLIW", rd, rs1, imm)
 				c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<imm), 31))
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b101:
 				switch InstructionPart(s, 25, 31) {
 				case 0b0000000: // ---------------------------------------------------------------- SRLIW
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s imm: %#016x", "srliw", c.LogI(rd), c.LogI(rs1), imm))
 					if InstructionPart(imm, 5, 5) != 0x00 {
 						return 0, ErrAbnormalInstruction
 					}
-					imm = InstructionPart(imm, 0, 4)
-					DebuglnIType("SRLIW", rd, rs1, imm)
-					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>imm), 31))
+					shamt := InstructionPart(imm, 0, 4)
+					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>shamt), 31))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0100000: // ---------------------------------------------------------------- SRAIW
+					Debugln(fmt.Sprintf("% 10s rd: %s rs1: %s imm: %#016x", "sraiw", c.LogI(rd), c.LogI(rs1), imm))
 					if InstructionPart(imm, 5, 5) != 0x00 {
 						return 0, ErrAbnormalInstruction
 					}
-					imm = InstructionPart(imm, 0, 4)
-					DebuglnIType("SRAIW", rd, rs1, imm)
-					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>imm))
+					shamt := InstructionPart(imm, 0, 4)
+					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>shamt))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				}
