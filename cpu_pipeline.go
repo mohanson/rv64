@@ -32,7 +32,6 @@ func (c *CPU) PipelineInstructionFetch() ([]byte, error) {
 		return nil, err
 	}
 	return r, nil
-
 }
 
 func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
