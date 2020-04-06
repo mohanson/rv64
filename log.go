@@ -19,14 +19,6 @@ func Panicln(v ...interface{}) {
 	log.Panicln(v...)
 }
 
-func I(c *CPU, n uint64) string {
-	return fmt.Sprintf("%#02x(%#016x)", n, c.GetRegister(n))
-}
-
-func F(c *CPU, n uint64) string {
-	return fmt.Sprintf("%#02x(%#016x)", n, c.GetRegisterFloat(n))
-}
-
 func DebuglnRType(i string, rd uint64, rs1 uint64, rs2 uint64) {
 	Debugln(fmt.Sprintf("% 10s rd: %#02x rs1: %#02x rs2: %#02x", i, rd, rs1, rs2))
 }

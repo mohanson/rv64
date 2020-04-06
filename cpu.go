@@ -2,6 +2,7 @@ package rv64
 
 import (
 	"encoding/binary"
+	"fmt"
 	"math"
 )
 
@@ -94,6 +95,14 @@ func (c *CPU) PushUint64(v uint64) {
 func (c *CPU) PushUint8(v uint8) {
 	c.SetRegister(Rsp, c.GetRegister(Rsp)-1)
 	c.GetMemory().SetUint8(c.GetRegister(Rsp), 0)
+}
+
+func (c *CPU) LogI(n uint64) string {
+	return fmt.Sprintf("%#02x(%#016x)", n, c.GetRegister(n))
+}
+
+func (c *CPU) LogF(n uint64) string {
+	return fmt.Sprintf("%#02x(%#016x)", n, c.GetRegisterFloat(n))
 }
 
 func NewCPU() *CPU {
