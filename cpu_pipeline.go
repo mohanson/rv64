@@ -893,7 +893,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			a := c.GetRegister(rs1) + imm
 			switch InstructionPart(s, 12, 14) {
 			case 0b010: // ------------------------------------------------------------------------ FLW
-				DebuglnIType("FLW", rd, rs1, imm)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s imm: %#016x", "flw", c.LogF(rd), c.LogI(rs1), imm))
 				v, err := c.GetMemory().GetUint32(a)
 				if err != nil {
 					return 0, err
@@ -902,7 +902,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b011: // ------------------------------------------------------------------------ FLD
-				DebuglnIType("FLD", rd, rs1, imm)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s imm: %#016x", "fld", c.LogF(rd), c.LogI(rs1), imm))
 				v, err := c.GetMemory().GetUint64(a)
 				if err != nil {
 					return 0, err
@@ -916,7 +916,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			a := c.GetRegister(rs1) + imm
 			switch InstructionPart(s, 12, 14) {
 			case 0b010: // ------------------------------------------------------------------------ FSW
-				DebuglnSType("FSW", rs1, rs2, imm)
+				Debugln(fmt.Sprintf("% 10s rs1: %s rs2: %s imm: %#016x", "fsw", c.LogI(rs1), c.LogF(rs2), imm))
 				err := c.GetMemory().SetUint32(a, uint32(c.GetRegisterFloat(rs2)))
 				if err != nil {
 					return 0, err
@@ -924,7 +924,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b011: // ------------------------------------------------------------------------ FSD
-				DebuglnSType("FSD", rs1, rs2, imm)
+				Debugln(fmt.Sprintf("% 10s rs1: %s rs2: %s imm: %#016x", "fsd", c.LogI(rs1), c.LogF(rs2), imm))
 				err := c.GetMemory().SetUint64(a, c.GetRegisterFloat(rs2))
 				if err != nil {
 					return 0, err
@@ -936,7 +936,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			rd, rs1, rs2, rs3 := R4Type(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00: // ------------------------------------------------------------------------- FMADD.S
-				DebuglnR4Type("FMADD.S", rd, rs1, rs2, rs3)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s rs3: %s", "fmadd.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
 				c.ClrFloatFlag()
 				a := c.GetRegisterFloatAsFloat32(rs1)
 				b := c.GetRegisterFloatAsFloat32(rs2)
@@ -949,7 +949,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b01: // ------------------------------------------------------------------------- FMADD.D
-				DebuglnR4Type("FMADD.D", rd, rs1, rs2, rs3)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s rs3: %s", "fmadd.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
 				c.ClrFloatFlag()
 				a := c.GetRegisterFloatAsFloat64(rs1)
 				b := c.GetRegisterFloatAsFloat64(rs2)
@@ -966,7 +966,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			rd, rs1, rs2, rs3 := R4Type(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00: // ------------------------------------------------------------------------- FMSUB.S
-				DebuglnR4Type("FMSUB.S", rd, rs1, rs2, rs3)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s rs3: %s", "fmsub.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
 				c.ClrFloatFlag()
 				a := c.GetRegisterFloatAsFloat32(rs1)
 				b := c.GetRegisterFloatAsFloat32(rs2)
@@ -979,7 +979,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b01: // ------------------------------------------------------------------------- FMSUB.D
-				DebuglnR4Type("FMSUB.D", rd, rs1, rs2, rs3)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s rs3: %s", "fmsub.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
 				c.ClrFloatFlag()
 				a := c.GetRegisterFloatAsFloat64(rs1)
 				b := c.GetRegisterFloatAsFloat64(rs2)
@@ -996,7 +996,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			rd, rs1, rs2, rs3 := R4Type(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00: // ------------------------------------------------------------------------- FNMSUB.S
-				DebuglnR4Type("FNMSUB.S", rd, rs1, rs2, rs3)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s rs3: %s", "fnmsub.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
 				c.ClrFloatFlag()
 				a := c.GetRegisterFloatAsFloat32(rs1)
 				b := c.GetRegisterFloatAsFloat32(rs2)
@@ -1009,7 +1009,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b01: // ------------------------------------------------------------------------- FNMSUB.D
-				DebuglnR4Type("FNMSUB.D", rd, rs1, rs2, rs3)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s rs3: %s", "fnmsub.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
 				c.ClrFloatFlag()
 				a := c.GetRegisterFloatAsFloat64(rs1)
 				b := c.GetRegisterFloatAsFloat64(rs2)
@@ -1026,7 +1026,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			rd, rs1, rs2, rs3 := R4Type(s)
 			switch InstructionPart(s, 25, 26) {
 			case 0b00: // ------------------------------------------------------------------------- FNMADD.S
-				DebuglnR4Type("FNMADD.S", rd, rs1, rs2, rs3)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s rs3: %s", "fnmadd.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
 				c.ClrFloatFlag()
 				a := c.GetRegisterFloatAsFloat32(rs1)
 				b := c.GetRegisterFloatAsFloat32(rs2)
@@ -1039,7 +1039,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b01: // ------------------------------------------------------------------------- FNMADD.D
-				DebuglnR4Type("FNMADD.D", rd, rs1, rs2, rs3)
+				Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s rs3: %s", "fnmadd.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
 				c.ClrFloatFlag()
 				a := c.GetRegisterFloatAsFloat64(rs1)
 				b := c.GetRegisterFloatAsFloat64(rs2)
@@ -1060,7 +1060,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				b := c.GetRegisterFloatAsFloat32(rs2)
 				switch InstructionPart(s, 27, 31) {
 				case 0b00000: // ------------------------------------------------------------------ FADD.S
-					DebuglnRType("FADD.S", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fadd.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.ClrFloatFlag()
 					d := a + b
 					c.SetRegisterFloatAsFloat32(rd, d)
@@ -1070,7 +1070,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00001: // ------------------------------------------------------------------ FSUB.S
-					DebuglnRType("FSUB.S", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fsub.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.ClrFloatFlag()
 					if (math.Signbit(float64(a)) == math.Signbit(float64(b))) && math.IsInf(float64(a), 0) && math.IsInf(float64(b), 0) {
 						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
@@ -1086,7 +1086,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00010: // ------------------------------------------------------------------ FMUL.S
-					DebuglnRType("FMUL.S", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fmul.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.ClrFloatFlag()
 					d := a * b
 					c.SetRegisterFloatAsFloat32(rd, d)
@@ -1096,7 +1096,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00011: // ------------------------------------------------------------------ FDIV.S
-					DebuglnRType("FDIV.S", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fdiv.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.ClrFloatFlag()
 					if b == 0 {
 						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
@@ -1112,7 +1112,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b01011: // ------------------------------------------------------------------ FSQRT.S
-					DebuglnRType("FSQRT.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fsqrt.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.ClrFloatFlag()
 					if a < 0 {
 						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
@@ -1130,7 +1130,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b00100:
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FSGNJ.S
-						DebuglnRType("FSGNJ.S", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fsgnj.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if math.Signbit(float64(b)) {
 							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)|0x80000000))
 						} else {
@@ -1139,7 +1139,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FSGNJN.S
-						DebuglnRType("FSGNJ.S", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fsgnjn.s.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if math.Signbit(float64(b)) {
 							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)&0x7fffffff))
 						} else {
@@ -1148,7 +1148,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b010: // ---------------------------------------------------------------- FSGNJX.S
-						DebuglnRType("FSGNJ.S", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fsgnjx.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if math.Signbit(float64(a)) != math.Signbit(float64(b)) {
 							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)|0x80000000))
 						} else {
@@ -1160,9 +1160,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b00101:
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FMIN.D
-						DebuglnRType("FMIN.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fmin.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					case 0b001: // ---------------------------------------------------------------- FMAX.D
-						DebuglnRType("FMAX.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fmax.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					}
 					c.ClrFloatFlag()
 					if math.IsNaN(float64(a)) && math.IsNaN(float64(b)) {
@@ -1205,7 +1205,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b11000:
 					switch InstructionPart(s, 20, 24) {
 					case 0b00000: // -------------------------------------------------------------- FCVT.W.S
-						DebuglnRType("FCVT.W.S", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.w.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						d := c.GetRegisterFloatAsFloat32(rs1)
 						if math.IsNaN(float64(d)) {
 							c.SetRegister(rd, 0x7fffffff)
@@ -1231,7 +1231,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b00001: // -------------------------------------------------------------- FCVT.WU.S
-						DebuglnRType("FCVT.WU.S", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.wu.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						d := c.GetRegisterFloatAsFloat32(rs1)
 						if math.IsNaN(float64(d)) {
 							c.SetRegister(rd, 0xffffffffffffffff)
@@ -1257,7 +1257,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b00010: // -------------------------------------------------------------- FCVT.L.S
-						DebuglnRType("FCVT.L.S", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.l.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						d := c.GetRegisterFloatAsFloat32(rs1)
 						if math.IsNaN(float64(d)) {
 							c.SetRegister(rd, 0x7fffffffffffffff)
@@ -1283,7 +1283,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b00011: // -------------------------------------------------------------- FCVT.LU.S
-						DebuglnRType("FCVT.LU.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.lu.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						d := c.GetRegisterFloatAsFloat32(rs1)
 						if math.IsNaN(float64(d)) {
 							c.SetRegister(rd, 0xffffffffffffffff)
@@ -1310,7 +1310,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					}
 				case 0b01000: // ------------------------------------------------------------------ FCVT.S.D
-					DebuglnRType("FCVT.S.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.s.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					d := c.GetRegisterFloatAsFloat64(rs1)
 					if math.IsNaN(d) {
 						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
@@ -1322,12 +1322,12 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b11100:
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FMV.X.W
-						DebuglnRType("FMV.X.W", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fmv.x.w", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegisterFloat(rs1))), 31))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FCLASS.S
-						DebuglnRType("FCLASS.S", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fclass.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						a := c.GetRegisterFloatAsFloat32(rs1)
 						c.SetRegister(rd, FClassS(a))
 						c.SetPC(c.GetPC() + 4)
@@ -1337,21 +1337,21 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					var cond bool
 					switch InstructionPart(s, 12, 14) {
 					case 0b010: // ---------------------------------------------------------------- FEQ.S
-						DebuglnRType("FEQ.S", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "feq.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if IsSNaN32(a) || IsSNaN32(b) {
 							c.SetFloatFlag(FFlagsNV, 1)
 						} else {
 							cond = a == b
 						}
 					case 0b001: // ---------------------------------------------------------------- FLT.S
-						DebuglnRType("FLT.S", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "flt.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if math.IsNaN(float64(a)) || math.IsNaN(float64(b)) {
 							c.SetFloatFlag(FFlagsNV, 1)
 						} else {
 							cond = a < b
 						}
 					case 0b000: // ---------------------------------------------------------------- FLE.S
-						DebuglnRType("FLE.S", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fle.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if math.IsNaN(float64(a)) || math.IsNaN(float64(b)) {
 							c.SetFloatFlag(FFlagsNV, 1)
 						} else {
@@ -1368,28 +1368,28 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b11010:
 					switch InstructionPart(s, 20, 24) {
 					case 0b00000: // -------------------------------------------------------------- FCVT.S.W
-						DebuglnRType("FCVT.S.W", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.s.w", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegisterFloatAsFloat32(rd, float32(int32(c.GetRegister(rs1))))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b00001: // -------------------------------------------------------------- FCVT.S.WU
-						DebuglnRType("FCVT.S.WU", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.s.wu", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegisterFloatAsFloat32(rd, float32(uint32(c.GetRegister(rs1))))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b00010: // -------------------------------------------------------------- FCVT.S.L
-						DebuglnRType("FCVT.S.L", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.s.l", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegisterFloatAsFloat32(rd, float32(int64(c.GetRegister(rs1))))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b00011: // -------------------------------------------------------------- FCVT.S.LU
-						DebuglnRType("FCVT.S.LU", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.s.lu", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegisterFloatAsFloat32(rd, float32(uint64(c.GetRegister(rs1))))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					}
 				case 0b11110: // ------------------------------------------------------------------ FMV.W.X
-					DebuglnRType("FMV.W.X", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fmv.w.x", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(uint32(c.GetRegister(rs1))))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
@@ -1399,7 +1399,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				b := c.GetRegisterFloatAsFloat64(rs2)
 				switch InstructionPart(s, 27, 31) {
 				case 0b00000: // ------------------------------------------------------------------ FADD.D
-					DebuglnRType("FADD.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fadd.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.ClrFloatFlag()
 					c.SetRegisterFloatAsFloat64(rd, a+b)
 					if big.NewFloat(0).Add(big.NewFloat(a), big.NewFloat(b)).Acc() != big.Exact {
@@ -1408,7 +1408,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00001: // ------------------------------------------------------------------ FSUB.D
-					DebuglnRType("FSUB.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fsub.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.ClrFloatFlag()
 					if (math.Signbit(a) == math.Signbit(b)) && math.IsInf(a, 0) && math.IsInf(b, 0) {
 						c.SetRegisterFloat(rd, NaN64)
@@ -1423,7 +1423,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00010: // ------------------------------------------------------------------ FMUL.D
-					DebuglnRType("FMUL.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fmul.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.ClrFloatFlag()
 					c.SetRegisterFloatAsFloat64(rd, a*b)
 					if big.NewFloat(0).Add(big.NewFloat(a), big.NewFloat(b)).Acc() != big.Exact {
@@ -1432,7 +1432,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00011: // ------------------------------------------------------------------ FDIV.D
-					DebuglnRType("FDIV.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fdiv.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.ClrFloatFlag()
 					if b == 0 {
 						c.SetRegisterFloat(rd, NaN64)
@@ -1447,7 +1447,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b01011: // ------------------------------------------------------------------ FSQRT.D
-					DebuglnRType("FSQRT.D", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fsqrt.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.ClrFloatFlag()
 					if a < 0 {
 						c.SetRegisterFloat(rd, NaN64)
@@ -1465,7 +1465,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b00100:
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FSGNJ.D
-						DebuglnRType("FSGNJ.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fsgnj.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if math.Signbit(b) {
 							c.SetRegisterFloat(rd, math.Float64bits(a)|0x8000000000000000)
 						} else {
@@ -1474,7 +1474,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FSGNJN.D
-						DebuglnRType("FSGNJN.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fsgnjn.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if math.Signbit(b) {
 							c.SetRegisterFloat(rd, math.Float64bits(a)&0x7fffffffffffffff)
 						} else {
@@ -1483,7 +1483,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b010: // ---------------------------------------------------------------- FSGNJX.D
-						DebuglnRType("FSGNJX.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fsgnjx.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if math.Signbit(a) != math.Signbit(b) {
 							c.SetRegisterFloat(rd, math.Float64bits(a)|0x8000000000000000)
 						} else {
@@ -1495,9 +1495,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b00101:
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FMIN.D
-						DebuglnRType("FMIN.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fmin.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					case 0b001: // ---------------------------------------------------------------- FMAX.D
-						DebuglnRType("FMAX.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fmax.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					}
 					c.ClrFloatFlag()
 					if math.IsNaN(a) && math.IsNaN(b) {
@@ -1540,7 +1540,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b11000:
 					switch InstructionPart(s, 20, 24) {
 					case 0b00000: // -------------------------------------------------------------- FCVT.W.D
-						DebuglnRType("FCVT.W.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.w.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						d := c.GetRegisterFloatAsFloat64(rs1)
 						if math.IsNaN(d) {
 							c.SetRegister(rd, 0x7fffffff)
@@ -1566,7 +1566,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b00001: // -------------------------------------------------------------- FCVT.WU.D
-						DebuglnRType("FCVT.WU.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.wu.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						d := c.GetRegisterFloatAsFloat64(rs1)
 						if math.IsNaN(d) {
 							c.SetRegister(rd, 0xffffffffffffffff)
@@ -1592,7 +1592,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b00010: // -------------------------------------------------------------- FCVT.L.D
-						DebuglnRType("FCVT.L.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.l.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						d := c.GetRegisterFloatAsFloat64(rs1)
 						if math.IsNaN(d) {
 							c.SetRegister(rd, 0x7fffffffffffffff)
@@ -1618,7 +1618,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b00011: // -------------------------------------------------------------- FCVT.LU.D
-						DebuglnRType("FCVT.LU.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.lu.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						d := c.GetRegisterFloatAsFloat64(rs1)
 						if math.IsNaN(d) {
 							c.SetRegister(rd, 0xffffffffffffffff)
@@ -1645,7 +1645,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					}
 				case 0b01000: // ------------------------------------------------------------------ FCVT.D.S
-					DebuglnRType("FCVT.D.S", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.d.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					d := c.GetRegisterFloatAsFloat32(rs1)
 					if math.IsNaN(float64(d)) {
 						c.SetRegisterFloat(rd, NaN64)
@@ -1658,21 +1658,21 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					var cond bool
 					switch InstructionPart(s, 12, 14) {
 					case 0b010: // ---------------------------------------------------------------- FEQ.D
-						DebuglnRType("FEQ.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "feq.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if IsSNaN64(a) || IsSNaN64(b) {
 							c.SetFloatFlag(FFlagsNV, 1)
 						} else {
 							cond = a == b
 						}
 					case 0b001: // ---------------------------------------------------------------- FLT.D
-						DebuglnRType("FLT.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "flt.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if math.IsNaN(a) || math.IsNaN(b) {
 							c.SetFloatFlag(FFlagsNV, 1)
 						} else {
 							cond = a < b
 						}
 					case 0b000: // ---------------------------------------------------------------- FLE.D
-						DebuglnRType("FLE.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fle.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if math.IsNaN(a) || math.IsNaN(b) {
 							c.SetFloatFlag(FFlagsNV, 1)
 						} else {
@@ -1689,12 +1689,12 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b11100:
 					switch InstructionPart(s, 12, 14) {
 					case 0b000: // ---------------------------------------------------------------- FMV.X.D
-						DebuglnRType("FMV.X.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fmv.x.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegister(rd, c.GetRegisterFloat(rs1))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b001: // ---------------------------------------------------------------- FCLASS.D
-						DebuglnRType("FCLASS.D", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fclass.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						a := c.GetRegisterFloatAsFloat64(rs1)
 						c.SetRegister(rd, FClassD(a))
 						c.SetPC(c.GetPC() + 4)
@@ -1703,28 +1703,28 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				case 0b11010:
 					switch InstructionPart(s, 20, 24) {
 					case 0b00000: // -------------------------------------------------------------- FCVT.D.W
-						DebuglnRType("FCVT.D.W", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.d.w", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegisterFloatAsFloat64(rd, float64(int32(c.GetRegister(rs1))))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b00001: // -------------------------------------------------------------- FCVT.D.WU
-						DebuglnRType("FCVT.D.WU", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.d.wu", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegisterFloatAsFloat64(rd, float64(uint32(c.GetRegister(rs1))))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b00010: // -------------------------------------------------------------- FCVT.D.L
-						DebuglnRType("FCVT.D.L", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.d.l", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegisterFloatAsFloat64(rd, float64(int64(c.GetRegister(rs1))))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					case 0b00011: // -------------------------------------------------------------- FCVT.D.LU
-						DebuglnRType("FCVT.D.LU", rd, rs1, rs2)
+						Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fcvt.d.lu", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegisterFloatAsFloat64(rd, float64(uint64(c.GetRegister(rs1))))
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					}
 				case 0b11110: // ------------------------------------------------------------------ FMV.D.X
-					DebuglnRType("FMV.D.X", rd, rs1, rs2)
+					Debugln(fmt.Sprintf("% 10s rd : %s rs1: %s rs2: %s", "fmv.d.x", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.SetRegisterFloat(rd, c.GetRegister(rs1))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
