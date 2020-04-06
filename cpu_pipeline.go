@@ -46,21 +46,18 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		switch InstructionPart(s, 0, 6) {
 		case 0b0110111: // ----------------------------------------------------------------------- LUI
 			rd, imm := UType(s)
-			imm = SignExtend(imm, 31)
 			DebuglnUType("LUI", rd, imm)
 			c.SetRegister(rd, imm)
 			c.SetPC(c.GetPC() + 4)
 			return 1, nil
 		case 0b0010111: // ----------------------------------------------------------------------- AUIPC
 			rd, imm := UType(s)
-			imm = SignExtend(imm, 31)
 			DebuglnUType("AUIPC", rd, imm)
 			c.SetRegister(rd, c.GetPC()+imm)
 			c.SetPC(c.GetPC() + 4)
 			return 1, nil
 		case 0b1101111: // ----------------------------------------------------------------------- JAL
 			rd, imm := JType(s)
-			imm = SignExtend(imm, 19)
 			DebuglnJType("JAL", rd, imm)
 			c.SetRegister(rd, c.GetPC()+4)
 			r := c.GetPC() + imm
@@ -71,7 +68,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			return 1, nil
 		case 0b1100111: // ----------------------------------------------------------------------- JALR
 			rd, rs1, imm := IType(s)
-			imm = SignExtend(imm, 11)
 			DebuglnIType("JALR", rd, rs1, imm)
 			c.SetRegister(rd, c.GetPC()+4)
 			r := (c.GetRegister(rs1) + imm) & 0xfffffffffffffffe
@@ -82,7 +78,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			return 1, nil
 		case 0b1100011:
 			rs1, rs2, imm := BType(s)
-			imm = SignExtend(imm, 12)
 			if imm%2 != 0x00 {
 				return 0, ErrMisalignedInstructionFetch
 			}
@@ -115,7 +110,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			return 1, nil
 		case 0b0000011:
 			rd, rs1, imm := IType(s)
-			imm = SignExtend(imm, 11)
 			a := c.GetRegister(rs1) + imm
 			var v uint64
 			switch InstructionPart(s, 12, 14) {
@@ -174,7 +168,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			return 1, nil
 		case 0b0100011:
 			rs1, rs2, imm := SType(s)
-			imm = SignExtend(imm, 11)
 			a := c.GetRegister(rs1) + imm
 			var err error
 			switch InstructionPart(s, 12, 14) {
@@ -200,11 +193,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			rd, rs1, imm := IType(s)
 			switch InstructionPart(s, 12, 14) {
 			case 0b000: // ------------------------------------------------------------------------ ADDI
-				imm = SignExtend(imm, 11)
 				DebuglnIType("ADDI", rd, rs1, imm)
 				c.SetRegister(rd, c.GetRegister(rs1)+imm)
 			case 0b010: // ------------------------------------------------------------------------ SLTI
-				imm = SignExtend(imm, 11)
 				DebuglnIType("SLTI", rd, rs1, imm)
 				if int64(c.GetRegister(rs1)) < int64(imm) {
 					c.SetRegister(rd, 1)
@@ -212,7 +203,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetRegister(rd, 0)
 				}
 			case 0b011: // ------------------------------------------------------------------------ SLTIU
-				imm = SignExtend(imm, 11)
 				DebuglnIType("SLTIU", rd, rs1, imm)
 				if c.GetRegister(rs1) < imm {
 					c.SetRegister(rd, 1)
@@ -220,15 +210,12 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetRegister(rd, 0)
 				}
 			case 0b100: // ------------------------------------------------------------------------ XORI
-				imm = SignExtend(imm, 11)
 				DebuglnIType("XORI", rd, rs1, imm)
 				c.SetRegister(rd, c.GetRegister(rs1)^imm)
 			case 0b110: // ------------------------------------------------------------------------ ORI
-				imm = SignExtend(imm, 11)
 				DebuglnIType("ORI", rd, rs1, imm)
 				c.SetRegister(rd, c.GetRegister(rs1)|imm)
 			case 0b111: // ------------------------------------------------------------------------ ANDI
-				imm = SignExtend(imm, 11)
 				DebuglnIType("ANDI", rd, rs1, imm)
 				c.SetRegister(rd, c.GetRegister(rs1)&imm)
 			case 0b001: // ------------------------------------------------------------------------ SLLI
@@ -479,8 +466,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b101: // ------------------------------------------------------------------------ CSRRWI
-				imm := SignExtend(rs1, 4)
-				DebuglnIType("CSRRWI", rd, rs1, imm)
+				DebuglnIType("CSRRWI", rd, rs1, csr)
 				if rd != Rzero {
 					c.SetRegister(rd, c.GetCSR().Get(csr))
 				}
@@ -488,20 +474,18 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b110: // ------------------------------------------------------------------------ CSRRSI
-				imm := SignExtend(rs1, 4)
 				DebuglnIType("CSRRSI", rd, rs1, csr)
 				c.SetRegister(rd, c.GetCSR().Get(csr))
 				if csr != 0x00 {
-					c.GetCSR().Set(csr, c.GetCSR().Get(csr)|imm)
+					c.GetCSR().Set(csr, c.GetCSR().Get(csr)|rs1)
 				}
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b111: // ------------------------------------------------------------------------ CSRRCI
-				imm := SignExtend(rs1, 4)
 				DebuglnIType("CSRRCI", rd, rs1, csr)
 				c.SetRegister(rd, c.GetCSR().Get(csr))
 				if csr != 0x00 {
-					c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-imm))
+					c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-rs1))
 				}
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
@@ -510,7 +494,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			rd, rs1, imm := IType(s)
 			switch InstructionPart(s, 12, 14) {
 			case 0b000: // ------------------------------------------------------------------------ ADDIW
-				imm = SignExtend(imm, 11)
 				DebuglnIType("ADDIW", rd, rs1, imm)
 				c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(imm)))
 				c.SetPC(c.GetPC() + 4)
@@ -909,7 +892,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			}
 		case 0b0000111:
 			rd, rs1, imm := IType(s)
-			imm = SignExtend(imm, 11)
 			a := c.GetRegister(rs1) + imm
 			switch InstructionPart(s, 12, 14) {
 			case 0b010: // ------------------------------------------------------------------------ FLW
@@ -933,7 +915,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			}
 		case 0b0100111:
 			rs1, rs2, imm := SType(s)
-			imm = SignExtend(imm, 11)
 			a := c.GetRegister(rs1) + imm
 			switch InstructionPart(s, 12, 14) {
 			case 0b010: // ------------------------------------------------------------------------ FSW
