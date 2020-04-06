@@ -1,7 +1,6 @@
 package rv64
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -16,19 +15,19 @@ func (c *CPU) Run() uint8 {
 			Panicln(err)
 		}
 
-		Debugln("----------------------------------------")
-		var s uint64 = 0
-		for i := 0; i < 32; i++ {
-			s += c.GetRegister(uint64(i))
-		}
-		Debugln(fmt.Sprintf("nums=%d, pc=%d, sum=%d", c.GetCSR().Get(CSRinstret), c.GetPC(), s))
-		if len(data) == 2 {
-			Debugln(fmt.Sprintf("%08b %08b", data[1], data[0]))
-		} else if len(data) == 4 {
-			Debugln(fmt.Sprintf("%08b %08b %08b %08b", data[3], data[2], data[1], data[0]))
-		} else {
-			Panicln("")
-		}
+		// Debugln("----------------------------------------")
+		// var s uint64 = 0
+		// for i := 0; i < 32; i++ {
+		// 	s += c.GetRegister(uint64(i))
+		// }
+		// Debugln(fmt.Sprintf("nums=%d, pc=%d, sum=%d", c.GetCSR().Get(CSRinstret), c.GetPC(), s))
+		// if len(data) == 2 {
+		// 	Debugln(fmt.Sprintf("%08b %08b", data[1], data[0]))
+		// } else if len(data) == 4 {
+		// 	Debugln(fmt.Sprintf("%08b %08b %08b %08b", data[3], data[2], data[1], data[0]))
+		// } else {
+		// 	Panicln("")
+		// }
 
 		n, err := c.PipelineExecute(data)
 		if err != nil {
