@@ -68,7 +68,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			return 1, nil
 		case 0b1100111: // ----------------------------------------------------------------------- JALR
 			rd, rs1, imm := IType(s)
-			DebuglnIType("JALR", rd, rs1, imm)
+			Debugln(fmt.Sprintf("% 10s rd: %#02x rs1: %s imm: %#016x", "jalr", rd, I(c, rs1), imm))
 			c.SetRegister(rd, c.GetPC()+4)
 			r := (c.GetRegister(rs1) + imm) & 0xfffffffffffffffe
 			if r%4 != 0x00 {
@@ -84,22 +84,22 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			var cond bool
 			switch InstructionPart(s, 12, 14) {
 			case 0b000: // ------------------------------------------------------------------------ BEQ
-				DebuglnBType("BEQ", rs1, rs2, imm)
+				Debugln(fmt.Sprintf("% 10s rs1: %s rs2: %s imm: %#016x", "beq", I(c, rs1), I(c, rs2), imm))
 				cond = c.GetRegister(rs1) == c.GetRegister(rs2)
 			case 0b001: // ------------------------------------------------------------------------ BNE
-				DebuglnBType("BNE", rs1, rs2, imm)
+				Debugln(fmt.Sprintf("% 10s rs1: %s rs2: %s imm: %#016x", "bne", I(c, rs1), I(c, rs2), imm))
 				cond = c.GetRegister(rs1) != c.GetRegister(rs2)
 			case 0b100: // ------------------------------------------------------------------------ BLT
-				DebuglnBType("BLT", rs1, rs2, imm)
+				Debugln(fmt.Sprintf("% 10s rs1: %s rs2: %s imm: %#016x", "blt", I(c, rs1), I(c, rs2), imm))
 				cond = int64(c.GetRegister(rs1)) < int64(c.GetRegister(rs2))
 			case 0b101: // ------------------------------------------------------------------------ BGE
-				DebuglnBType("BGE", rs1, rs2, imm)
+				Debugln(fmt.Sprintf("% 10s rs1: %s rs2: %s imm: %#016x", "bge", I(c, rs1), I(c, rs2), imm))
 				cond = int64(c.GetRegister(rs1)) >= int64(c.GetRegister(rs2))
 			case 0b110: // ------------------------------------------------------------------------ BLTU
-				DebuglnBType("BLTU", rs1, rs2, imm)
+				Debugln(fmt.Sprintf("% 10s rs1: %s rs2: %s imm: %#016x", "bltu", I(c, rs1), I(c, rs2), imm))
 				cond = c.GetRegister(rs1) < c.GetRegister(rs2)
 			case 0b111: // ------------------------------------------------------------------------ BGEU
-				DebuglnBType("BGEU", rs1, rs2, imm)
+				Debugln(fmt.Sprintf("% 10s rs1: %s rs2: %s imm: %#016x", "bgeu", I(c, rs1), I(c, rs2), imm))
 				cond = c.GetRegister(rs1) >= c.GetRegister(rs2)
 			}
 			if cond {
