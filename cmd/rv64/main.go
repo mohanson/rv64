@@ -13,8 +13,19 @@ var (
 	flDebug = flag.Bool("d", false, "Debug")
 )
 
+func prog() []string {
+	i := 0
+	for ; i < len(os.Args); i++ {
+		if os.Args[i] == "--" {
+			break
+		}
+	}
+	flag.CommandLine.Parse(os.Args[1:i])
+	return os.Args[i+1:]
+}
+
 func main() {
-	flag.Parse()
+	args := prog()
 	if *flDebug {
 		rv64.LogLevel = 1
 	}
@@ -23,7 +34,7 @@ func main() {
 	cpu.SetSystem(rv64.NewSystemStandard())
 	cpu.SetCSR(rv64.NewCSRStandard())
 
-	f, err := elf.Open(flag.Arg(0))
+	f, err := elf.Open(args[0])
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -56,7 +67,7 @@ func main() {
 	// | argv[1].ptr |
 	// | argv[0].ptr |
 	// | argc        |
-	argList := flag.Args()
+	argList := args
 	envList := []string{}
 	envPtrs := []uint64{}
 	argPtrs := []uint64{}
