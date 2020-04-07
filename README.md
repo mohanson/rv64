@@ -58,7 +58,7 @@ int main() {
 
 ```sh
 $ /opt/riscv/bin/riscv64-unknown-elf-gcc -o /tmp/fib ./res/program/fib.c
-$ ./bin/rv64 /tmp/fib
+$ ./bin/rv64 -- /tmp/fib
 $ echo $?
 # 55
 ```
