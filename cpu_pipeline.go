@@ -2,7 +2,6 @@ package rv64
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"math/big"
 )
@@ -36,21 +35,17 @@ func (c *CPU) PipelineInstructionFetch() ([]byte, error) {
 }
 
 func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
+	var i uint64 = 0
+	for j := len(data) - 1; j >= 0; j-- {
+		i += uint64(data[j]) << (8 * j)
+	}
 	switch len(data) {
 	case 2:
-		var s uint64 = 0
-		for i := len(data) - 1; i >= 0; i-- {
-			s += uint64(data[i]) << (8 * i)
-		}
-		log.Printf("%016b\n", s)
-		opcode := InstructionPart(s, 0, 1)
-		funct3 := InstructionPart(s, 13, 15)
+		opcode := InstructionPart(i, 0, 1)
+		funct3 := InstructionPart(i, 13, 15)
 		switch opcode<<3 | funct3 {
 		case 00_000:
-			if InstructionPart(s, 5, 12) == 0x00 {
-				return 0, ErrAbnormalInstruction
-			}
-			Println("c.addi4spn")
+			return aluC.addi4spn(c, i)
 		case 0b00_001:
 			Println("c.fld")
 		case 0b00_010:
@@ -66,53 +61,36 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b00_111:
 			Println("c.sd")
 		case 0b01_000:
-			if InstructionPart(s, 7, 11) == 0x00 {
+			if InstructionPart(i, 7, 11) == 0x00 {
 				Println("c.nop")
 			}
 			Println("c.addi")
 		case 0b01_001:
 			Println("c.addiw")
 		case 0b01_010:
-			// rd, imm := CI(s)
-			// imm = SignExtend(imm, 5)
-			// Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.li", c.LogI(rd), imm))
-			// return aluC.li(c, rd, imm)
+			Println("c.li")
 		case 0b01_011:
-			// if InstructionPart(s, 7, 11) == 0x02 {
-			// 	Println("c.addi16sp")
-			// } else {
-			// 	rd, imm := CI(s)
-			// 	imm = imm << 12
-			// 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.li", c.LogI(rd), imm))
-			// 	return aluC.lui(c, rd, imm)
-			// }
+			Println("c.lui")
 		case 0b01_100:
-			switch InstructionPart(s, 10, 11) {
+			switch InstructionPart(i, 10, 11) {
 			case 0b00:
-				if InstructionPart(s, 2, 6) == 0x00 && InstructionPart(s, 12, 12) == 0x00 {
+				if InstructionPart(i, 2, 6) == 0x00 && InstructionPart(i, 12, 12) == 0x00 {
 					Println("c.srli64")
 				}
 				Println("c.srli")
 			case 0b01:
-				if InstructionPart(s, 2, 6) == 0x00 && InstructionPart(s, 12, 12) == 0x00 {
+				if InstructionPart(i, 2, 6) == 0x00 && InstructionPart(i, 12, 12) == 0x00 {
 					Println("c.srai64")
 				}
 				Println("c.srai")
 			case 0b10:
-				// var (
-				// 	rd  = InstructionPart(s, 7, 9) + 8
-				// 	imm = SignExtend(InstructionPart(s, 12, 12)<<5|InstructionPart(s, 2, 6), 6)
-				// )
-				// Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.andi", c.LogI(rd), imm))
-				// return aluC.andi(c, rd, imm)
+				Println("c.andi")
 			case 0b11:
-				o2 := InstructionPart(s, 12, 12)
-				fs := InstructionPart(s, 5, 6)
+				o2 := InstructionPart(i, 12, 12)
+				fs := InstructionPart(i, 5, 6)
 				switch o2<<1 | fs {
 				case 0b0_00:
-					// rs1, rs2 := CA(s)
-					// Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs2: %s", c.GetPC(), "c.sub", c.LogI(rs1), c.LogI(rs2)))
-					// return aluI.sub(c, rs1, rs1, rs2)
+					Println("c.sub")
 				case 0b0_01:
 					Println("c.xor")
 				case 0b0_10:
@@ -134,9 +112,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b01_101:
 			Println("c.j")
 		case 0b01_110:
-			// Debugln(fmt.Sprintf("%#08x % 10s rs1: %s imm: ____(%#016x)", c.GetPC(), "c.beqz", c.LogI(rs1), imm))
+			Println("c.beqz")
 		case 0b01_111:
-			// Debugln(fmt.Sprintf("%#08x % 10s rs1: %s imm: ____(%#016x)", c.GetPC(), "c.bnez", c.LogI(rs1), imm))
+			Println("c.bnez")
 		case 0b10_000:
 			Println("c.slli64")
 		case 0b10_001:
@@ -146,16 +124,16 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b10_011:
 			Println("c.ldsp")
 		case 0b10_100:
-			switch InstructionPart(s, 12, 12) {
+			switch InstructionPart(i, 12, 12) {
 			case 0:
-				if InstructionPart(s, 2, 6) == 0 {
+				if InstructionPart(i, 2, 6) == 0 {
 					Println("c.jr")
 				} else {
 					Println("c.mv")
 				}
 			case 1:
-				l1 := InstructionPart(s, 7, 11)
-				l2 := InstructionPart(s, 2, 6)
+				l1 := InstructionPart(i, 7, 11)
+				l2 := InstructionPart(i, 2, 6)
 				if l1 == 0 && l2 == 0 {
 					Println("c.ebreak")
 				}
@@ -171,229 +149,163 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b10_111:
 			Println("c.sdsp")
 		}
-		Panicln("Unreachable")
+		Panicln("unreachable")
 	case 4:
-		var s uint64 = 0
-		for i := len(data) - 1; i >= 0; i-- {
-			s += uint64(data[i]) << (8 * i)
-		}
-		opcode := InstructionPart(s, 0, 6)
+		opcode := InstructionPart(i, 0, 6)
+		funct3 := InstructionPart(i, 12, 14)
+		funct6 := InstructionPart(i, 26, 31)
+		funct7 := InstructionPart(i, 25, 31)
 		switch opcode {
 		case 0b0110111:
-			rd, imm := UType(s)
-			Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "lui", c.LogI(rd), imm))
-			return aluI.lui(c, rd, imm)
+			return aluI.lui(c, i)
 		case 0b0010111:
-			rd, imm := UType(s)
-			Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "auipc", c.LogI(rd), imm))
-			return aluI.aupic(c, rd, imm)
+			return aluI.aupic(c, i)
 		case 0b1101111:
-			rd, imm := JType(s)
-			Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "jal", c.LogI(rd), imm))
-			return aluI.jal(c, rd, imm)
+			return aluI.jal(c, i)
 		case 0b1100111:
-			rd, rs1, imm := IType(s)
-			Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "jalr", c.LogI(rd), c.LogI(rs1), imm))
-			return aluI.jalr(c, rd, rs1, imm)
+			return aluI.jalr(c, i)
 		case 0b1100011:
-			rs1, rs2, imm := BType(s)
-			funct3 := InstructionPart(s, 12, 14)
 			switch funct3 {
 			case 0b000:
-				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "beq", c.LogI(rs1), c.LogI(rs2), imm))
-				return aluI.beq(c, rs1, rs2, imm)
+				return aluI.beq(c, i)
 			case 0b001:
-				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "bne", c.LogI(rs1), c.LogI(rs2), imm))
-				return aluI.bne(c, rs1, rs2, imm)
+				return aluI.bne(c, i)
 			case 0b100:
-				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "blt", c.LogI(rs1), c.LogI(rs2), imm))
-				return aluI.blt(c, rs1, rs2, imm)
+				return aluI.blt(c, i)
 			case 0b101:
-				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "bge", c.LogI(rs1), c.LogI(rs2), imm))
-				return aluI.bge(c, rs1, rs2, imm)
+				return aluI.bge(c, i)
 			case 0b110:
-				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "bltu", c.LogI(rs1), c.LogI(rs2), imm))
-				return aluI.bltu(c, rs1, rs2, imm)
+				return aluI.bltu(c, i)
 			case 0b111:
-				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "bgeu", c.LogI(rs1), c.LogI(rs2), imm))
-				return aluI.bgeu(c, rs1, rs2, imm)
+				return aluI.bgeu(c, i)
 			}
 		case 0b0000011:
-			rd, rs1, imm := IType(s)
-			funct3 := InstructionPart(s, 12, 14)
 			switch funct3 {
 			case 0b000:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "lb", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.lb(c, rd, rs1, imm)
+				return aluI.lb(c, i)
 			case 0b001:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "lh", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.lh(c, rd, rs1, imm)
+				return aluI.lh(c, i)
 			case 0b010:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "lw", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.lw(c, rd, rs1, imm)
+				return aluI.lw(c, i)
 			case 0b011:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "ld", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.ld(c, rd, rs1, imm)
+				return aluI.ld(c, i)
 			case 0b100:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "lbu", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.lbu(c, rd, rs1, imm)
+				return aluI.lbu(c, i)
 			case 0b101:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "lhu", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.lhu(c, rd, rs1, imm)
+				return aluI.lhu(c, i)
 			case 0b110:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "lwu", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.lwu(c, rd, rs1, imm)
+				return aluI.lwu(c, i)
 			}
 		case 0b0100011:
-			rs1, rs2, imm := SType(s)
-			funct3 := InstructionPart(s, 12, 14)
 			switch funct3 {
 			case 0b000:
-				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sb", c.LogI(rs1), c.LogI(rs2), imm))
-				return aluI.sb(c, rs1, rs2, imm)
+				return aluI.sb(c, i)
 			case 0b001:
-				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sh", c.LogI(rs1), c.LogI(rs2), imm))
-				return aluI.sh(c, rs1, rs2, imm)
+				return aluI.sh(c, i)
 			case 0b010:
-				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sw", c.LogI(rs1), c.LogI(rs2), imm))
-				return aluI.sw(c, rs1, rs2, imm)
+				return aluI.sw(c, i)
 			case 0b011:
-				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sd", c.LogI(rs1), c.LogI(rs2), imm))
-				return aluI.sd(c, rs1, rs2, imm)
+				return aluI.sd(c, i)
 			}
 		case 0b0010011:
-			rd, rs1, imm := IType(s)
-			funct3 := InstructionPart(s, 12, 14)
 			switch funct3 {
 			case 0b000:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "addi", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.addi(c, rd, rs1, imm)
+				return aluI.addi(c, i)
 			case 0b010:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "slti", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.slti(c, rd, rs1, imm)
+				return aluI.slti(c, i)
 			case 0b011:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "sltiu", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.sltiu(c, rd, rs1, imm)
+				return aluI.sltiu(c, i)
 			case 0b100:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "xori", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.xori(c, rd, rs1, imm)
+				return aluI.xori(c, i)
 			case 0b110:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "ori", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.ori(c, rd, rs1, imm)
+				return aluI.ori(c, i)
 			case 0b111:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "andi", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.andi(c, rd, rs1, imm)
+				return aluI.andi(c, i)
 			case 0b001:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "slli", c.LogI(rd), c.LogI(rs1), imm))
-				return aluI.slli(c, rd, rs1, InstructionPart(imm, 0, 5))
+				return aluI.slli(c, i)
 			case 0b101:
-				switch InstructionPart(s, 26, 31) {
+				switch funct6 {
 				case 0b000000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "srli", c.LogI(rd), c.LogI(rs1), imm))
-					return aluI.srli(c, rd, rs1, InstructionPart(imm, 0, 5))
+					return aluI.srli(c, i)
 				case 0b010000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "srai", c.LogI(rd), c.LogI(rs1), imm))
-					return aluI.srai(c, rd, rs1, InstructionPart(imm, 0, 5))
+					return aluI.srai(c, i)
 				}
 			}
 		case 0b0110011:
-			rd, rs1, rs2 := RType(s)
-			funct3 := InstructionPart(s, 12, 14)
-			funct7 := InstructionPart(s, 25, 31)
 			switch funct3 {
 			case 0b000:
 				switch funct7 {
 				case 0b0000000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "add", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluI.add(c, rd, rs1, rs2)
+					return aluI.add(c, i)
 				case 0b0000001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "mul", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluM.mul(c, rd, rs1, rs2)
+					return aluM.mul(c, i)
 				case 0b0100000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sub", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluI.sub(c, rd, rs1, rs2)
+					return aluI.sub(c, i)
 				}
 			case 0b001:
 				switch funct7 {
 				case 0b0000000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sll", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluI.sll(c, rd, rs1, rs2)
+					return aluI.sll(c, i)
 				case 0b0000001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "mulh", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluM.mulh(c, rd, rs1, rs2)
+					return aluM.mulh(c, i)
 				}
 			case 0b010:
 				switch funct7 {
 				case 0b0000000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "slt", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluI.slt(c, rd, rs1, rs2)
+					return aluI.slt(c, i)
 				case 0b0000001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "mulhsu", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluM.mulhsu(c, rd, rs1, rs2)
+					return aluM.mulhsu(c, i)
 				}
 			case 0b011:
 				switch funct7 {
 				case 0b0000000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sltu", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluI.sltu(c, rd, rs1, rs2)
+					return aluI.sltu(c, i)
 				case 0b0000001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "mulhu", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluM.mulhu(c, rd, rs1, rs2)
+					return aluM.mulhu(c, i)
 				}
 			case 0b100:
 				switch funct7 {
 				case 0b0000000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "xor", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluI.xor(c, rd, rs1, rs2)
+					return aluI.xor(c, i)
 				case 0b0000001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "div", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluM.div(c, rd, rs1, rs2)
+					return aluM.div(c, i)
 				}
 			case 0b101:
 				switch funct7 {
 				case 0b0000000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "srl", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluI.srl(c, rd, rs1, rs2)
+					return aluI.srl(c, i)
 				case 0b0000001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "divu", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluM.divu(c, rd, rs1, rs2)
+					return aluM.divu(c, i)
 				case 0b0100000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sra", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluI.sra(c, rd, rs1, rs2)
+					return aluI.sra(c, i)
 				}
 			case 0b110:
 				switch funct7 {
 				case 0b0000000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "or", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluI.or(c, rd, rs1, rs2)
+					return aluI.or(c, i)
 				case 0b0000001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "rem", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluM.rem(c, rd, rs1, rs2)
+					return aluM.rem(c, i)
 				}
 			case 0b111:
 				switch funct7 {
 				case 0b0000000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "and", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluI.and(c, rd, rs1, rs2)
+					return aluI.and(c, i)
 				case 0b0000001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "remu", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluM.remu(c, rd, rs1, rs2)
+					return aluM.remu(c, i)
 				}
 			}
 		case 0b0001111:
-			switch InstructionPart(s, 12, 14) {
+			switch funct3 {
 			case 0b000:
-				Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "fence"))
+				return aluI.fence(c, i)
 			case 0b001:
-				Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "fence.i"))
+				return aluZifencei.fencei(c, i)
 			}
-			c.SetPC(c.GetPC() + 4)
-			return 1, nil
 		case 0b1110011:
-			rd, rs1, csr := IType(s)
-			switch InstructionPart(s, 12, 14) {
+			rd, rs1, csr := IType(i)
+			switch InstructionPart(i, 12, 14) {
 			case 0b000:
-				switch InstructionPart(s, 20, 31) {
+				switch InstructionPart(i, 20, 31) {
 				case 0b000000000000:
 					Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "ecall"))
 					return c.GetSystem().HandleCall(c)
@@ -451,8 +363,8 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return 1, nil
 			}
 		case 0b0011011:
-			rd, rs1, imm := IType(s)
-			switch InstructionPart(s, 12, 14) {
+			rd, rs1, imm := IType(i)
+			switch InstructionPart(i, 12, 14) {
 			case 0b000:
 				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "addiw", c.LogI(rd), c.LogI(rs1), imm))
 				c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(imm)))
@@ -467,7 +379,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b101:
-				switch InstructionPart(s, 25, 31) {
+				switch InstructionPart(i, 25, 31) {
 				case 0b0000000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "srliw", c.LogI(rd), c.LogI(rs1), imm))
 					if InstructionPart(imm, 5, 5) != 0x00 {
@@ -489,18 +401,17 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				}
 			}
 		case 0b0111011:
-			rd, rs1, rs2 := RType(s)
-			switch InstructionPart(s, 12, 14) {
+			rd, rs1, rs2 := RType(i)
+			switch InstructionPart(i, 12, 14) {
 			case 0b000:
-				switch InstructionPart(s, 25, 31) {
+				switch InstructionPart(i, 25, 31) {
 				case 0b0000000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "addw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(c.GetRegister(rs2))))
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0000001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "mulw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluM.mulw(c, rd, rs1, rs2)
+					return aluM.mulw(c, i)
 				case 0b0100000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "subw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))-int32(c.GetRegister(rs2))))
@@ -514,10 +425,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				c.SetPC(c.GetPC() + 4)
 				return 1, nil
 			case 0b100:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "divw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-				return aluM.divw(c, rd, rs1, rs2)
+				return aluM.divw(c, i)
 			case 0b101:
-				switch InstructionPart(s, 25, 31) {
+				switch InstructionPart(i, 25, 31) {
 				case 0b0000000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "srlw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					s := c.GetRegister(rs2) & 0x1f
@@ -525,8 +435,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b0000001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "divuw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					return aluM.divuw(c, rd, rs1, rs2)
+					return aluM.divuw(c, i)
 				case 0b0100000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sraw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 4)))
@@ -534,18 +443,17 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				}
 			case 0b110:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "remw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-				return aluM.remw(c, rd, rs1, rs2)
+				return aluM.remw(c, i)
 			case 0b111:
 				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "remuw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-				return aluM.remuw(c, rd, rs1, rs2)
+				return aluM.remuw(c, i)
 			}
 		case 0b0101111:
-			rd, rs1, rs2 := RType(s)
-			switch InstructionPart(s, 12, 14) {
+			rd, rs1, rs2 := RType(i)
+			switch InstructionPart(i, 12, 14) {
 			case 0b010:
 				a := SignExtend(c.GetRegister(rs1), 31)
-				switch InstructionPart(s, 27, 31) {
+				switch InstructionPart(i, 27, 31) {
 				case 0b00010:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "lr.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint32(a)
@@ -684,7 +592,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				}
 			case 0b011:
 				a := c.GetRegister(rs1)
-				switch InstructionPart(s, 27, 31) {
+				switch InstructionPart(i, 27, 31) {
 				case 0b00010:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "lr.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					v, err := c.GetMemory().GetUint64(a)
@@ -824,9 +732,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				}
 			}
 		case 0b0000111:
-			rd, rs1, imm := IType(s)
+			rd, rs1, imm := IType(i)
 			a := c.GetRegister(rs1) + imm
-			switch InstructionPart(s, 12, 14) {
+			switch InstructionPart(i, 12, 14) {
 			case 0b010:
 				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "flw", c.LogF(rd), c.LogI(rs1), imm))
 				v, err := c.GetMemory().GetUint32(a)
@@ -847,9 +755,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return 1, nil
 			}
 		case 0b0100111:
-			rs1, rs2, imm := SType(s)
+			rs1, rs2, imm := SType(i)
 			a := c.GetRegister(rs1) + imm
-			switch InstructionPart(s, 12, 14) {
+			switch InstructionPart(i, 12, 14) {
 			case 0b010:
 				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "fsw", c.LogI(rs1), c.LogF(rs2), imm))
 				err := c.GetMemory().SetUint32(a, uint32(c.GetRegisterFloat(rs2)))
@@ -868,8 +776,8 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return 1, nil
 			}
 		case 0b1000011:
-			rd, rs1, rs2, rs3 := R4Type(s)
-			switch InstructionPart(s, 25, 26) {
+			rd, rs1, rs2, rs3 := R4Type(i)
+			switch InstructionPart(i, 25, 26) {
 			case 0b00:
 				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s rs3: %s", c.GetPC(), "fmadd.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
 				c.ClrFloatFlag()
@@ -898,8 +806,8 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return 1, nil
 			}
 		case 0b1000111:
-			rd, rs1, rs2, rs3 := R4Type(s)
-			switch InstructionPart(s, 25, 26) {
+			rd, rs1, rs2, rs3 := R4Type(i)
+			switch InstructionPart(i, 25, 26) {
 			case 0b00:
 				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s rs3: %s", c.GetPC(), "fmsub.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
 				c.ClrFloatFlag()
@@ -928,8 +836,8 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return 1, nil
 			}
 		case 0b1001011:
-			rd, rs1, rs2, rs3 := R4Type(s)
-			switch InstructionPart(s, 25, 26) {
+			rd, rs1, rs2, rs3 := R4Type(i)
+			switch InstructionPart(i, 25, 26) {
 			case 0b00:
 				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s rs3: %s", c.GetPC(), "fnmsub.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
 				c.ClrFloatFlag()
@@ -958,8 +866,8 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return 1, nil
 			}
 		case 0b1001111:
-			rd, rs1, rs2, rs3 := R4Type(s)
-			switch InstructionPart(s, 25, 26) {
+			rd, rs1, rs2, rs3 := R4Type(i)
+			switch InstructionPart(i, 25, 26) {
 			case 0b00:
 				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s rs3: %s", c.GetPC(), "fnmadd.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
 				c.ClrFloatFlag()
@@ -988,12 +896,12 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return 1, nil
 			}
 		case 0b1010011:
-			rd, rs1, rs2 := RType(s)
-			switch InstructionPart(s, 25, 26) {
+			rd, rs1, rs2 := RType(i)
+			switch InstructionPart(i, 25, 26) {
 			case 0b00:
 				a := c.GetRegisterFloatAsFloat32(rs1)
 				b := c.GetRegisterFloatAsFloat32(rs2)
-				switch InstructionPart(s, 27, 31) {
+				switch InstructionPart(i, 27, 31) {
 				case 0b00000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fadd.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.ClrFloatFlag()
@@ -1063,7 +971,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00100:
-					switch InstructionPart(s, 12, 14) {
+					switch InstructionPart(i, 12, 14) {
 					case 0b000:
 						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fsgnj.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if math.Signbit(float64(b)) {
@@ -1093,7 +1001,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					}
 				case 0b00101:
-					switch InstructionPart(s, 12, 14) {
+					switch InstructionPart(i, 12, 14) {
 					case 0b000:
 						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fmin.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					case 0b001:
@@ -1121,7 +1029,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					}
-					switch InstructionPart(s, 12, 14) {
+					switch InstructionPart(i, 12, 14) {
 					case 0b000:
 						if (math.Signbit(float64(a)) && !math.Signbit(float64(b))) || a < b {
 							c.SetRegisterFloatAsFloat32(rd, a)
@@ -1138,7 +1046,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b11000:
-					switch InstructionPart(s, 20, 24) {
+					switch InstructionPart(i, 20, 24) {
 					case 0b00000:
 						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.w.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						d := c.GetRegisterFloatAsFloat32(rs1)
@@ -1255,7 +1163,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b11100:
-					switch InstructionPart(s, 12, 14) {
+					switch InstructionPart(i, 12, 14) {
 					case 0b000:
 						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fmv.x.w", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegisterFloat(rs1))), 31))
@@ -1270,7 +1178,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					}
 				case 0b10100:
 					var cond bool
-					switch InstructionPart(s, 12, 14) {
+					switch InstructionPart(i, 12, 14) {
 					case 0b010:
 						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "feq.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if IsSNaN32(a) || IsSNaN32(b) {
@@ -1301,7 +1209,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b11010:
-					switch InstructionPart(s, 20, 24) {
+					switch InstructionPart(i, 20, 24) {
 					case 0b00000:
 						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.s.w", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegisterFloatAsFloat32(rd, float32(int32(c.GetRegister(rs1))))
@@ -1332,7 +1240,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b01:
 				a := c.GetRegisterFloatAsFloat64(rs1)
 				b := c.GetRegisterFloatAsFloat64(rs2)
-				switch InstructionPart(s, 27, 31) {
+				switch InstructionPart(i, 27, 31) {
 				case 0b00000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fadd.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					c.ClrFloatFlag()
@@ -1398,7 +1306,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b00100:
-					switch InstructionPart(s, 12, 14) {
+					switch InstructionPart(i, 12, 14) {
 					case 0b000:
 						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fsgnj.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if math.Signbit(b) {
@@ -1428,7 +1336,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					}
 				case 0b00101:
-					switch InstructionPart(s, 12, 14) {
+					switch InstructionPart(i, 12, 14) {
 					case 0b000:
 						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fmin.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 					case 0b001:
@@ -1456,7 +1364,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						c.SetPC(c.GetPC() + 4)
 						return 1, nil
 					}
-					switch InstructionPart(s, 12, 14) {
+					switch InstructionPart(i, 12, 14) {
 					case 0b000:
 						if (math.Signbit(a) && !math.Signbit(b)) || a < b {
 							c.SetRegisterFloatAsFloat64(rd, a)
@@ -1473,7 +1381,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b11000:
-					switch InstructionPart(s, 20, 24) {
+					switch InstructionPart(i, 20, 24) {
 					case 0b00000:
 						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.w.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						d := c.GetRegisterFloatAsFloat64(rs1)
@@ -1591,7 +1499,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b10100:
 					var cond bool
-					switch InstructionPart(s, 12, 14) {
+					switch InstructionPart(i, 12, 14) {
 					case 0b010:
 						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "feq.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						if IsSNaN64(a) || IsSNaN64(b) {
@@ -1622,7 +1530,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					c.SetPC(c.GetPC() + 4)
 					return 1, nil
 				case 0b11100:
-					switch InstructionPart(s, 12, 14) {
+					switch InstructionPart(i, 12, 14) {
 					case 0b000:
 						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fmv.x.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegister(rd, c.GetRegisterFloat(rs1))
@@ -1636,7 +1544,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 						return 1, nil
 					}
 				case 0b11010:
-					switch InstructionPart(s, 20, 24) {
+					switch InstructionPart(i, 20, 24) {
 					case 0b00000:
 						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.d.w", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
 						c.SetRegisterFloatAsFloat64(rd, float64(int32(c.GetRegister(rs1))))
