@@ -990,13 +990,28 @@ func (_ *isaC) addi(c *CPU, i uint64) (uint64, error) {
 		rd  = InstructionPart(i, 7, 11)
 		imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 5)
 	)
+	if rd == 0x00 {
+		return 0, ErrReservedInstruction
+	}
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.addi", c.LogI(rd), imm))
 	c.SetRegister(rd, c.GetRegister(rd)+imm)
 	c.SetPC(c.GetPC() + 2)
 	return 1, nil
 }
 
-func (_ *isaC) addiw() {}
+func (_ *isaC) addiw(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 11)
+		imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 5)
+	)
+	if rd == 0x00 {
+		return 0, ErrReservedInstruction
+	}
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.addiw", c.LogI(rd), imm))
+	c.SetRegister(rd, uint64(int32(c.GetRegister(rd))+int32(imm)))
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
 
 func (_ *isaC) li(c *CPU, i uint64) (uint64, error) {
 	var (

@@ -67,7 +67,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return aluC.addi(c, i)
 			}
 		case 0b01_001:
-			Println("c.addiw")
+			return aluC.addiw(c, i)
 		case 0b01_010:
 			return aluC.li(c, i)
 		case 0b01_011:
