@@ -226,15 +226,69 @@ func (_ *isaI) sd(c *CPU, rs1 uint64, rs2 uint64, imm uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaI) addi()  {}
-func (_ *isaI) slti()  {}
-func (_ *isaI) sltiu() {}
-func (_ *isaI) xori()  {}
-func (_ *isaI) andi()  {}
-func (_ *isaI) slli()  {}
-func (_ *isaI) srli()  {}
-func (_ *isaI) srai()  {}
-func (_ *isaI) add()   {}
+func (_ *isaI) addi(c *CPU, rd uint64, rs1 uint64, imm uint64) (uint64, error) {
+	c.SetRegister(rd, c.GetRegister(rs1)+imm)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) slti(c *CPU, rd uint64, rs1 uint64, imm uint64) (uint64, error) {
+	if int64(c.GetRegister(rs1)) < int64(imm) {
+		c.SetRegister(rd, 1)
+	} else {
+		c.SetRegister(rd, 0)
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) sltiu(c *CPU, rd uint64, rs1 uint64, imm uint64) (uint64, error) {
+	if c.GetRegister(rs1) < imm {
+		c.SetRegister(rd, 1)
+	} else {
+		c.SetRegister(rd, 0)
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) xori(c *CPU, rd uint64, rs1 uint64, imm uint64) (uint64, error) {
+	c.SetRegister(rd, c.GetRegister(rs1)^imm)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) ori(c *CPU, rd uint64, rs1 uint64, imm uint64) (uint64, error) {
+	c.SetRegister(rd, c.GetRegister(rs1)|imm)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) andi(c *CPU, rd uint64, rs1 uint64, imm uint64) (uint64, error) {
+	c.SetRegister(rd, c.GetRegister(rs1)&imm)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) slli(c *CPU, rd uint64, rs1 uint64, shamt uint64) (uint64, error) {
+	c.SetRegister(rd, c.GetRegister(rs1)<<shamt)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) srli(c *CPU, rd uint64, rs1 uint64, shamt uint64) (uint64, error) {
+	c.SetRegister(rd, c.GetRegister(rs1)>>shamt)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) srai(c *CPU, rd uint64, rs1 uint64, shamt uint64) (uint64, error) {
+	c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))>>shamt))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) add() {}
 
 func (_ *isaI) sub(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
 	c.SetRegister(rd, c.GetRegister(rs1)-c.GetRegister(rs2))
