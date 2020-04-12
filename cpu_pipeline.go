@@ -86,27 +86,23 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b10:
 				Println("c.andi")
 			case 0b11:
-				o2 := InstructionPart(i, 12, 12)
-				fs := InstructionPart(i, 5, 6)
-				switch o2<<1 | fs {
+				switch InstructionPart(i, 12, 12)<<1 | InstructionPart(i, 5, 6) {
 				case 0b0_00:
-					Println("c.sub")
+					return aluC.sub(c, i)
 				case 0b0_01:
-					Println("c.xor")
+					return aluC.xor(c, i)
 				case 0b0_10:
-					Println("c.or")
+					return aluC.or(c, i)
 				case 0b0_11:
-					Println("c.and")
+					return aluC.and(c, i)
 				case 0b1_00:
-					Println("c.subw")
+					return aluC.subw(c, i)
 				case 0b1_01:
-					Println("c.addw")
+					return aluC.addw(c, i)
 				case 0b1_10:
 					return 0, ErrReservedInstruction
 				case 0b1_11:
 					return 0, ErrReservedInstruction
-				default:
-					Panicln("unreachable")
 				}
 			}
 		case 0b01_101:

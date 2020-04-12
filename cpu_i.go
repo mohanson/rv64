@@ -924,28 +924,89 @@ func (_ *isaC) lui()      {}
 func (_ *isaC) srli64()   {}
 func (_ *isaC) srai64()   {}
 func (_ *isaC) andi()     {}
-func (_ *isaC) sub()      {}
-func (_ *isaC) xor()      {}
-func (_ *isaC) or()       {}
-func (_ *isaC) and()      {}
-func (_ *isaC) subw()     {}
-func (_ *isaC) addw()     {}
-func (_ *isaC) j()        {}
-func (_ *isaC) beqz()     {}
-func (_ *isaC) bnez()     {}
-func (_ *isaC) slli64()   {}
-func (_ *isaC) fldsp()    {}
-func (_ *isaC) lwsp()     {}
-func (_ *isaC) ldsp()     {}
-func (_ *isaC) jr()       {}
-func (_ *isaC) mv()       {}
-func (_ *isaC) ebreak()   {}
-func (_ *isaC) jalr()     {}
-func (_ *isaC) add()      {}
-func (_ *isaC) fsdsp()    {}
-func (_ *isaC) sqsp()     {}
-func (_ *isaC) swsp()     {}
-func (_ *isaC) sdsp()     {}
+
+func (_ *isaC) sub(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 9) + 16
+		rs2 = InstructionPart(i, 2, 4) + 16
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs2: %s", c.GetPC(), "c.sub", c.LogI(rd), c.LogI(rs2)))
+	c.SetRegister(rd, c.GetRegister(rd)-c.GetRegister(rs2))
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
+func (_ *isaC) xor(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 9) + 16
+		rs2 = InstructionPart(i, 2, 4) + 16
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs2: %s", c.GetPC(), "c.xor", c.LogI(rd), c.LogI(rs2)))
+	c.SetRegister(rd, c.GetRegister(rd)^c.GetRegister(rs2))
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
+func (_ *isaC) or(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 9) + 16
+		rs2 = InstructionPart(i, 2, 4) + 16
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs2: %s", c.GetPC(), "c.or", c.LogI(rd), c.LogI(rs2)))
+	c.SetRegister(rd, c.GetRegister(rd)|c.GetRegister(rs2))
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
+func (_ *isaC) and(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 9) + 16
+		rs2 = InstructionPart(i, 2, 4) + 16
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs2: %s", c.GetPC(), "c.and", c.LogI(rd), c.LogI(rs2)))
+	c.SetRegister(rd, c.GetRegister(rd)&c.GetRegister(rs2))
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
+func (_ *isaC) subw(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 9) + 16
+		rs2 = InstructionPart(i, 2, 4) + 16
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs2: %s", c.GetPC(), "c.subw", c.LogI(rd), c.LogI(rs2)))
+	c.SetRegister(rd, uint64(int32(c.GetRegister(rd))-int32(c.GetRegister(rs2))))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaC) addw(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 9) + 16
+		rs2 = InstructionPart(i, 2, 4) + 16
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs2: %s", c.GetPC(), "c.addw", c.LogI(rd), c.LogI(rs2)))
+	c.SetRegister(rd, uint64(int32(c.GetRegister(rd))+int32(c.GetRegister(rs2))))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaC) j()      {}
+func (_ *isaC) beqz()   {}
+func (_ *isaC) bnez()   {}
+func (_ *isaC) slli64() {}
+func (_ *isaC) fldsp()  {}
+func (_ *isaC) lwsp()   {}
+func (_ *isaC) ldsp()   {}
+func (_ *isaC) jr()     {}
+func (_ *isaC) mv()     {}
+func (_ *isaC) ebreak() {}
+func (_ *isaC) jalr()   {}
+func (_ *isaC) add()    {}
+func (_ *isaC) fsdsp()  {}
+func (_ *isaC) sqsp()   {}
+func (_ *isaC) swsp()   {}
+func (_ *isaC) sdsp()   {}
 
 var (
 	aluI        = &isaI{}
