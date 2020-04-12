@@ -1019,9 +1019,42 @@ func (_ *isaC) addw(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) j()      {}
-func (_ *isaC) beqz()   {}
-func (_ *isaC) bnez()   {}
+func (_ *isaC) j() {}
+
+func (_ *isaC) beqz(c *CPU, i uint64) (uint64, error) {
+	var (
+		rs1 = InstructionPart(i, 7, 9) + 16
+		imm = SignExtend(InstructionPart(i, 3, 4)<<1|InstructionPart(i, 10, 11)<<3|InstructionPart(i, 2, 2)<<5|InstructionPart(i, 5, 6)<<6|InstructionPart(i, 12, 12)<<8, 8)
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s imm: ____(%#016x)", c.GetPC(), "c.beqz", c.LogI(rs1), imm))
+	if imm%2 != 0x00 {
+		return 0, ErrMisalignedInstructionFetch
+	}
+	if c.GetRegister(rs1) == c.GetRegister(Rzero) {
+		c.SetPC(c.GetPC() + imm)
+	} else {
+		c.SetPC(c.GetPC() + 2)
+	}
+	return 1, nil
+}
+
+func (_ *isaC) bnez(c *CPU, i uint64) (uint64, error) {
+	var (
+		rs1 = InstructionPart(i, 7, 9) + 16
+		imm = SignExtend(InstructionPart(i, 3, 4)<<1|InstructionPart(i, 10, 11)<<3|InstructionPart(i, 2, 2)<<5|InstructionPart(i, 5, 6)<<6|InstructionPart(i, 12, 12)<<8, 8)
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s imm: ____(%#016x)", c.GetPC(), "c.bnez", c.LogI(rs1), imm))
+	if imm%2 != 0x00 {
+		return 0, ErrMisalignedInstructionFetch
+	}
+	if c.GetRegister(rs1) != c.GetRegister(Rzero) {
+		c.SetPC(c.GetPC() + imm)
+	} else {
+		c.SetPC(c.GetPC() + 2)
+	}
+	return 1, nil
+}
+
 func (_ *isaC) slli64() {}
 func (_ *isaC) fldsp()  {}
 func (_ *isaC) lwsp()   {}

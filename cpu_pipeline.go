@@ -115,9 +115,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b01_101:
 			Println("c.j")
 		case 0b01_110:
-			Println("c.beqz")
+			return aluC.beqz(c, i)
 		case 0b01_111:
-			Println("c.bnez")
+			return aluC.bnez(c, i)
 		case 0b10_000:
 			Println("c.slli64")
 		case 0b10_001:
