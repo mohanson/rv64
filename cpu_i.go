@@ -1055,8 +1055,31 @@ func (_ *isaC) lui(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) srli64() {}
-func (_ *isaC) srai64() {}
+func (_ *isaC) srli(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd    = InstructionPart(i, 7, 9) + 8
+		shamt = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.srli", c.LogI(rd), shamt))
+	c.SetRegister(rd, c.GetRegister(rd)>>shamt)
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
+// func (_ *isaC) srli64() {}
+
+func (_ *isaC) srai(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd    = InstructionPart(i, 7, 9) + 8
+		shamt = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.srai", c.LogI(rd), shamt))
+	c.SetRegister(rd, uint64(int64(c.GetRegister(rd))>>shamt))
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
+// func (_ *isaC) srai64() {}
 
 func (_ *isaC) andi(c *CPU, i uint64) (uint64, error) {
 	var (

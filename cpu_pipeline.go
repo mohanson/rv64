@@ -82,13 +82,13 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				if InstructionPart(i, 2, 6) == 0x00 && InstructionPart(i, 12, 12) == 0x00 {
 					Println("c.srli64")
 				} else {
-					Println("c.srli")
+					return aluC.srli(c, i)
 				}
 			case 0b01:
 				if InstructionPart(i, 2, 6) == 0x00 && InstructionPart(i, 12, 12) == 0x00 {
 					Println("c.srai64")
 				} else {
-					Println("c.srai")
+					return aluC.srai(c, i)
 				}
 			case 0b10:
 				return aluC.andi(c, i)
