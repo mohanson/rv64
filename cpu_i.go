@@ -450,8 +450,15 @@ func (_ *isaI) fence(c *CPU, _ uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaI) ecall()  {}
-func (_ *isaI) ebreak() {}
+func (_ *isaI) ecall(c *CPU, _ uint64) (uint64, error) {
+	Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "ecall"))
+	return c.GetSystem().HandleCall(c)
+}
+
+func (_ *isaI) ebreak(c *CPU, _ uint64) (uint64, error) {
+	Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "ebreak"))
+	return 1, nil
+}
 
 func (_ *isaI) addiw() {}
 func (_ *isaI) slliw() {}

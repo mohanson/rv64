@@ -303,15 +303,13 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			}
 		case 0b1110011:
 			rd, rs1, csr := IType(i)
-			switch InstructionPart(i, 12, 14) {
+			switch funct3 {
 			case 0b000:
 				switch InstructionPart(i, 20, 31) {
 				case 0b000000000000:
-					Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "ecall"))
-					return c.GetSystem().HandleCall(c)
+					return aluI.ecall(c, i)
 				case 0b000000000001:
-					Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "ebreak"))
-					return 1, nil
+					return aluI.ebreak(c, i)
 				}
 			case 0b001:
 				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrw", c.LogI(rd), c.LogI(rs1), csr))
