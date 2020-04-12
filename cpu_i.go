@@ -1,5 +1,10 @@
 package rv64
 
+import (
+	"math"
+	"math/big"
+)
+
 type isaI struct{}
 
 func (_ *isaI) lui(c *CPU, rd uint64, imm uint64) (uint64, error) {
@@ -288,7 +293,11 @@ func (_ *isaI) srai(c *CPU, rd uint64, rs1 uint64, shamt uint64) (uint64, error)
 	return 1, nil
 }
 
-func (_ *isaI) add() {}
+func (_ *isaI) add(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	c.SetRegister(rd, c.GetRegister(rs1)+c.GetRegister(rs2))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
 
 func (_ *isaI) sub(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
 	c.SetRegister(rd, c.GetRegister(rs1)-c.GetRegister(rs2))
@@ -296,14 +305,61 @@ func (_ *isaI) sub(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaI) sll()    {}
-func (_ *isaI) slt()    {}
-func (_ *isaI) sltu()   {}
-func (_ *isaI) xor()    {}
-func (_ *isaI) srl()    {}
-func (_ *isaI) sra()    {}
-func (_ *isaI) or()     {}
-func (_ *isaI) and()    {}
+func (i *isaI) sll(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	c.SetRegister(rd, c.GetRegister(rs1)<<(c.GetRegister(rs2)&0x3f))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) slt(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	if int64(c.GetRegister(rs1)) < int64(c.GetRegister(rs2)) {
+		c.SetRegister(rd, 1)
+	} else {
+		c.SetRegister(rd, 0)
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) sltu(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	if c.GetRegister(rs1) < c.GetRegister(rs2) {
+		c.SetRegister(rd, 1)
+	} else {
+		c.SetRegister(rd, 0)
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) xor(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	c.SetRegister(rd, c.GetRegister(rs1)^c.GetRegister(rs2))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) srl(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	c.SetRegister(rd, c.GetRegister(rs1)>>(c.GetRegister(rs2)&0x3f))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+func (_ *isaI) sra(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))>>(c.GetRegister(rs2)&0x3f)))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) or(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	c.SetRegister(rd, c.GetRegister(rs1)|c.GetRegister(rs2))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) and(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	c.SetRegister(rd, c.GetRegister(rs1)&c.GetRegister(rs2))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
 func (_ *isaI) fenci()  {}
 func (_ *isaI) ecall()  {}
 func (_ *isaI) ebreak() {}
@@ -333,19 +389,156 @@ func (_ *isaZicsr) csrrci() {}
 
 type isaM struct{}
 
-func (_ *isaM) mul()    {}
-func (_ *isaM) mulh()   {}
-func (_ *isaM) mulhsu() {}
-func (_ *isaM) mulhu()  {}
-func (_ *isaM) div()    {}
-func (_ *isaM) divu()   {}
-func (_ *isaM) rem()    {}
-func (_ *isaM) remu()   {}
-func (_ *isaM) mulw()   {}
-func (_ *isaM) divw()   {}
-func (_ *isaM) divuw()  {}
-func (_ *isaM) remw()   {}
-func (_ *isaM) remuw()  {}
+func (_ *isaM) mul(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))*int64(c.GetRegister(rs2))))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaM) mulh(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	v := func() uint64 {
+		ag1 := big.NewInt(int64(c.GetRegister(rs1)))
+		ag2 := big.NewInt(int64(c.GetRegister(rs2)))
+		tmp := big.NewInt(0)
+		tmp.Mul(ag1, ag2)
+		tmp.Rsh(tmp, 64)
+		return uint64(tmp.Int64())
+	}()
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaM) mulhsu(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	v := func() uint64 {
+		ag1 := big.NewInt(int64(c.GetRegister(rs1)))
+		ag2 := big.NewInt(int64(c.GetRegister(rs2)))
+		if ag2.Cmp(big.NewInt(0)) == -1 {
+			tmp := big.NewInt(0)
+			tmp.Add(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64))
+			tmp.Add(tmp, big.NewInt(2))
+			ag2 = tmp.Add(tmp, ag2)
+		}
+		tmp := big.NewInt(0)
+		tmp.Mul(ag1, ag2)
+		tmp.Rsh(tmp, 64)
+		return uint64(tmp.Int64())
+	}()
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaM) mulhu(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	v := func() uint64 {
+		ag1 := big.NewInt(int64(c.GetRegister(rs1)))
+		ag2 := big.NewInt(int64(c.GetRegister(rs2)))
+		if ag1.Cmp(big.NewInt(0)) == -1 {
+			tmp := big.NewInt(0)
+			tmp.Add(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64))
+			tmp.Add(tmp, big.NewInt(2))
+			ag1 = tmp.Add(tmp, ag1)
+		}
+		if ag2.Cmp(big.NewInt(0)) == -1 {
+			tmp := big.NewInt(0)
+			tmp.Add(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64))
+			tmp.Add(tmp, big.NewInt(2))
+			ag2 = tmp.Add(tmp, ag2)
+		}
+		tmp := big.NewInt(0)
+		tmp.Mul(ag1, ag2)
+		tmp.Rsh(tmp, 64)
+		return tmp.Uint64()
+	}()
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaM) div(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	if c.GetRegister(rs2) == 0 {
+		c.SetRegister(rd, math.MaxUint64)
+	} else {
+		c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))/int64(c.GetRegister(rs2))))
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaM) divu(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	if c.GetRegister(rs2) == 0 {
+		c.SetRegister(rd, math.MaxUint64)
+	} else {
+		c.SetRegister(rd, c.GetRegister(rs1)/c.GetRegister(rs2))
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaM) rem(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	if c.GetRegister(rs2) == 0 {
+		c.SetRegister(rd, c.GetRegister(rs1))
+	} else {
+		c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))%int64(c.GetRegister(rs2))))
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaM) remu(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	if c.GetRegister(rs2) == 0 {
+		c.SetRegister(rd, c.GetRegister(rs1))
+	} else {
+		c.SetRegister(rd, c.GetRegister(rs1)%c.GetRegister(rs2))
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaM) mulw(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))*int32(c.GetRegister(rs2))))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaM) divw(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	if c.GetRegister(rs2) == 0 {
+		c.SetRegister(rd, math.MaxUint64)
+	} else {
+		c.SetRegister(rd, SignExtend(uint64(int32(c.GetRegister(rs1))/int32(c.GetRegister(rs2))), 31))
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaM) divuw(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	if c.GetRegister(rs2) == 0 {
+		c.SetRegister(rd, math.MaxUint64)
+	} else {
+		c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))/uint32(c.GetRegister(rs2))), 31))
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaM) remw(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	if c.GetRegister(rs2) == 0 {
+		c.SetRegister(rd, c.GetRegister(rs1))
+	} else {
+		c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))%int32(c.GetRegister(rs2))))
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+func (_ *isaM) remuw(c *CPU, rd uint64, rs1 uint64, rs2 uint64) (uint64, error) {
+	if c.GetRegister(rs2) == 0 {
+		c.SetRegister(rd, c.GetRegister(rs1))
+	} else {
+		c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))%uint32(c.GetRegister(rs2))), 31))
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
 
 type isaA struct{}
 

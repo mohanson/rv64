@@ -298,186 +298,86 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			}
 		case 0b0110011:
 			rd, rs1, rs2 := RType(s)
-			switch InstructionPart(s, 12, 14) {
+			funct3 := InstructionPart(s, 12, 14)
+			funct7 := InstructionPart(s, 25, 31)
+			switch funct3 {
 			case 0b000:
-				switch InstructionPart(s, 25, 31) {
+				switch funct7 {
 				case 0b0000000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "add", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, c.GetRegister(rs1)+c.GetRegister(rs2))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.add(c, rd, rs1, rs2)
 				case 0b0000001:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "mul", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))*int64(c.GetRegister(rs2))))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluM.mul(c, rd, rs1, rs2)
 				case 0b0100000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sub", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, c.GetRegister(rs1)-c.GetRegister(rs2))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.sub(c, rd, rs1, rs2)
 				}
 			case 0b001:
-				switch InstructionPart(s, 25, 31) {
+				switch funct7 {
 				case 0b0000000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sll", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, c.GetRegister(rs1)<<(c.GetRegister(rs2)&0x3f))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.sll(c, rd, rs1, rs2)
 				case 0b0000001:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "mulh", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v := func() uint64 {
-						ag1 := big.NewInt(int64(c.GetRegister(rs1)))
-						ag2 := big.NewInt(int64(c.GetRegister(rs2)))
-						tmp := big.NewInt(0)
-						tmp.Mul(ag1, ag2)
-						tmp.Rsh(tmp, 64)
-						return uint64(tmp.Int64())
-					}()
-					c.SetRegister(rd, v)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluM.mulh(c, rd, rs1, rs2)
 				}
 			case 0b010:
-				switch InstructionPart(s, 25, 31) {
+				switch funct7 {
 				case 0b0000000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "slt", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					if int64(c.GetRegister(rs1)) < int64(c.GetRegister(rs2)) {
-						c.SetRegister(rd, 1)
-					} else {
-						c.SetRegister(rd, 0)
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.slt(c, rd, rs1, rs2)
 				case 0b0000001:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "mulhsu", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v := func() uint64 {
-						ag1 := big.NewInt(int64(c.GetRegister(rs1)))
-						ag2 := big.NewInt(int64(c.GetRegister(rs2)))
-						if ag2.Cmp(big.NewInt(0)) == -1 {
-							tmp := big.NewInt(0)
-							tmp.Add(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64))
-							tmp.Add(tmp, big.NewInt(2))
-							ag2 = tmp.Add(tmp, ag2)
-						}
-						tmp := big.NewInt(0)
-						tmp.Mul(ag1, ag2)
-						tmp.Rsh(tmp, 64)
-						return uint64(tmp.Int64())
-					}()
-					c.SetRegister(rd, v)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluM.mulhsu(c, rd, rs1, rs2)
 				}
 			case 0b011:
-				switch InstructionPart(s, 25, 31) {
+				switch funct7 {
 				case 0b0000000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sltu", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					if c.GetRegister(rs1) < c.GetRegister(rs2) {
-						c.SetRegister(rd, 1)
-					} else {
-						c.SetRegister(rd, 0)
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.sltu(c, rd, rs1, rs2)
 				case 0b0000001:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "mulhu", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v := func() uint64 {
-						ag1 := big.NewInt(int64(c.GetRegister(rs1)))
-						ag2 := big.NewInt(int64(c.GetRegister(rs2)))
-						if ag1.Cmp(big.NewInt(0)) == -1 {
-							tmp := big.NewInt(0)
-							tmp.Add(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64))
-							tmp.Add(tmp, big.NewInt(2))
-							ag1 = tmp.Add(tmp, ag1)
-						}
-						if ag2.Cmp(big.NewInt(0)) == -1 {
-							tmp := big.NewInt(0)
-							tmp.Add(big.NewInt(math.MaxInt64), big.NewInt(math.MaxInt64))
-							tmp.Add(tmp, big.NewInt(2))
-							ag2 = tmp.Add(tmp, ag2)
-						}
-						tmp := big.NewInt(0)
-						tmp.Mul(ag1, ag2)
-						tmp.Rsh(tmp, 64)
-						return tmp.Uint64()
-					}()
-					c.SetRegister(rd, v)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluM.mulhu(c, rd, rs1, rs2)
 				}
 			case 0b100:
-				switch InstructionPart(s, 25, 31) {
+				switch funct7 {
 				case 0b0000000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "xor", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, c.GetRegister(rs1)^c.GetRegister(rs2))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.xor(c, rd, rs1, rs2)
 				case 0b0000001:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "div", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					if c.GetRegister(rs2) == 0 {
-						c.SetRegister(rd, math.MaxUint64)
-					} else {
-						c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))/int64(c.GetRegister(rs2))))
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluM.div(c, rd, rs1, rs2)
 				}
 			case 0b101:
-				switch InstructionPart(s, 25, 31) {
+				switch funct7 {
 				case 0b0000000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "srl", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, c.GetRegister(rs1)>>(c.GetRegister(rs2)&0x3f))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.srl(c, rd, rs1, rs2)
 				case 0b0000001:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "divu", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					if c.GetRegister(rs2) == 0 {
-						c.SetRegister(rd, math.MaxUint64)
-					} else {
-						c.SetRegister(rd, c.GetRegister(rs1)/c.GetRegister(rs2))
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluM.divu(c, rd, rs1, rs2)
 				case 0b0100000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sra", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))>>(c.GetRegister(rs2)&0x3f)))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.sra(c, rd, rs1, rs2)
 				}
 			case 0b110:
-				switch InstructionPart(s, 25, 31) {
+				switch funct7 {
 				case 0b0000000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "or", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, c.GetRegister(rs1)|c.GetRegister(rs2))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.or(c, rd, rs1, rs2)
 				case 0b0000001:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "rem", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					if c.GetRegister(rs2) == 0 {
-						c.SetRegister(rd, c.GetRegister(rs1))
-					} else {
-						c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))%int64(c.GetRegister(rs2))))
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluM.rem(c, rd, rs1, rs2)
 				}
 			case 0b111:
-				switch InstructionPart(s, 25, 31) {
+				switch funct7 {
 				case 0b0000000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "and", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, c.GetRegister(rs1)&c.GetRegister(rs2))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.and(c, rd, rs1, rs2)
 				case 0b0000001:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "remu", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					if c.GetRegister(rs2) == 0 {
-						c.SetRegister(rd, c.GetRegister(rs1))
-					} else {
-						c.SetRegister(rd, c.GetRegister(rs1)%c.GetRegister(rs2))
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluM.remu(c, rd, rs1, rs2)
 				}
 			}
 		case 0b0001111:
@@ -600,9 +500,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b0000001:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "mulw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))*int32(c.GetRegister(rs2))))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluM.mulw(c, rd, rs1, rs2)
 				case 0b0100000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "subw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))-int32(c.GetRegister(rs2))))
@@ -617,13 +515,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return 1, nil
 			case 0b100:
 				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "divw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-				if c.GetRegister(rs2) == 0 {
-					c.SetRegister(rd, math.MaxUint64)
-				} else {
-					c.SetRegister(rd, SignExtend(uint64(int32(c.GetRegister(rs1))/int32(c.GetRegister(rs2))), 31))
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluM.divw(c, rd, rs1, rs2)
 			case 0b101:
 				switch InstructionPart(s, 25, 31) {
 				case 0b0000000:
@@ -634,13 +526,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return 1, nil
 				case 0b0000001:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "divuw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					if c.GetRegister(rs2) == 0 {
-						c.SetRegister(rd, math.MaxUint64)
-					} else {
-						c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))/uint32(c.GetRegister(rs2))), 31))
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluM.divuw(c, rd, rs1, rs2)
 				case 0b0100000:
 					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sraw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 4)))
@@ -649,22 +535,10 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				}
 			case 0b110:
 				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "remw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-				if c.GetRegister(rs2) == 0 {
-					c.SetRegister(rd, c.GetRegister(rs1))
-				} else {
-					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))%int32(c.GetRegister(rs2))))
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluM.remw(c, rd, rs1, rs2)
 			case 0b111:
 				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "remuw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-				if c.GetRegister(rs2) == 0 {
-					c.SetRegister(rd, c.GetRegister(rs1))
-				} else {
-					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))%uint32(c.GetRegister(rs2))), 31))
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluM.remuw(c, rd, rs1, rs2)
 			}
 		case 0b0101111:
 			rd, rs1, rs2 := RType(s)
