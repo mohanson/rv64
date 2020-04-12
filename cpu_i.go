@@ -480,12 +480,71 @@ func (_ *isaZifencei) fencei(c *CPU, i uint64) (uint64, error) {
 
 type isaZicsr struct{}
 
-func (_ *isaZicsr) csrrw()  {}
-func (_ *isaZicsr) csrrs()  {}
-func (_ *isaZicsr) csrrc()  {}
-func (_ *isaZicsr) csrrwi() {}
-func (_ *isaZicsr) csrrsi() {}
-func (_ *isaZicsr) csrrci() {}
+func (_ *isaZicsr) csrrw(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, csr := IType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrw", c.LogI(rd), c.LogI(rs1), csr))
+	if rd != Rzero {
+		c.SetRegister(rd, c.GetCSR().Get(csr))
+	}
+	c.GetCSR().Set(csr, c.GetRegister(rs1))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaZicsr) csrrs(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, csr := IType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrs", c.LogI(rd), c.LogI(rs1), csr))
+	c.SetRegister(rd, c.GetCSR().Get(csr))
+	if rs1 != Rzero {
+		c.GetCSR().Set(csr, c.GetCSR().Get(csr)|c.GetRegister(rs1))
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaZicsr) csrrc(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, csr := IType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrc", c.LogI(rd), c.LogI(rs1), csr))
+	c.SetRegister(rd, c.GetCSR().Get(csr))
+	if rs1 != Rzero {
+		c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-c.GetRegister(rs1)))
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaZicsr) csrrwi(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, csr := IType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrwi", c.LogI(rd), c.LogI(rs1), csr))
+	if rd != Rzero {
+		c.SetRegister(rd, c.GetCSR().Get(csr))
+	}
+	c.GetCSR().Set(csr, rs1)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaZicsr) csrrsi(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, csr := IType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrsi", c.LogI(rd), c.LogI(rs1), csr))
+	c.SetRegister(rd, c.GetCSR().Get(csr))
+	if csr != 0x00 {
+		c.GetCSR().Set(csr, c.GetCSR().Get(csr)|rs1)
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaZicsr) csrrci(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, csr := IType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrci", c.LogI(rd), c.LogI(rs1), csr))
+	c.SetRegister(rd, c.GetCSR().Get(csr))
+	if csr != 0x00 {
+		c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-rs1))
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
 
 type isaM struct{}
 

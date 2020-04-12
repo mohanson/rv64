@@ -302,7 +302,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return aluZifencei.fencei(c, i)
 			}
 		case 0b1110011:
-			rd, rs1, csr := IType(i)
 			switch funct3 {
 			case 0b000:
 				switch InstructionPart(i, 20, 31) {
@@ -312,53 +311,17 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return aluI.ebreak(c, i)
 				}
 			case 0b001:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrw", c.LogI(rd), c.LogI(rs1), csr))
-				if rd != Rzero {
-					c.SetRegister(rd, c.GetCSR().Get(csr))
-				}
-				c.GetCSR().Set(csr, c.GetRegister(rs1))
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluZicsr.csrrw(c, i)
 			case 0b010:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrs", c.LogI(rd), c.LogI(rs1), csr))
-				c.SetRegister(rd, c.GetCSR().Get(csr))
-				if rs1 != Rzero {
-					c.GetCSR().Set(csr, c.GetCSR().Get(csr)|c.GetRegister(rs1))
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluZicsr.csrrs(c, i)
 			case 0b011:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrc", c.LogI(rd), c.LogI(rs1), csr))
-				c.SetRegister(rd, c.GetCSR().Get(csr))
-				if rs1 != Rzero {
-					c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-c.GetRegister(rs1)))
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluZicsr.csrrc(c, i)
 			case 0b101:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrwi", c.LogI(rd), c.LogI(rs1), csr))
-				if rd != Rzero {
-					c.SetRegister(rd, c.GetCSR().Get(csr))
-				}
-				c.GetCSR().Set(csr, rs1)
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluZicsr.csrrwi(c, i)
 			case 0b110:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrsi", c.LogI(rd), c.LogI(rs1), csr))
-				c.SetRegister(rd, c.GetCSR().Get(csr))
-				if csr != 0x00 {
-					c.GetCSR().Set(csr, c.GetCSR().Get(csr)|rs1)
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluZicsr.csrrsi(c, i)
 			case 0b111:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrci", c.LogI(rd), c.LogI(rs1), csr))
-				c.SetRegister(rd, c.GetCSR().Get(csr))
-				if csr != 0x00 {
-					c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-rs1))
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluZicsr.csrrci(c, i)
 			}
 		case 0b0011011:
 			rd, rs1, imm := IType(i)
