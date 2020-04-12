@@ -922,7 +922,17 @@ func (_ *isaC) nop(c *CPU, _ uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) addi()  {}
+func (_ *isaC) addi(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 11)
+		imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 6)
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.addi", c.LogI(rd), imm))
+	c.SetRegister(rd, c.GetRegister(rd)+imm)
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
 func (_ *isaC) addiw() {}
 
 func (_ *isaC) li(c *CPU, i uint64) (uint64, error) {
@@ -969,7 +979,17 @@ func (_ *isaC) lui(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaC) srli64() {}
 func (_ *isaC) srai64() {}
-func (_ *isaC) andi()   {}
+
+func (_ *isaC) andi(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 9) + 16
+		imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 5)
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.andi", c.LogI(rd), imm))
+	c.SetRegister(rd, c.GetRegister(rd)&imm)
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
 
 func (_ *isaC) sub(c *CPU, i uint64) (uint64, error) {
 	var (

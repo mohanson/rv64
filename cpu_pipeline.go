@@ -64,7 +64,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			if InstructionPart(i, 2, 6) == 0x00 && InstructionPart(i, 12, 12) == 0x00 {
 				return aluC.nop(c, i)
 			} else {
-				Println("c.addi")
+				return aluC.addi(c, i)
 			}
 		case 0b01_001:
 			Println("c.addiw")
@@ -91,7 +91,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					Println("c.srai")
 				}
 			case 0b10:
-				Println("c.andi")
+				return aluC.andi(c, i)
 			case 0b11:
 				switch InstructionPart(i, 12, 12)<<2 | InstructionPart(i, 5, 6) {
 				case 0b0_00:
