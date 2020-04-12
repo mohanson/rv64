@@ -324,89 +324,46 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return aluZicsr.csrrci(c, i)
 			}
 		case 0b0011011:
-			rd, rs1, imm := IType(i)
-			switch InstructionPart(i, 12, 14) {
+			switch funct3 {
 			case 0b000:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "addiw", c.LogI(rd), c.LogI(rs1), imm))
-				c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(imm)))
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluI.addiw(c, i)
 			case 0b001:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "slliw", c.LogI(rd), c.LogI(rs1), imm))
-				if InstructionPart(imm, 5, 5) != 0x00 {
-					return 0, ErrAbnormalInstruction
-				}
-				c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<imm), 31))
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluI.slliw(c, i)
 			case 0b101:
-				switch InstructionPart(i, 25, 31) {
+				switch funct7 {
 				case 0b0000000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "srliw", c.LogI(rd), c.LogI(rs1), imm))
-					if InstructionPart(imm, 5, 5) != 0x00 {
-						return 0, ErrAbnormalInstruction
-					}
-					shamt := InstructionPart(imm, 0, 4)
-					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>shamt), 31))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.srliw(c, i)
 				case 0b0100000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "sraiw", c.LogI(rd), c.LogI(rs1), imm))
-					if InstructionPart(imm, 5, 5) != 0x00 {
-						return 0, ErrAbnormalInstruction
-					}
-					shamt := InstructionPart(imm, 0, 4)
-					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>shamt))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.sraiw(c, i)
 				}
 			}
 		case 0b0111011:
-			rd, rs1, rs2 := RType(i)
-			switch InstructionPart(i, 12, 14) {
+			switch funct3 {
 			case 0b000:
-				switch InstructionPart(i, 25, 31) {
+				switch funct7 {
 				case 0b0000000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "addw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(c.GetRegister(rs2))))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.addw(c, i)
 				case 0b0000001:
 					return aluM.mulw(c, i)
 				case 0b0100000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "subw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))-int32(c.GetRegister(rs2))))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.subw(c, i)
 				}
 			case 0b001:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sllw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-				s := c.GetRegister(rs2) & 0x1f
-				c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))<<s), 31))
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluI.sllw(c, i)
 			case 0b100:
 				return aluM.divw(c, i)
 			case 0b101:
-				switch InstructionPart(i, 25, 31) {
+				switch funct7 {
 				case 0b0000000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "srlw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					s := c.GetRegister(rs2) & 0x1f
-					c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegister(rs1))>>s), 31))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.srlw(c, i)
 				case 0b0000001:
 					return aluM.divuw(c, i)
 				case 0b0100000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sraw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))>>InstructionPart(c.GetRegister(rs2), 0, 4)))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluI.sraw(c, i)
 				}
 			case 0b110:
 				return aluM.remw(c, i)
 			case 0b111:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "remuw", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
 				return aluM.remuw(c, i)
 			}
 		case 0b0101111:
