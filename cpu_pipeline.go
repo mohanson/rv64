@@ -62,7 +62,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			Println("c.sd")
 		case 0b01_000:
 			if InstructionPart(i, 2, 6) == 0x00 && InstructionPart(i, 12, 12) == 0x00 {
-				Println("c.nop")
+				return aluC.nop(c, i)
 			} else {
 				Println("c.addi")
 			}
@@ -72,7 +72,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			return aluC.li(c, i)
 		case 0b01_011:
 			if InstructionPart(i, 7, 11) == 2 {
-				Println("c.addi16sp")
+				return aluC.addi16sp(c, i)
 			} else {
 				return aluC.lui(c, i)
 			}

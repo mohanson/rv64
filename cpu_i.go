@@ -909,13 +909,19 @@ func (_ *isaC) addi4spn(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) fld()   {}
-func (_ *isaC) lw()    {}
-func (_ *isaC) ld()    {}
-func (_ *isaC) fsd()   {}
-func (_ *isaC) sw()    {}
-func (_ *isaC) sd()    {}
-func (_ *isaC) nop()   {}
+func (_ *isaC) fld() {}
+func (_ *isaC) lw()  {}
+func (_ *isaC) ld()  {}
+func (_ *isaC) fsd() {}
+func (_ *isaC) sw()  {}
+func (_ *isaC) sd()  {}
+
+func (_ *isaC) nop(c *CPU, _ uint64) (uint64, error) {
+	Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "c.nop"))
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
 func (_ *isaC) addi()  {}
 func (_ *isaC) addiw() {}
 
@@ -933,7 +939,19 @@ func (_ *isaC) li(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) addi16sp() {}
+func (_ *isaC) addi16sp(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 11)
+		imm = SignExtend(InstructionPart(i, 12, 12)<<9|InstructionPart(i, 3, 4)<<7|InstructionPart(i, 5, 5)<<6|InstructionPart(i, 2, 2)<<5|InstructionPart(i, 6, 6)<<4, 9)
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.addi16sp", c.LogI(rd), imm))
+	if imm == 0x00 {
+		return 0, ErrReservedInstruction
+	}
+	c.SetRegister(rd, c.GetRegister(Rsp)+imm)
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
 
 func (_ *isaC) lui(c *CPU, i uint64) (uint64, error) {
 	var (
