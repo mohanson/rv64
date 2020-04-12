@@ -1066,8 +1066,6 @@ func (_ *isaC) srli(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-// func (_ *isaC) srli64() {}
-
 func (_ *isaC) srai(c *CPU, i uint64) (uint64, error) {
 	var (
 		rd    = InstructionPart(i, 7, 9) + 8
@@ -1078,8 +1076,6 @@ func (_ *isaC) srai(c *CPU, i uint64) (uint64, error) {
 	c.SetPC(c.GetPC() + 2)
 	return 1, nil
 }
-
-// func (_ *isaC) srai64() {}
 
 func (_ *isaC) andi(c *CPU, i uint64) (uint64, error) {
 	var (
