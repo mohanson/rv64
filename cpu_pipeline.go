@@ -61,32 +61,39 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b00_111:
 			Println("c.sd")
 		case 0b01_000:
-			if InstructionPart(i, 7, 11) == 0x00 {
+			if InstructionPart(i, 2, 6) == 0x00 && InstructionPart(i, 12, 12) == 0x00 {
 				Println("c.nop")
+			} else {
+				Println("c.addi")
 			}
-			Println("c.addi")
 		case 0b01_001:
 			Println("c.addiw")
 		case 0b01_010:
-			Println("c.li")
+			return aluC.li(c, i)
 		case 0b01_011:
-			Println("c.lui")
+			if InstructionPart(i, 7, 11) == 2 {
+				Println("c.addi16sp")
+			} else {
+				return aluC.lui(c, i)
+			}
 		case 0b01_100:
 			switch InstructionPart(i, 10, 11) {
 			case 0b00:
 				if InstructionPart(i, 2, 6) == 0x00 && InstructionPart(i, 12, 12) == 0x00 {
 					Println("c.srli64")
+				} else {
+					Println("c.srli")
 				}
-				Println("c.srli")
 			case 0b01:
 				if InstructionPart(i, 2, 6) == 0x00 && InstructionPart(i, 12, 12) == 0x00 {
 					Println("c.srai64")
+				} else {
+					Println("c.srai")
 				}
-				Println("c.srai")
 			case 0b10:
 				Println("c.andi")
 			case 0b11:
-				switch InstructionPart(i, 12, 12)<<1 | InstructionPart(i, 5, 6) {
+				switch InstructionPart(i, 12, 12)<<2 | InstructionPart(i, 5, 6) {
 				case 0b0_00:
 					return aluC.sub(c, i)
 				case 0b0_01:
@@ -133,10 +140,12 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				if l1 == 0 && l2 == 0 {
 					Println("c.ebreak")
 				}
-				if l1 != 0 && l2 == 0 {
+				if l1 != 0 {
 					Println("c.jalr")
 				}
-				Println("c.add")
+				if l2 != 0 {
+					Println("c.add")
+				}
 			}
 		case 0b10_101:
 			Println("c.fsdsp")

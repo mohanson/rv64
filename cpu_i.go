@@ -909,21 +909,49 @@ func (_ *isaC) addi4spn(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) fld()      {}
-func (_ *isaC) lw()       {}
-func (_ *isaC) ld()       {}
-func (_ *isaC) fsd()      {}
-func (_ *isaC) sw()       {}
-func (_ *isaC) sd()       {}
-func (_ *isaC) nop()      {}
-func (_ *isaC) addi()     {}
-func (_ *isaC) addiw()    {}
-func (_ *isaC) li()       {}
+func (_ *isaC) fld()   {}
+func (_ *isaC) lw()    {}
+func (_ *isaC) ld()    {}
+func (_ *isaC) fsd()   {}
+func (_ *isaC) sw()    {}
+func (_ *isaC) sd()    {}
+func (_ *isaC) nop()   {}
+func (_ *isaC) addi()  {}
+func (_ *isaC) addiw() {}
+
+func (_ *isaC) li(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 11)
+		imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 5)
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.li", c.LogI(rd), imm))
+	if rd == 0x00 {
+		return 0, ErrReservedInstruction
+	}
+	c.SetRegister(rd, imm)
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
 func (_ *isaC) addi16sp() {}
-func (_ *isaC) lui()      {}
-func (_ *isaC) srli64()   {}
-func (_ *isaC) srai64()   {}
-func (_ *isaC) andi()     {}
+
+func (_ *isaC) lui(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 11)
+		imm = SignExtend(InstructionPart(i, 12, 12)<<17|InstructionPart(i, 2, 6)<<12, 17)
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.lui", c.LogI(rd), imm))
+	if rd == 0x00 || rd == 0x02 || imm == 0x00 {
+		return 0, ErrReservedInstruction
+	}
+	c.SetRegister(rd, imm)
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
+func (_ *isaC) srli64() {}
+func (_ *isaC) srai64() {}
+func (_ *isaC) andi()   {}
 
 func (_ *isaC) sub(c *CPU, i uint64) (uint64, error) {
 	var (
