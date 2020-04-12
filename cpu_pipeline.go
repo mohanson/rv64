@@ -79,17 +79,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b01_100:
 			switch InstructionPart(i, 10, 11) {
 			case 0b00:
-				if InstructionPart(i, 2, 6) == 0x00 && InstructionPart(i, 12, 12) == 0x00 {
-					Println("c.srli64")
-				} else {
-					return aluC.srli(c, i)
-				}
+				return aluC.srli(c, i)
 			case 0b01:
-				if InstructionPart(i, 2, 6) == 0x00 && InstructionPart(i, 12, 12) == 0x00 {
-					Println("c.srai64")
-				} else {
-					return aluC.srai(c, i)
-				}
+				return aluC.srai(c, i)
 			case 0b10:
 				return aluC.andi(c, i)
 			case 0b11:
@@ -119,7 +111,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b01_111:
 			return aluC.bnez(c, i)
 		case 0b10_000:
-			Println("c.slli64")
+			return aluC.slli(c, i)
 		case 0b10_001:
 			Println("c.fldsp")
 		case 0b10_010:

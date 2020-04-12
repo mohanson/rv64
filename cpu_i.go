@@ -1194,11 +1194,24 @@ func (_ *isaC) bnez(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) slli64() {}
-func (_ *isaC) fldsp()  {}
-func (_ *isaC) lwsp()   {}
-func (_ *isaC) ldsp()   {}
-func (_ *isaC) jr()     {}
+func (_ *isaC) slli(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd    = InstructionPart(i, 7, 9) + 8
+		shamt = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.slli", c.LogI(rd), shamt))
+	if rd == 0 {
+		return 0, ErrAbnormalInstruction
+	}
+	c.SetRegister(rd, c.GetRegister(rd)<<shamt)
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
+func (_ *isaC) fldsp() {}
+func (_ *isaC) lwsp()  {}
+func (_ *isaC) ldsp()  {}
+func (_ *isaC) jr()    {}
 
 func (_ *isaC) mv(c *CPU, i uint64) (uint64, error) {
 	var (
