@@ -49,7 +49,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b00_001:
 			Println("c.fld")
 		case 0b00_010:
-			Println("c.lw")
+			return aluC.lw(c, i)
 		case 0b00_011:
 			Println("c.ld")
 		case 0b00_100:
@@ -57,7 +57,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b00_101:
 			Println("c.fsd")
 		case 0b00_110:
-			Println("c.sw")
+			return aluC.sw(c, i)
 		case 0b00_111:
 			Println("c.sd")
 		case 0b01_000:
