@@ -246,27 +246,21 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			}
 		case 0b0100011:
 			rs1, rs2, imm := SType(s)
-			a := c.GetRegister(rs1) + imm
-			var err error
-			switch InstructionPart(s, 12, 14) {
+			funct3 := InstructionPart(s, 12, 14)
+			switch funct3 {
 			case 0b000:
 				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sb", c.LogI(rs1), c.LogI(rs2), imm))
-				err = c.GetMemory().SetUint8(a, uint8(c.GetRegister(rs2)))
+				return aluI.sb(c, rs1, rs2, imm)
 			case 0b001:
 				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sh", c.LogI(rs1), c.LogI(rs2), imm))
-				err = c.GetMemory().SetUint16(a, uint16(c.GetRegister(rs2)))
+				return aluI.sh(c, rs1, rs2, imm)
 			case 0b010:
 				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sw", c.LogI(rs1), c.LogI(rs2), imm))
-				err = c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2)))
+				return aluI.sw(c, rs1, rs2, imm)
 			case 0b011:
 				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sd", c.LogI(rs1), c.LogI(rs2), imm))
-				err = c.GetMemory().SetUint64(a, c.GetRegister(rs2))
+				return aluI.sd(c, rs1, rs2, imm)
 			}
-			if err != nil {
-				return 0, err
-			}
-			c.SetPC(c.GetPC() + 4)
-			return 1, nil
 		case 0b0010011:
 			rd, rs1, imm := IType(s)
 			switch InstructionPart(s, 12, 14) {

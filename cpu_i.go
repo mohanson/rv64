@@ -190,8 +190,42 @@ func (_ *isaI) lwu(c *CPU, rd uint64, rs1 uint64, imm uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaI) sb()    {}
-func (_ *isaI) sh()    {}
+func (_ *isaI) sb(c *CPU, rs1 uint64, rs2 uint64, imm uint64) (uint64, error) {
+	a := c.GetRegister(rs1) + imm
+	if err := c.GetMemory().SetUint8(a, uint8(c.GetRegister(rs2))); err != nil {
+		return 0, err
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) sh(c *CPU, rs1 uint64, rs2 uint64, imm uint64) (uint64, error) {
+	a := c.GetRegister(rs1) + imm
+	if err := c.GetMemory().SetUint16(a, uint16(c.GetRegister(rs2))); err != nil {
+		return 0, err
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) sw(c *CPU, rs1 uint64, rs2 uint64, imm uint64) (uint64, error) {
+	a := c.GetRegister(rs1) + imm
+	if err := c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2))); err != nil {
+		return 0, err
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaI) sd(c *CPU, rs1 uint64, rs2 uint64, imm uint64) (uint64, error) {
+	a := c.GetRegister(rs1) + imm
+	if err := c.GetMemory().SetUint64(a, c.GetRegister(rs2)); err != nil {
+		return 0, err
+	}
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
 func (_ *isaI) addi()  {}
 func (_ *isaI) slti()  {}
 func (_ *isaI) sltiu() {}
@@ -220,7 +254,6 @@ func (_ *isaI) fenci()  {}
 func (_ *isaI) ecall()  {}
 func (_ *isaI) ebreak() {}
 
-func (_ *isaI) sd()    {}
 func (_ *isaI) addiw() {}
 func (_ *isaI) slliw() {}
 func (_ *isaI) srliw() {}
