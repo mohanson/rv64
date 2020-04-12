@@ -1004,7 +1004,7 @@ func (_ *isaC) subw(c *CPU, i uint64) (uint64, error) {
 	)
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs2: %s", c.GetPC(), "c.subw", c.LogI(rd), c.LogI(rs2)))
 	c.SetRegister(rd, uint64(int32(c.GetRegister(rd))-int32(c.GetRegister(rs2))))
-	c.SetPC(c.GetPC() + 4)
+	c.SetPC(c.GetPC() + 2)
 	return 1, nil
 }
 
@@ -1015,7 +1015,7 @@ func (_ *isaC) addw(c *CPU, i uint64) (uint64, error) {
 	)
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs2: %s", c.GetPC(), "c.addw", c.LogI(rd), c.LogI(rs2)))
 	c.SetRegister(rd, uint64(int32(c.GetRegister(rd))+int32(c.GetRegister(rs2))))
-	c.SetPC(c.GetPC() + 4)
+	c.SetPC(c.GetPC() + 2)
 	return 1, nil
 }
 
@@ -1027,7 +1027,18 @@ func (_ *isaC) fldsp()  {}
 func (_ *isaC) lwsp()   {}
 func (_ *isaC) ldsp()   {}
 func (_ *isaC) jr()     {}
-func (_ *isaC) mv()     {}
+
+func (_ *isaC) mv(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 11)
+		rs2 = InstructionPart(i, 2, 6)
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs2: %s", c.GetPC(), "c.mv", c.LogI(rd), c.LogI(rs2)))
+	c.SetRegister(rd, c.GetRegister(rs2))
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
 func (_ *isaC) ebreak() {}
 func (_ *isaC) jalr()   {}
 func (_ *isaC) add()    {}

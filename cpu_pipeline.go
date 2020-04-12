@@ -132,7 +132,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				if InstructionPart(i, 2, 6) == 0 {
 					Println("c.jr")
 				} else {
-					Println("c.mv")
+					return aluC.mv(c, i)
 				}
 			case 1:
 				l1 := InstructionPart(i, 7, 11)
