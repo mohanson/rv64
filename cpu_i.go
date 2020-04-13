@@ -1306,17 +1306,11 @@ func (_ *isaC) ldsp(c *CPU, i uint64) (uint64, error) {
 }
 
 func (_ *isaC) jr(c *CPU, i uint64) (uint64, error) {
-	var (
-		rs1 = InstructionPart(i, 7, 11)
-		rs2 = InstructionPart(i, 2, 6)
-	)
+	var rs1 = InstructionPart(i, 7, 11)
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s", c.GetPC(), "c.jr", c.LogI(rs1)))
 	if rs1 == 0 {
 		return 0, ErrReservedInstruction
 	}
-	if rs2 != 0 {
-		return 0, ErrAbnormalInstruction
-	}
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s", c.GetPC(), "c.jr", c.LogI(rs1)))
 	r := c.GetRegister(rs1)
 	if r%2 != 0x00 {
 		return 0, ErrMisalignedInstructionFetch
@@ -1331,6 +1325,9 @@ func (_ *isaC) mv(c *CPU, i uint64) (uint64, error) {
 		rs2 = InstructionPart(i, 2, 6)
 	)
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs2: %s", c.GetPC(), "c.mv", c.LogI(rd), c.LogI(rs2)))
+	if rd == Rzero {
+		return 0, ErrHint
+	}
 	c.SetRegister(rd, c.GetRegister(rs2))
 	c.SetPC(c.GetPC() + 2)
 	return 1, nil

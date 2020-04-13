@@ -118,7 +118,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			// j[al]r/mv/add
 			switch InstructionPart(i, 12, 12) {
 			case 0:
-				if InstructionPart(i, 2, 6) == 0 {
+				if InstructionPart(i, 2, 6) == Rzero {
 					return aluC.jr(c, i)
 				} else {
 					return aluC.mv(c, i)
