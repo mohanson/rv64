@@ -41,10 +41,7 @@ func (_ *isaI) jalr(c *CPU, i uint64) (uint64, error) {
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "jalr", c.LogI(rd), c.LogI(rs1), imm))
 	c.SetRegister(rd, c.GetPC()+4)
 	r := c.GetRegister(rs1) + imm
-	if r%2 != 0x00 {
-		return 0, ErrMisalignedInstructionFetch
-	}
-	c.SetPC(r)
+	c.SetPC(r & 0xfffffffffffffffe)
 	return 1, nil
 }
 
@@ -1347,11 +1344,7 @@ func (_ *isaC) jalr(c *CPU, i uint64) (uint64, error) {
 	}
 	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s", c.GetPC(), "c.jalr", c.LogI(rs1)))
 	c.SetRegister(Rra, c.GetPC()+2)
-	r := c.GetRegister(rs1)
-	if r%2 != 0x00 {
-		return 0, ErrMisalignedInstructionFetch
-	}
-	c.SetPC(r)
+	c.SetPC(c.GetRegister(rs1) & 0xfffffffffffffffe)
 	return 1, nil
 }
 
