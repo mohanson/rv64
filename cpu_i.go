@@ -1187,14 +1187,14 @@ func (_ *isaC) addw(c *CPU, i uint64) (uint64, error) {
 }
 
 func (_ *isaC) j(c *CPU, i uint64) (uint64, error) {
-	var imm = InstructionPart(i, 12, 12)<<11 |
-		InstructionPart(i, 8, 8)<<10 |
-		InstructionPart(i, 9, 10)<<8 |
-		InstructionPart(i, 6, 6)<<7 |
-		InstructionPart(i, 7, 7)<<6 |
-		InstructionPart(i, 2, 2)<<5 |
-		InstructionPart(i, 11, 11)<<4 |
-		InstructionPart(i, 3, 5)<<1
+	var imm = SignExtend(InstructionPart(i, 12, 12)<<11|
+		InstructionPart(i, 8, 8)<<10|
+		InstructionPart(i, 9, 10)<<8|
+		InstructionPart(i, 6, 6)<<7|
+		InstructionPart(i, 7, 7)<<6|
+		InstructionPart(i, 2, 2)<<5|
+		InstructionPart(i, 11, 11)<<4|
+		InstructionPart(i, 3, 5)<<1, 11)
 	Debugln(fmt.Sprintf("%#08x % 10s imm: ____(%#016x)", c.GetPC(), "c.j", imm))
 	r := c.GetPC() + imm
 	if r%2 != 0x00 {

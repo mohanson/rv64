@@ -73,7 +73,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return aluC.lui(c, i)
 			}
 		case 0b01_100:
-			// misc-alu
 			switch InstructionPart(i, 10, 11) {
 			case 0b00:
 				return aluC.srli(c, i)
