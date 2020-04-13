@@ -137,7 +137,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 	case 4:
 		opcode := InstructionPart(i, 0, 6)
 		funct3 := InstructionPart(i, 12, 14)
-		funct6 := InstructionPart(i, 26, 31)
 		funct7 := InstructionPart(i, 25, 31)
 		switch opcode {
 		case 0b0110111:
@@ -208,7 +207,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			case 0b001:
 				return aluI.slli(c, i)
 			case 0b101:
-				switch funct6 {
+				switch InstructionPart(i, 26, 31) {
 				case 0b000000:
 					return aluI.srli(c, i)
 				case 0b010000:
