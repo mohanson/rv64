@@ -10,7 +10,7 @@ type isaI struct{}
 
 func (_ *isaI) lui(c *CPU, i uint64) (uint64, error) {
 	rd, imm := UType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "lui", c.LogI(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "lui", c.LogI(rd), imm))
 	c.SetRegister(rd, imm)
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
@@ -18,7 +18,7 @@ func (_ *isaI) lui(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) aupic(c *CPU, i uint64) (uint64, error) {
 	rd, imm := UType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "auipc", c.LogI(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "auipc", c.LogI(rd), imm))
 	c.SetRegister(rd, c.GetPC()+imm)
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
@@ -26,7 +26,7 @@ func (_ *isaI) aupic(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) jal(c *CPU, i uint64) (uint64, error) {
 	rd, imm := JType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "jal", c.LogI(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "jal", c.LogI(rd), imm))
 	c.SetRegister(rd, c.GetPC()+4)
 	r := c.GetPC() + imm
 	if r%2 != 0x00 {
@@ -38,7 +38,7 @@ func (_ *isaI) jal(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) jalr(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "jalr", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "jalr", c.LogI(rd), c.LogI(rs1), imm))
 	c.SetRegister(rd, c.GetPC()+4)
 	r := c.GetRegister(rs1) + imm
 	c.SetPC(r & 0xfffffffffffffffe)
@@ -47,7 +47,7 @@ func (_ *isaI) jalr(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) beq(c *CPU, i uint64) (uint64, error) {
 	rs1, rs2, imm := BType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "beq", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "beq", c.LogI(rs1), c.LogI(rs2), imm))
 	if imm%2 != 0x00 {
 		return 0, ErrMisalignedInstructionFetch
 	}
@@ -61,7 +61,7 @@ func (_ *isaI) beq(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) bne(c *CPU, i uint64) (uint64, error) {
 	rs1, rs2, imm := BType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "bne", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "bne", c.LogI(rs1), c.LogI(rs2), imm))
 	if imm%2 != 0x00 {
 		return 0, ErrMisalignedInstructionFetch
 	}
@@ -75,7 +75,7 @@ func (_ *isaI) bne(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) blt(c *CPU, i uint64) (uint64, error) {
 	rs1, rs2, imm := BType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "blt", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "blt", c.LogI(rs1), c.LogI(rs2), imm))
 	if imm%2 != 0x00 {
 		return 0, ErrMisalignedInstructionFetch
 	}
@@ -89,7 +89,7 @@ func (_ *isaI) blt(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) bge(c *CPU, i uint64) (uint64, error) {
 	rs1, rs2, imm := BType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "bge", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "bge", c.LogI(rs1), c.LogI(rs2), imm))
 	if imm%2 != 0x00 {
 		return 0, ErrMisalignedInstructionFetch
 	}
@@ -103,7 +103,7 @@ func (_ *isaI) bge(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) bltu(c *CPU, i uint64) (uint64, error) {
 	rs1, rs2, imm := BType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "bltu", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "bltu", c.LogI(rs1), c.LogI(rs2), imm))
 	if imm%2 != 0x00 {
 		return 0, ErrMisalignedInstructionFetch
 	}
@@ -117,7 +117,7 @@ func (_ *isaI) bltu(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) bgeu(c *CPU, i uint64) (uint64, error) {
 	rs1, rs2, imm := BType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "bgeu", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "bgeu", c.LogI(rs1), c.LogI(rs2), imm))
 	if imm%2 != 0x00 {
 		return 0, ErrMisalignedInstructionFetch
 	}
@@ -131,7 +131,7 @@ func (_ *isaI) bgeu(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) lb(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "lb", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "lb", c.LogI(rd), c.LogI(rs1), imm))
 	a := c.GetRegister(rs1) + imm
 	b, err := c.GetMemory().GetUint8(a)
 	if err != nil {
@@ -145,7 +145,7 @@ func (_ *isaI) lb(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) lh(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "lh", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "lh", c.LogI(rd), c.LogI(rs1), imm))
 	a := c.GetRegister(rs1) + imm
 	b, err := c.GetMemory().GetUint16(a)
 	if err != nil {
@@ -159,7 +159,7 @@ func (_ *isaI) lh(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) lw(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "lw", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "lw", c.LogI(rd), c.LogI(rs1), imm))
 	a := c.GetRegister(rs1) + imm
 	b, err := c.GetMemory().GetUint32(a)
 	if err != nil {
@@ -173,7 +173,7 @@ func (_ *isaI) lw(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) ld(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "ld", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "ld", c.LogI(rd), c.LogI(rs1), imm))
 	a := c.GetRegister(rs1) + imm
 	b, err := c.GetMemory().GetUint64(a)
 	if err != nil {
@@ -186,7 +186,7 @@ func (_ *isaI) ld(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) lbu(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "lbu", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "lbu", c.LogI(rd), c.LogI(rs1), imm))
 	a := c.GetRegister(rs1) + imm
 	b, err := c.GetMemory().GetUint8(a)
 	if err != nil {
@@ -200,7 +200,7 @@ func (_ *isaI) lbu(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) lhu(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "lhu", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "lhu", c.LogI(rd), c.LogI(rs1), imm))
 	a := c.GetRegister(rs1) + imm
 	b, err := c.GetMemory().GetUint16(a)
 	if err != nil {
@@ -214,7 +214,7 @@ func (_ *isaI) lhu(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) lwu(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "lwu", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "lwu", c.LogI(rd), c.LogI(rs1), imm))
 	a := c.GetRegister(rs1) + imm
 	b, err := c.GetMemory().GetUint32(a)
 	if err != nil {
@@ -228,7 +228,7 @@ func (_ *isaI) lwu(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) sb(c *CPU, i uint64) (uint64, error) {
 	rs1, rs2, imm := SType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sb", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "sb", c.LogI(rs1), c.LogI(rs2), imm))
 	a := c.GetRegister(rs1) + imm
 	if err := c.GetMemory().SetUint8(a, uint8(c.GetRegister(rs2))); err != nil {
 		return 0, err
@@ -239,7 +239,7 @@ func (_ *isaI) sb(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) sh(c *CPU, i uint64) (uint64, error) {
 	rs1, rs2, imm := SType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sh", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "sh", c.LogI(rs1), c.LogI(rs2), imm))
 	a := c.GetRegister(rs1) + imm
 	if err := c.GetMemory().SetUint16(a, uint16(c.GetRegister(rs2))); err != nil {
 		return 0, err
@@ -250,7 +250,7 @@ func (_ *isaI) sh(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) sw(c *CPU, i uint64) (uint64, error) {
 	rs1, rs2, imm := SType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sw", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "sw", c.LogI(rs1), c.LogI(rs2), imm))
 	a := c.GetRegister(rs1) + imm
 	if err := c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2))); err != nil {
 		return 0, err
@@ -261,7 +261,7 @@ func (_ *isaI) sw(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) sd(c *CPU, i uint64) (uint64, error) {
 	rs1, rs2, imm := SType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sd", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "sd", c.LogI(rs1), c.LogI(rs2), imm))
 	a := c.GetRegister(rs1) + imm
 	if err := c.GetMemory().SetUint64(a, c.GetRegister(rs2)); err != nil {
 		return 0, err
@@ -272,7 +272,7 @@ func (_ *isaI) sd(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) addi(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "addi", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "addi", c.LogI(rd), c.LogI(rs1), imm))
 	c.SetRegister(rd, c.GetRegister(rs1)+imm)
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
@@ -280,7 +280,7 @@ func (_ *isaI) addi(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) slti(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "slti", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "slti", c.LogI(rd), c.LogI(rs1), imm))
 	if int64(c.GetRegister(rs1)) < int64(imm) {
 		c.SetRegister(rd, 1)
 	} else {
@@ -292,7 +292,7 @@ func (_ *isaI) slti(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) sltiu(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "sltiu", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "sltiu", c.LogI(rd), c.LogI(rs1), imm))
 	if c.GetRegister(rs1) < imm {
 		c.SetRegister(rd, 1)
 	} else {
@@ -304,7 +304,7 @@ func (_ *isaI) sltiu(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) xori(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "xori", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "xori", c.LogI(rd), c.LogI(rs1), imm))
 	c.SetRegister(rd, c.GetRegister(rs1)^imm)
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
@@ -312,7 +312,7 @@ func (_ *isaI) xori(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) ori(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "ori", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "ori", c.LogI(rd), c.LogI(rs1), imm))
 	c.SetRegister(rd, c.GetRegister(rs1)|imm)
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
@@ -320,7 +320,7 @@ func (_ *isaI) ori(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) andi(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "andi", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "andi", c.LogI(rd), c.LogI(rs1), imm))
 	c.SetRegister(rd, c.GetRegister(rs1)&imm)
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
@@ -329,7 +329,7 @@ func (_ *isaI) andi(c *CPU, i uint64) (uint64, error) {
 func (_ *isaI) slli(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
 	shamt := imm & 0x3f
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "slli", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "slli", c.LogI(rd), c.LogI(rs1), imm))
 	c.SetRegister(rd, c.GetRegister(rs1)<<shamt)
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
@@ -337,7 +337,7 @@ func (_ *isaI) slli(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) srli(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "srli", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "srli", c.LogI(rd), c.LogI(rs1), imm))
 	shamt := imm & 0x3f
 	c.SetRegister(rd, c.GetRegister(rs1)>>shamt)
 	c.SetPC(c.GetPC() + 4)
@@ -346,7 +346,7 @@ func (_ *isaI) srli(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) srai(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "srai", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "srai", c.LogI(rd), c.LogI(rs1), imm))
 	shamt := imm & 0x3f
 	c.SetRegister(rd, uint64(int64(c.GetRegister(rs1))>>shamt))
 	c.SetPC(c.GetPC() + 4)
@@ -458,7 +458,7 @@ func (_ *isaI) ebreak(c *CPU, _ uint64) (uint64, error) {
 
 func (_ *isaI) addiw(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "addiw", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "addiw", c.LogI(rd), c.LogI(rs1), imm))
 	c.SetRegister(rd, uint64(int32(c.GetRegister(rs1))+int32(imm)))
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
@@ -466,7 +466,7 @@ func (_ *isaI) addiw(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) slliw(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "slliw", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "slliw", c.LogI(rd), c.LogI(rs1), imm))
 	if InstructionPart(imm, 5, 5) != 0x00 {
 		return 0, ErrAbnormalInstruction
 	}
@@ -477,7 +477,7 @@ func (_ *isaI) slliw(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) srliw(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "srliw", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "srliw", c.LogI(rd), c.LogI(rs1), imm))
 	if InstructionPart(imm, 5, 5) != 0x00 {
 		return 0, ErrAbnormalInstruction
 	}
@@ -489,7 +489,7 @@ func (_ *isaI) srliw(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaI) sraiw(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "sraiw", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "sraiw", c.LogI(rd), c.LogI(rs1), imm))
 	if InstructionPart(imm, 5, 5) != 0x00 {
 		return 0, ErrAbnormalInstruction
 	}
@@ -896,7 +896,7 @@ func (_ *isaC) addi4spn(c *CPU, i uint64) (uint64, error) {
 		rd  = InstructionPart(i, 2, 4) + 8
 		imm = InstructionPart(i, 7, 10)<<6 | InstructionPart(i, 11, 12)<<4 | InstructionPart(i, 5, 5)<<3 | InstructionPart(i, 6, 6)<<2
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.addi4spn", c.LogI(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "c.addi4spn", c.LogI(rd), imm))
 	if imm == 0x00 {
 		return 0, ErrReservedInstruction
 	}
@@ -911,7 +911,7 @@ func (_ *isaC) fld(c *CPU, i uint64) (uint64, error) {
 		rs1 = InstructionPart(i, 7, 9) + 8
 		imm = InstructionPart(i, 5, 6)<<6 | InstructionPart(i, 10, 12)<<3
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "c.fld", c.LogF(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "c.fld", c.LogF(rd), c.LogI(rs1), imm))
 	a := c.GetRegister(rs1) + imm
 	v, err := c.GetMemory().GetUint64(a)
 	if err != nil {
@@ -928,7 +928,7 @@ func (_ *isaC) lw(c *CPU, i uint64) (uint64, error) {
 		rs1 = InstructionPart(i, 7, 9) + 8
 		imm = InstructionPart(i, 5, 5)<<6 | InstructionPart(i, 10, 12)<<3 | InstructionPart(i, 6, 6)<<2
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "c.lw", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "c.lw", c.LogI(rd), c.LogI(rs1), imm))
 	a := c.GetRegister(rs1) + imm
 	b, err := c.GetMemory().GetUint32(a)
 	if err != nil {
@@ -946,7 +946,7 @@ func (_ *isaC) ld(c *CPU, i uint64) (uint64, error) {
 		rs1 = InstructionPart(i, 7, 9) + 8
 		imm = InstructionPart(i, 5, 6)<<6 | InstructionPart(i, 10, 12)<<3
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "c.ld", c.LogI(rd), c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "c.ld", c.LogI(rd), c.LogI(rs1), imm))
 	a := c.GetRegister(rs1) + imm
 	b, err := c.GetMemory().GetUint64(a)
 	if err != nil {
@@ -963,7 +963,7 @@ func (_ *isaC) fsd(c *CPU, i uint64) (uint64, error) {
 		rs2 = InstructionPart(i, 2, 4) + 8
 		imm = InstructionPart(i, 5, 6)<<6 | InstructionPart(i, 10, 12)<<3
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "c.fsd", c.LogI(rs1), c.LogF(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "c.fsd", c.LogI(rs1), c.LogF(rs2), imm))
 	a := c.GetRegister(rs1) + imm
 	if err := c.GetMemory().SetUint64(a, c.GetRegisterFloat(rs2)); err != nil {
 		return 0, err
@@ -978,7 +978,7 @@ func (_ *isaC) sw(c *CPU, i uint64) (uint64, error) {
 		rs2 = InstructionPart(i, 2, 4) + 8
 		imm = InstructionPart(i, 5, 5)<<6 | InstructionPart(i, 10, 12)<<3 | InstructionPart(i, 6, 6)<<2
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "c.sw", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "c.sw", c.LogI(rs1), c.LogI(rs2), imm))
 	a := c.GetRegister(rs1) + imm
 	if err := c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2))); err != nil {
 		return 0, err
@@ -993,7 +993,7 @@ func (_ *isaC) sd(c *CPU, i uint64) (uint64, error) {
 		rs2 = InstructionPart(i, 2, 4) + 8
 		imm = InstructionPart(i, 5, 6)<<6 | InstructionPart(i, 10, 12)<<3
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "c.sd", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "c.sd", c.LogI(rs1), c.LogI(rs2), imm))
 	a := c.GetRegister(rs1) + imm
 	if err := c.GetMemory().SetUint64(a, c.GetRegister(rs2)); err != nil {
 		return 0, err
@@ -1013,7 +1013,7 @@ func (z *isaC) addi(c *CPU, i uint64) (uint64, error) {
 		rd  = InstructionPart(i, 7, 11)
 		imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 5)
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.addi", c.LogI(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "c.addi", c.LogI(rd), imm))
 	if rd == Rzero {
 		return z.nop(c, i)
 	}
@@ -1030,7 +1030,7 @@ func (_ *isaC) addiw(c *CPU, i uint64) (uint64, error) {
 		rd  = InstructionPart(i, 7, 11)
 		imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 5)
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.addiw", c.LogI(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "c.addiw", c.LogI(rd), imm))
 	if rd == Rzero {
 		return 0, ErrReservedInstruction
 	}
@@ -1044,7 +1044,7 @@ func (_ *isaC) li(c *CPU, i uint64) (uint64, error) {
 		rd  = InstructionPart(i, 7, 11)
 		imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 5)
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.li", c.LogI(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "c.li", c.LogI(rd), imm))
 	if rd == Rzero {
 		return 0, ErrHint
 	}
@@ -1057,7 +1057,7 @@ func (_ *isaC) addi16sp(c *CPU, i uint64) (uint64, error) {
 	var (
 		imm = SignExtend(InstructionPart(i, 12, 12)<<9|InstructionPart(i, 3, 4)<<7|InstructionPart(i, 5, 5)<<6|InstructionPart(i, 2, 2)<<5|InstructionPart(i, 6, 6)<<4, 9)
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s imm: ____(%#016x)", c.GetPC(), "c.addi16sp", imm))
+	Debugln(fmt.Sprintf("%#08x % 10s imm: ----(%#016x)", c.GetPC(), "c.addi16sp", imm))
 	if imm == 0x00 {
 		return 0, ErrReservedInstruction
 	}
@@ -1071,7 +1071,7 @@ func (_ *isaC) lui(c *CPU, i uint64) (uint64, error) {
 		rd  = InstructionPart(i, 7, 11)
 		imm = SignExtend(InstructionPart(i, 12, 12)<<17|InstructionPart(i, 2, 6)<<12, 17)
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.lui", c.LogI(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "c.lui", c.LogI(rd), imm))
 	if imm == 0x00 {
 		return 0, ErrHint
 	}
@@ -1088,7 +1088,7 @@ func (_ *isaC) srli(c *CPU, i uint64) (uint64, error) {
 		rd    = InstructionPart(i, 7, 9) + 8
 		shamt = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.srli", c.LogI(rd), shamt))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "c.srli", c.LogI(rd), shamt))
 	c.SetRegister(rd, c.GetRegister(rd)>>shamt)
 	c.SetPC(c.GetPC() + 2)
 	return 1, nil
@@ -1099,7 +1099,7 @@ func (_ *isaC) srai(c *CPU, i uint64) (uint64, error) {
 		rd    = InstructionPart(i, 7, 9) + 8
 		shamt = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.srai", c.LogI(rd), shamt))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "c.srai", c.LogI(rd), shamt))
 	c.SetRegister(rd, uint64(int64(c.GetRegister(rd))>>shamt))
 	c.SetPC(c.GetPC() + 2)
 	return 1, nil
@@ -1110,7 +1110,7 @@ func (_ *isaC) andi(c *CPU, i uint64) (uint64, error) {
 		rd  = InstructionPart(i, 7, 9) + 8
 		imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 5)
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.andi", c.LogI(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "c.andi", c.LogI(rd), imm))
 	c.SetRegister(rd, c.GetRegister(rd)&imm)
 	c.SetPC(c.GetPC() + 2)
 	return 1, nil
@@ -1191,7 +1191,7 @@ func (_ *isaC) j(c *CPU, i uint64) (uint64, error) {
 		InstructionPart(i, 2, 2)<<5|
 		InstructionPart(i, 11, 11)<<4|
 		InstructionPart(i, 3, 5)<<1, 11)
-	Debugln(fmt.Sprintf("%#08x % 10s imm: ____(%#016x)", c.GetPC(), "c.j", imm))
+	Debugln(fmt.Sprintf("%#08x % 10s imm: ----(%#016x)", c.GetPC(), "c.j", imm))
 	r := c.GetPC() + imm
 	if r%2 != 0x00 {
 		return 0, ErrMisalignedInstructionFetch
@@ -1205,7 +1205,7 @@ func (_ *isaC) beqz(c *CPU, i uint64) (uint64, error) {
 		rs1 = InstructionPart(i, 7, 9) + 8
 		imm = SignExtend(InstructionPart(i, 3, 4)<<1|InstructionPart(i, 10, 11)<<3|InstructionPart(i, 2, 2)<<5|InstructionPart(i, 5, 6)<<6|InstructionPart(i, 12, 12)<<8, 8)
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s imm: ____(%#016x)", c.GetPC(), "c.beqz", c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s imm: ----(%#016x)", c.GetPC(), "c.beqz", c.LogI(rs1), imm))
 	if imm%2 != 0x00 {
 		return 0, ErrMisalignedInstructionFetch
 	}
@@ -1222,7 +1222,7 @@ func (_ *isaC) bnez(c *CPU, i uint64) (uint64, error) {
 		rs1 = InstructionPart(i, 7, 9) + 8
 		imm = SignExtend(InstructionPart(i, 3, 4)<<1|InstructionPart(i, 10, 11)<<3|InstructionPart(i, 2, 2)<<5|InstructionPart(i, 5, 6)<<6|InstructionPart(i, 12, 12)<<8, 8)
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s imm: ____(%#016x)", c.GetPC(), "c.bnez", c.LogI(rs1), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s imm: ----(%#016x)", c.GetPC(), "c.bnez", c.LogI(rs1), imm))
 	if imm%2 != 0x00 {
 		return 0, ErrMisalignedInstructionFetch
 	}
@@ -1239,7 +1239,7 @@ func (_ *isaC) slli(c *CPU, i uint64) (uint64, error) {
 		rd    = InstructionPart(i, 7, 11)
 		shamt = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.slli", c.LogI(rd), shamt))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "c.slli", c.LogI(rd), shamt))
 	if rd == 0 {
 		return 0, ErrHint
 	}
@@ -1253,7 +1253,7 @@ func (_ *isaC) fldsp(c *CPU, i uint64) (uint64, error) {
 		rd  = InstructionPart(i, 7, 11)
 		imm = InstructionPart(i, 2, 4)<<6 | InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 5, 6)<<3
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.fldsp", c.LogF(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "c.fldsp", c.LogF(rd), imm))
 	v, err := c.GetMemory().GetUint64(c.GetRegister(Rsp) + imm)
 	if err != nil {
 		return 0, err
@@ -1268,7 +1268,7 @@ func (_ *isaC) lwsp(c *CPU, i uint64) (uint64, error) {
 		rd  = InstructionPart(i, 7, 11)
 		imm = InstructionPart(i, 2, 3)<<6 | InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 4, 6)<<2
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.lwsp", c.LogI(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "c.lwsp", c.LogI(rd), imm))
 	if rd == Rzero {
 		return 0, ErrReservedInstruction
 	}
@@ -1288,7 +1288,7 @@ func (_ *isaC) ldsp(c *CPU, i uint64) (uint64, error) {
 		rd  = InstructionPart(i, 7, 11)
 		imm = InstructionPart(i, 2, 4)<<6 | InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 5, 6)<<3
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.ldsp", c.LogI(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x)", c.GetPC(), "c.ldsp", c.LogI(rd), imm))
 	if rd == Rzero {
 		return 0, ErrReservedInstruction
 	}
@@ -1367,7 +1367,7 @@ func (_ *isaC) fsdsp(c *CPU, i uint64) (uint64, error) {
 		rs2 = InstructionPart(i, 2, 6)
 		imm = InstructionPart(i, 7, 9)<<6 | InstructionPart(i, 10, 12)<<3
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s rs2: %s imm: ____(%#016x)", c.GetPC(), "c.sdsp", c.LogF(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs2: %s imm: ----(%#016x)", c.GetPC(), "c.sdsp", c.LogF(rs2), imm))
 	a := c.GetRegister(Rsp) + imm
 	if err := c.GetMemory().SetUint64(a, c.GetRegisterFloat(rs2)); err != nil {
 		return 0, err
@@ -1381,7 +1381,7 @@ func (_ *isaC) swsp(c *CPU, i uint64) (uint64, error) {
 		rs2 = InstructionPart(i, 2, 6)
 		imm = InstructionPart(i, 7, 8)<<6 | InstructionPart(i, 9, 12)<<2
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s rs2: %s imm: ____(%#016x)", c.GetPC(), "c.swsp", c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs2: %s imm: ----(%#016x)", c.GetPC(), "c.swsp", c.LogI(rs2), imm))
 	a := c.GetRegister(Rsp) + imm
 	if err := c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2))); err != nil {
 		return 0, err
@@ -1395,7 +1395,7 @@ func (_ *isaC) sdsp(c *CPU, i uint64) (uint64, error) {
 		rs2 = InstructionPart(i, 2, 6)
 		imm = InstructionPart(i, 7, 9)<<6 | InstructionPart(i, 10, 12)<<3
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s rs2: %s imm: ____(%#016x)", c.GetPC(), "c.sdsp", c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs2: %s imm: ----(%#016x)", c.GetPC(), "c.sdsp", c.LogI(rs2), imm))
 	a := c.GetRegister(Rsp) + imm
 	if err := c.GetMemory().SetUint64(a, c.GetRegister(rs2)); err != nil {
 		return 0, err
