@@ -1240,12 +1240,12 @@ func (_ *isaC) bnez(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaC) slli(c *CPU, i uint64) (uint64, error) {
 	var (
-		rd    = InstructionPart(i, 7, 9) + 8
+		rd    = InstructionPart(i, 7, 9)
 		shamt = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
 	)
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.slli", c.LogI(rd), shamt))
 	if rd == 0 {
-		return 0, ErrAbnormalInstruction
+		return 0, ErrHint
 	}
 	c.SetRegister(rd, c.GetRegister(rd)<<shamt)
 	c.SetPC(c.GetPC() + 2)
