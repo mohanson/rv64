@@ -14,7 +14,7 @@ $ apt install autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-de
 $ git clone --recursive https://github.com/riscv/riscv-gnu-toolchain
 $ cd riscv-gnu-toolchain
 $ git submodule update --init --recursive
-$ ./configure --prefix=/opt/riscv --with-arch=rv64g
+$ ./configure --prefix=/opt/riscv --with-arch=rv64gc
 $ make
 ```
 

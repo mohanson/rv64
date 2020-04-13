@@ -140,6 +140,7 @@ var (
 	ErrMisalignedInstructionFetch = errors.New("Misaligned instruction fetch")
 	ErrOutOfMemory                = errors.New("Out of memory")
 	ErrReservedInstruction        = errors.New("Reserved instruction")
+	ErrHint                       = errors.New("Hint")
 )
 
 var (
