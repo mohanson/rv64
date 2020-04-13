@@ -115,7 +115,6 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b10_011:
 			return aluC.ldsp(c, i)
 		case 0b10_100:
-			// j[al]r/mv/add
 			switch InstructionPart(i, 12, 12) {
 			case 0:
 				if InstructionPart(i, 2, 6) == Rzero {
@@ -124,17 +123,15 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return aluC.mv(c, i)
 				}
 			case 1:
-				l1 := InstructionPart(i, 7, 11)
-				l2 := InstructionPart(i, 2, 6)
-				if l1 == 0 && l2 == 0 {
-					Println("c.ebreak")
+				rs1 := InstructionPart(i, 7, 11)
+				rs2 := InstructionPart(i, 2, 6)
+				if rs2 != Rzero {
+					return aluC.add(c, i)
 				}
-				if l1 != 0 {
+				if rs1 != Rzero {
 					return aluC.jalr(c, i)
 				}
-				if l1 == 0 {
-					Println("c.add")
-				}
+				return aluC.ebreak(c, i)
 			}
 		case 0b10_101:
 			Println("c.fsdsp")

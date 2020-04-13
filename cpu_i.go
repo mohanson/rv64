@@ -1333,7 +1333,10 @@ func (_ *isaC) mv(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) ebreak() {}
+func (_ *isaC) ebreak(c *CPU, i uint64) (uint64, error) {
+	Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "c.ebreak"))
+	return 1, nil
+}
 
 func (_ *isaC) jalr(c *CPU, i uint64) (uint64, error) {
 	var (
@@ -1352,7 +1355,20 @@ func (_ *isaC) jalr(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) add()   {}
+func (_ *isaC) add(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 11)
+		rs2 = InstructionPart(i, 2, 6)
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs2: %s", c.GetPC(), "c.mv", c.LogI(rd), c.LogI(rs2)))
+	if rd == Rzero {
+		return 0, ErrHint
+	}
+	c.SetRegister(rd, c.GetRegister(rd)+c.GetRegister(rs2))
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
 func (_ *isaC) fsdsp() {}
 func (_ *isaC) sqsp()  {}
 func (_ *isaC) swsp()  {}
