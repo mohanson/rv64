@@ -1369,10 +1369,47 @@ func (_ *isaC) add(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) fsdsp() {}
-func (_ *isaC) sqsp()  {}
-func (_ *isaC) swsp()  {}
-func (_ *isaC) sdsp()  {}
+func (_ *isaC) fsdsp(c *CPU, i uint64) (uint64, error) {
+	var (
+		rs2 = InstructionPart(i, 2, 6)
+		imm = InstructionPart(i, 7, 9)<<6 | InstructionPart(i, 10, 12)<<3
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s rs2: %s imm: ____(%#016x)", c.GetPC(), "c.sdsp", c.LogF(rs2), imm))
+	a := c.GetRegister(Rsp) + imm
+	if err := c.GetMemory().SetUint64(a, c.GetRegisterFloat(rs2)); err != nil {
+		return 0, err
+	}
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
+func (_ *isaC) swsp(c *CPU, i uint64) (uint64, error) {
+	var (
+		rs2 = InstructionPart(i, 2, 6)
+		imm = InstructionPart(i, 7, 8)<<6 | InstructionPart(i, 9, 12)<<2
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s rs2: %s imm: ____(%#016x)", c.GetPC(), "c.swsp", c.LogI(rs2), imm))
+	a := c.GetRegister(Rsp) + imm
+	if err := c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2))); err != nil {
+		return 0, err
+	}
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
+func (_ *isaC) sdsp(c *CPU, i uint64) (uint64, error) {
+	var (
+		rs2 = InstructionPart(i, 2, 6)
+		imm = InstructionPart(i, 7, 9)<<6 | InstructionPart(i, 10, 12)<<3
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s rs2: %s imm: ____(%#016x)", c.GetPC(), "c.sdsp", c.LogI(rs2), imm))
+	a := c.GetRegister(Rsp) + imm
+	if err := c.GetMemory().SetUint64(a, c.GetRegister(rs2)); err != nil {
+		return 0, err
+	}
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
 
 var (
 	aluI        = &isaI{}

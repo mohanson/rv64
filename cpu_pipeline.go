@@ -134,13 +134,12 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return aluC.ebreak(c, i)
 			}
 		case 0b10_101:
-			Println("c.fsdsp")
+			return aluC.fsdsp(c, i)
 		case 0b10_110:
-			Println("c.swsp")
+			return aluC.swsp(c, i)
 		case 0b10_111:
-			Println("c.sdsp")
+			return aluC.sdsp(c, i)
 		}
-		Panicln("unreachable")
 	case 4:
 		opcode := InstructionPart(i, 0, 6)
 		funct3 := InstructionPart(i, 12, 14)
