@@ -67,7 +67,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b01_010:
 			return aluC.li(c, i)
 		case 0b01_011:
-			if InstructionPart(i, 7, 11) == 2 {
+			if InstructionPart(i, 7, 11) == Rsp {
 				return aluC.addi16sp(c, i)
 			} else {
 				return aluC.lui(c, i)
