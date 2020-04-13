@@ -933,7 +933,7 @@ func (_ *isaC) ld(c *CPU, i uint64) (uint64, error) {
 	var (
 		rd  = InstructionPart(i, 2, 4) + 8
 		rs1 = InstructionPart(i, 7, 9) + 8
-		imm = InstructionPart(i, 6, 6)<<7 | InstructionPart(i, 5, 5)<<6 | InstructionPart(i, 10, 12)<<3
+		imm = InstructionPart(i, 5, 6)<<6 | InstructionPart(i, 10, 12)<<3
 	)
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "c.ld", c.LogI(rd), c.LogI(rs1), imm))
 	a := c.GetRegister(rs1) + imm
@@ -941,8 +941,7 @@ func (_ *isaC) ld(c *CPU, i uint64) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	v := b
-	c.SetRegister(rd, v)
+	c.SetRegister(rd, b)
 	c.SetPC(c.GetPC() + 2)
 	return 1, nil
 }
@@ -968,9 +967,9 @@ func (_ *isaC) sd(c *CPU, i uint64) (uint64, error) {
 	var (
 		rs1 = InstructionPart(i, 7, 9) + 8
 		rs2 = InstructionPart(i, 2, 4) + 8
-		imm = InstructionPart(i, 6, 6)<<7 | InstructionPart(i, 5, 5)<<6 | InstructionPart(i, 10, 12)<<3
+		imm = InstructionPart(i, 5, 6)<<6 | InstructionPart(i, 10, 12)<<3
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "sd", c.LogI(rs1), c.LogI(rs2), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ____(%#016x)", c.GetPC(), "c.sd", c.LogI(rs1), c.LogI(rs2), imm))
 	a := c.GetRegister(rs1) + imm
 	if err := c.GetMemory().SetUint64(a, c.GetRegister(rs2)); err != nil {
 		return 0, err
