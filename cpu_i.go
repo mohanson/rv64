@@ -1252,9 +1252,23 @@ func (_ *isaC) slli(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) fldsp() {}
-func (_ *isaC) lwsp()  {}
-func (_ *isaC) ldsp()  {}
+func (_ *isaC) fldsp(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 11)
+		imm = InstructionPart(i, 2, 4)<<6 | InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 5, 6)<<3
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.fldsp", c.LogF(rd), imm))
+	v, err := c.GetMemory().GetUint64(c.GetRegister(Rsp) + imm)
+	if err != nil {
+		return 0, err
+	}
+	c.SetRegisterFloat(rd, v)
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
+func (_ *isaC) lwsp() {}
+func (_ *isaC) ldsp() {}
 
 func (_ *isaC) jr(c *CPU, i uint64) (uint64, error) {
 	var (

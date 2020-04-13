@@ -109,7 +109,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b10_000:
 			return aluC.slli(c, i)
 		case 0b10_001:
-			Println("c.fldsp")
+			return aluC.fldsp(c, i)
 		case 0b10_010:
 			Println("c.lwsp")
 		case 0b10_011:
