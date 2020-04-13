@@ -61,11 +61,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b00_111:
 			return aluC.sd(c, i)
 		case 0b01_000:
-			if InstructionPart(i, 2, 6) == 0x00 && InstructionPart(i, 12, 12) == 0x00 {
-				return aluC.nop(c, i)
-			} else {
-				return aluC.addi(c, i)
-			}
+			return aluC.addi(c, i)
 		case 0b01_001:
 			return aluC.addiw(c, i)
 		case 0b01_010:
@@ -77,6 +73,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return aluC.lui(c, i)
 			}
 		case 0b01_100:
+			// misc-alu
 			switch InstructionPart(i, 10, 11) {
 			case 0b00:
 				return aluC.srli(c, i)
@@ -119,6 +116,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b10_011:
 			Println("c.ldsp")
 		case 0b10_100:
+			// j[al]r/mv/add
 			switch InstructionPart(i, 12, 12) {
 			case 0:
 				if InstructionPart(i, 2, 6) == 0 {
