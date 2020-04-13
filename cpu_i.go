@@ -40,7 +40,7 @@ func (_ *isaI) jalr(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, imm := IType(i)
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ____(%#016x)", c.GetPC(), "jalr", c.LogI(rd), c.LogI(rs1), imm))
 	c.SetRegister(rd, c.GetPC()+4)
-	r := (c.GetRegister(rs1) + imm) & 0xfffffffffffffffe
+	r := c.GetRegister(rs1) + imm
 	if r%2 != 0x00 {
 		return 0, ErrMisalignedInstructionFetch
 	}
@@ -1154,7 +1154,23 @@ func (_ *isaC) addw(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) j() {}
+func (_ *isaC) j(c *CPU, i uint64) (uint64, error) {
+	var imm = InstructionPart(i, 12, 12)<<11 |
+		InstructionPart(i, 8, 8)<<10 |
+		InstructionPart(i, 9, 10)<<8 |
+		InstructionPart(i, 6, 6)<<7 |
+		InstructionPart(i, 7, 7)<<6 |
+		InstructionPart(i, 2, 2)<<5 |
+		InstructionPart(i, 11, 11)<<4 |
+		InstructionPart(i, 3, 5)<<1
+	Debugln(fmt.Sprintf("%#08x % 10s imm: ____(%#016x)", c.GetPC(), "c.j", imm))
+	r := c.GetPC() + imm
+	if r%2 != 0x00 {
+		return 0, ErrMisalignedInstructionFetch
+	}
+	c.SetPC(r)
+	return 1, nil
+}
 
 func (_ *isaC) beqz(c *CPU, i uint64) (uint64, error) {
 	var (
@@ -1207,7 +1223,26 @@ func (_ *isaC) slli(c *CPU, i uint64) (uint64, error) {
 func (_ *isaC) fldsp() {}
 func (_ *isaC) lwsp()  {}
 func (_ *isaC) ldsp()  {}
-func (_ *isaC) jr()    {}
+
+func (_ *isaC) jr(c *CPU, i uint64) (uint64, error) {
+	var (
+		rs1 = InstructionPart(i, 7, 11)
+		rs2 = InstructionPart(i, 2, 6)
+	)
+	if rs1 == 0 {
+		return 0, ErrReservedInstruction
+	}
+	if rs2 != 0 {
+		return 0, ErrAbnormalInstruction
+	}
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s", c.GetPC(), "c.jr", c.LogI(rs1)))
+	r := c.GetRegister(rs1)
+	if r%2 != 0x00 {
+		return 0, ErrMisalignedInstructionFetch
+	}
+	c.SetPC(r)
+	return 1, nil
+}
 
 func (_ *isaC) mv(c *CPU, i uint64) (uint64, error) {
 	var (
@@ -1221,12 +1256,29 @@ func (_ *isaC) mv(c *CPU, i uint64) (uint64, error) {
 }
 
 func (_ *isaC) ebreak() {}
-func (_ *isaC) jalr()   {}
-func (_ *isaC) add()    {}
-func (_ *isaC) fsdsp()  {}
-func (_ *isaC) sqsp()   {}
-func (_ *isaC) swsp()   {}
-func (_ *isaC) sdsp()   {}
+
+func (_ *isaC) jalr(c *CPU, i uint64) (uint64, error) {
+	var (
+		rs1 = InstructionPart(i, 7, 11)
+	)
+	if rs1 == 0 {
+		return 0, ErrReservedInstruction
+	}
+	Debugln(fmt.Sprintf("%#08x % 10s rs1: %s", c.GetPC(), "c.jalr", c.LogI(rs1)))
+	c.SetRegister(Rra, c.GetPC()+2)
+	r := c.GetRegister(rs1)
+	if r%2 != 0x00 {
+		return 0, ErrMisalignedInstructionFetch
+	}
+	c.SetPC(r)
+	return 1, nil
+}
+
+func (_ *isaC) add()   {}
+func (_ *isaC) fsdsp() {}
+func (_ *isaC) sqsp()  {}
+func (_ *isaC) swsp()  {}
+func (_ *isaC) sdsp()  {}
 
 var (
 	aluI        = &isaI{}

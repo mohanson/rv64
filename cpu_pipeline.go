@@ -105,7 +105,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				}
 			}
 		case 0b01_101:
-			Println("c.j")
+			return aluC.j(c, i)
 		case 0b01_110:
 			return aluC.beqz(c, i)
 		case 0b01_111:
@@ -122,7 +122,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 			switch InstructionPart(i, 12, 12) {
 			case 0:
 				if InstructionPart(i, 2, 6) == 0 {
-					Println("c.jr")
+					return aluC.jr(c, i)
 				} else {
 					return aluC.mv(c, i)
 				}
@@ -133,9 +133,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					Println("c.ebreak")
 				}
 				if l1 != 0 {
-					Println("c.jalr")
+					return aluC.jalr(c, i)
 				}
-				if l2 != 0 {
+				if l1 == 0 {
 					Println("c.add")
 				}
 			}
