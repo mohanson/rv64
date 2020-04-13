@@ -410,512 +410,122 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				}
 			}
 		case 0b0000111:
-			rd, rs1, imm := IType(i)
-			a := c.GetRegister(rs1) + imm
-			switch InstructionPart(i, 12, 14) {
+			switch funct3 {
 			case 0b010:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "flw", c.LogF(rd), c.LogI(rs1), imm))
-				v, err := c.GetMemory().GetUint32(a)
-				if err != nil {
-					return 0, err
-				}
-				c.SetRegisterFloatAsFloat32(rd, math.Float32frombits(v))
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluF.flw(c, i)
 			case 0b011:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s imm: ----(%#016x)", c.GetPC(), "fld", c.LogF(rd), c.LogI(rs1), imm))
-				v, err := c.GetMemory().GetUint64(a)
-				if err != nil {
-					return 0, err
-				}
-				c.SetRegisterFloat(rd, v)
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluD.fld(c, i)
 			}
 		case 0b0100111:
-			rs1, rs2, imm := SType(i)
-			a := c.GetRegister(rs1) + imm
-			switch InstructionPart(i, 12, 14) {
+			switch funct3 {
 			case 0b010:
-				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "fsw", c.LogI(rs1), c.LogF(rs2), imm))
-				err := c.GetMemory().SetUint32(a, uint32(c.GetRegisterFloat(rs2)))
-				if err != nil {
-					return 0, err
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluF.fsw(c, i)
 			case 0b011:
-				Debugln(fmt.Sprintf("%#08x % 10s rs1: %s rs2: %s imm: ----(%#016x)", c.GetPC(), "fsd", c.LogI(rs1), c.LogF(rs2), imm))
-				err := c.GetMemory().SetUint64(a, c.GetRegisterFloat(rs2))
-				if err != nil {
-					return 0, err
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluD.fsd(c, i)
 			}
 		case 0b1000011:
-			rd, rs1, rs2, rs3 := R4Type(i)
 			switch InstructionPart(i, 25, 26) {
 			case 0b00:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s rs3: %s", c.GetPC(), "fmadd.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
-				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFloat32(rs1)
-				b := c.GetRegisterFloatAsFloat32(rs2)
-				d := c.GetRegisterFloatAsFloat32(rs3)
-				r := a*b + d
-				c.SetRegisterFloatAsFloat32(rd, r)
-				if r-d != a*b || r-a*b != d || (r-d)/a != b || (r-d)/b != a {
-					c.SetFloatFlag(FFlagsNX, 1)
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluF.fmadds(c, i)
 			case 0b01:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s rs3: %s", c.GetPC(), "fmadd.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
-				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFloat64(rs1)
-				b := c.GetRegisterFloatAsFloat64(rs2)
-				d := c.GetRegisterFloatAsFloat64(rs3)
-				r := a*b + d
-				c.SetRegisterFloatAsFloat64(rd, r)
-				if r-d != a*b || r-a*b != d || (r-d)/a != b || (r-d)/b != a {
-					c.SetFloatFlag(FFlagsNX, 1)
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluD.fmaddd(c, i)
 			}
 		case 0b1000111:
-			rd, rs1, rs2, rs3 := R4Type(i)
 			switch InstructionPart(i, 25, 26) {
 			case 0b00:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s rs3: %s", c.GetPC(), "fmsub.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
-				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFloat32(rs1)
-				b := c.GetRegisterFloatAsFloat32(rs2)
-				d := c.GetRegisterFloatAsFloat32(rs3)
-				r := a*b - d
-				c.SetRegisterFloatAsFloat32(rd, r)
-				if r+d != a*b || a*b-r != d || (r+d)/a != b || (r+d)/b != a {
-					c.SetFloatFlag(FFlagsNX, 1)
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluF.fmsubs(c, i)
 			case 0b01:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s rs3: %s", c.GetPC(), "fmsub.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
-				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFloat64(rs1)
-				b := c.GetRegisterFloatAsFloat64(rs2)
-				d := c.GetRegisterFloatAsFloat64(rs3)
-				r := a*b - d
-				c.SetRegisterFloatAsFloat64(rd, r)
-				if r+d != a*b || a*b-r != d || (r+d)/a != b || (r+d)/b != a {
-					c.SetFloatFlag(FFlagsNX, 1)
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluD.fmsubd(c, i)
 			}
 		case 0b1001011:
-			rd, rs1, rs2, rs3 := R4Type(i)
 			switch InstructionPart(i, 25, 26) {
 			case 0b00:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s rs3: %s", c.GetPC(), "fnmsub.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
-				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFloat32(rs1)
-				b := c.GetRegisterFloatAsFloat32(rs2)
-				d := c.GetRegisterFloatAsFloat32(rs3)
-				r := a*b - d
-				c.SetRegisterFloatAsFloat32(rd, -r)
-				if r+d != a*b || a*b-r != d || (r+d)/a != b || (r+d)/b != a {
-					c.SetFloatFlag(FFlagsNX, 1)
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluF.fnmsubs(c, i)
 			case 0b01:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s rs3: %s", c.GetPC(), "fnmsub.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
-				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFloat64(rs1)
-				b := c.GetRegisterFloatAsFloat64(rs2)
-				d := c.GetRegisterFloatAsFloat64(rs3)
-				r := a*b - d
-				c.SetRegisterFloatAsFloat64(rd, -r)
-				if r+d != a*b || a*b-r != d || (r+d)/a != b || (r+d)/b != a {
-					c.SetFloatFlag(FFlagsNX, 1)
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluD.fnmsubd(c, i)
 			}
 		case 0b1001111:
-			rd, rs1, rs2, rs3 := R4Type(i)
 			switch InstructionPart(i, 25, 26) {
 			case 0b00:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s rs3: %s", c.GetPC(), "fnmadd.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
-				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFloat32(rs1)
-				b := c.GetRegisterFloatAsFloat32(rs2)
-				d := c.GetRegisterFloatAsFloat32(rs3)
-				r := a*b + d
-				c.SetRegisterFloatAsFloat32(rd, -r)
-				if r-d != a*b || r-a*b != d || (r-d)/a != b || (r-d)/b != a {
-					c.SetFloatFlag(FFlagsNX, 1)
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluF.fnmadds(c, i)
 			case 0b01:
-				Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s rs3: %s", c.GetPC(), "fnmadd.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2), c.LogF(rs3)))
-				c.ClrFloatFlag()
-				a := c.GetRegisterFloatAsFloat64(rs1)
-				b := c.GetRegisterFloatAsFloat64(rs2)
-				d := c.GetRegisterFloatAsFloat64(rs3)
-				r := a*b + d
-				c.SetRegisterFloatAsFloat64(rd, -r)
-				if r-d != a*b || r-a*b != d || (r-d)/a != b || (r-d)/b != a {
-					c.SetFloatFlag(FFlagsNX, 1)
-				}
-				c.SetPC(c.GetPC() + 4)
-				return 1, nil
+				return aluD.fnmaddd(c, i)
 			}
 		case 0b1010011:
-			rd, rs1, rs2 := RType(i)
 			switch InstructionPart(i, 25, 26) {
 			case 0b00:
-				a := c.GetRegisterFloatAsFloat32(rs1)
-				b := c.GetRegisterFloatAsFloat32(rs2)
 				switch InstructionPart(i, 27, 31) {
 				case 0b00000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fadd.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-					c.ClrFloatFlag()
-					d := a + b
-					c.SetRegisterFloatAsFloat32(rd, d)
-					if d-a != b || d-b != a {
-						c.SetFloatFlag(FFlagsNX, 1)
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluF.fadds(c, i)
 				case 0b00001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fsub.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-					c.ClrFloatFlag()
-					if (math.Signbit(float64(a)) == math.Signbit(float64(b))) && math.IsInf(float64(a), 0) && math.IsInf(float64(b), 0) {
-						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
-						c.SetFloatFlag(FFlagsNV, 1)
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
-					}
-					d := a - b
-					c.SetRegisterFloatAsFloat32(rd, d)
-					if a-d != b || b+d != a {
-						c.SetFloatFlag(FFlagsNX, 1)
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluF.fsubs(c, i)
 				case 0b00010:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fmul.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-					c.ClrFloatFlag()
-					d := a * b
-					c.SetRegisterFloatAsFloat32(rd, d)
-					if d/a != b || d/b != a || float64(a)*float64(b) != float64(d) {
-						c.SetFloatFlag(FFlagsNX, 1)
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluF.fmuls(c, i)
 				case 0b00011:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fdiv.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-					c.ClrFloatFlag()
-					if b == 0 {
-						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
-						c.SetFloatFlag(FFlagsDZ, 1)
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
-					}
-					d := a / b
-					c.SetRegisterFloatAsFloat32(rd, d)
-					if a/d != b || b*d != a || float64(b)*float64(d) != float64(a) {
-						c.SetFloatFlag(FFlagsNX, 1)
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluF.fdivs(c, i)
 				case 0b01011:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fsqrt.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-					c.ClrFloatFlag()
-					if a < 0 {
-						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
-						c.SetFloatFlag(FFlagsNV, 1)
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
-					}
-					d := float32(math.Sqrt(float64(a)))
-					c.SetRegisterFloatAsFloat32(rd, d)
-					if a/d != d || d*d != a || float64(d)*float64(d) != float64(a) {
-						c.SetFloatFlag(FFlagsNX, 1)
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluF.fsqrts(c, i)
 				case 0b00100:
-					switch InstructionPart(i, 12, 14) {
+					switch funct3 {
 					case 0b000:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fsgnj.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						if math.Signbit(float64(b)) {
-							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)|0x80000000))
-						} else {
-							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)&0x7fffffff))
-						}
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fsgnjs(c, i)
 					case 0b001:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fsgnjn.s.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						if math.Signbit(float64(b)) {
-							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)&0x7fffffff))
-						} else {
-							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)|0x80000000))
-						}
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fsgnjns(c, i)
 					case 0b010:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fsgnjx.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						if math.Signbit(float64(a)) != math.Signbit(float64(b)) {
-							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)|0x80000000))
-						} else {
-							c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(math.Float32bits(a)&0x7fffffff))
-						}
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fsgnjxs(c, i)
 					}
 				case 0b00101:
-					switch InstructionPart(i, 12, 14) {
+					switch funct3 {
 					case 0b000:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fmin.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
+						return aluF.fmins(c, i)
 					case 0b001:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fmax.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
+						return aluF.fmaxs(c, i)
 					}
-					c.ClrFloatFlag()
-					if math.IsNaN(float64(a)) && math.IsNaN(float64(b)) {
-						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
-					}
-					if math.IsNaN(float64(a)) {
-						c.SetRegisterFloatAsFloat32(rd, b)
-						if IsSNaN32(a) {
-							c.SetFloatFlag(FFlagsNV, 1)
-						}
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
-					}
-					if math.IsNaN(float64(b)) {
-						c.SetRegisterFloatAsFloat32(rd, a)
-						if IsSNaN32(b) {
-							c.SetFloatFlag(FFlagsNV, 1)
-						}
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
-					}
-					switch InstructionPart(i, 12, 14) {
-					case 0b000:
-						if (math.Signbit(float64(a)) && !math.Signbit(float64(b))) || a < b {
-							c.SetRegisterFloatAsFloat32(rd, a)
-						} else {
-							c.SetRegisterFloatAsFloat32(rd, b)
-						}
-					case 0b001:
-						if (!math.Signbit(float64(a)) && math.Signbit(float64(b))) || a > b {
-							c.SetRegisterFloatAsFloat32(rd, a)
-						} else {
-							c.SetRegisterFloatAsFloat32(rd, b)
-						}
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
 				case 0b11000:
 					switch InstructionPart(i, 20, 24) {
 					case 0b00000:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.w.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						d := c.GetRegisterFloatAsFloat32(rs1)
-						if math.IsNaN(float64(d)) {
-							c.SetRegister(rd, 0x7fffffff)
-							c.SetPC(c.GetPC() + 4)
-							return 1, nil
-						}
-						if d > float32(math.MaxInt32) {
-							c.SetRegister(rd, SignExtend(0x7fffffff, 31))
-							c.SetFloatFlag(FFlagsNV, 1)
-							c.SetPC(c.GetPC() + 4)
-							return 1, nil
-						}
-						if d < float32(math.MinInt32) {
-							c.SetRegister(rd, SignExtend(0x80000000, 31))
-							c.SetFloatFlag(FFlagsNV, 1)
-							c.SetPC(c.GetPC() + 4)
-							return 1, nil
-						}
-						c.SetRegister(rd, SignExtend(uint64(int32(d)), 31))
-						if math.Ceil(float64(d)) != float64(d) {
-							c.SetFloatFlag(FFlagsNX, 1)
-						}
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fcvtws(c, i)
 					case 0b00001:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.wu.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						d := c.GetRegisterFloatAsFloat32(rs1)
-						if math.IsNaN(float64(d)) {
-							c.SetRegister(rd, 0xffffffffffffffff)
-							c.SetPC(c.GetPC() + 4)
-							return 1, nil
-						}
-						if d > float32(math.MaxUint32) {
-							c.SetRegister(rd, SignExtend(0xffffffff, 31))
-							c.SetFloatFlag(FFlagsNV, 1)
-							c.SetPC(c.GetPC() + 4)
-							return 1, nil
-						}
-						if d <= float32(-1) {
-							c.SetRegister(rd, SignExtend(0x00000000, 31))
-							c.SetFloatFlag(FFlagsNV, 1)
-							c.SetPC(c.GetPC() + 4)
-							return 1, nil
-						}
-						c.SetRegister(rd, SignExtend(uint64(uint32(d)), 31))
-						if math.Ceil(float64(d)) != float64(d) {
-							c.SetFloatFlag(FFlagsNX, 1)
-						}
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fcvtwus(c, i)
 					case 0b00010:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.l.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						d := c.GetRegisterFloatAsFloat32(rs1)
-						if math.IsNaN(float64(d)) {
-							c.SetRegister(rd, 0x7fffffffffffffff)
-							c.SetPC(c.GetPC() + 4)
-							return 1, nil
-						}
-						if d > float32(math.MaxInt64) {
-							c.SetRegister(rd, 0x7fffffffffffffff)
-							c.SetFloatFlag(FFlagsNV, 1)
-							c.SetPC(c.GetPC() + 4)
-							return 1, nil
-						}
-						if d < float32(math.MinInt64) {
-							c.SetRegister(rd, 0x8000000000000000)
-							c.SetFloatFlag(FFlagsNV, 1)
-							c.SetPC(c.GetPC() + 4)
-							return 1, nil
-						}
-						c.SetRegister(rd, uint64(int64(d)))
-						if math.Ceil(float64(d)) != float64(d) {
-							c.SetFloatFlag(FFlagsNX, 1)
-						}
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fcvtls(c, i)
 					case 0b00011:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.lu.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						d := c.GetRegisterFloatAsFloat32(rs1)
-						if math.IsNaN(float64(d)) {
-							c.SetRegister(rd, 0xffffffffffffffff)
-							c.SetPC(c.GetPC() + 4)
-							return 1, nil
-						}
-						if d > float32(math.MaxUint64) {
-							c.SetRegister(rd, 0xffffffffffffffff)
-							c.SetFloatFlag(FFlagsNV, 1)
-							c.SetPC(c.GetPC() + 4)
-							return 1, nil
-						}
-						if d <= float32(-1) {
-							c.SetRegister(rd, 0x0000000000000000)
-							c.SetFloatFlag(FFlagsNV, 1)
-							c.SetPC(c.GetPC() + 4)
-							return 1, nil
-						}
-						c.SetRegister(rd, uint64(d))
-						if math.Ceil(float64(d)) != float64(d) {
-							c.SetFloatFlag(FFlagsNX, 1)
-						}
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fcvtlus(c, i)
 					}
 				case 0b01000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.s.d", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-					d := c.GetRegisterFloatAsFloat64(rs1)
-					if math.IsNaN(d) {
-						c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(NaN32))
-					} else {
-						c.SetRegisterFloatAsFloat32(rd, float32(d))
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluD.fcvtsd(c, i)
 				case 0b11100:
 					switch InstructionPart(i, 12, 14) {
 					case 0b000:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fmv.x.w", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						c.SetRegister(rd, SignExtend(uint64(uint32(c.GetRegisterFloat(rs1))), 31))
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fmvxw(c, i)
 					case 0b001:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fclass.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						a := c.GetRegisterFloatAsFloat32(rs1)
-						c.SetRegister(rd, FClassS(a))
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fclasss(c, i)
 					}
 				case 0b10100:
-					var cond bool
 					switch InstructionPart(i, 12, 14) {
 					case 0b010:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "feq.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						if IsSNaN32(a) || IsSNaN32(b) {
-							c.SetFloatFlag(FFlagsNV, 1)
-						} else {
-							cond = a == b
-						}
+						return aluF.feqs(c, i)
 					case 0b001:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "flt.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						if math.IsNaN(float64(a)) || math.IsNaN(float64(b)) {
-							c.SetFloatFlag(FFlagsNV, 1)
-						} else {
-							cond = a < b
-						}
+						return aluF.flts(c, i)
 					case 0b000:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fle.s", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						if math.IsNaN(float64(a)) || math.IsNaN(float64(b)) {
-							c.SetFloatFlag(FFlagsNV, 1)
-						} else {
-							cond = a <= b
-						}
+						return aluF.fles(c, i)
 					}
-					if cond {
-						c.SetRegister(rd, 1)
-					} else {
-						c.SetRegister(rd, 0)
-					}
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
 				case 0b11010:
 					switch InstructionPart(i, 20, 24) {
 					case 0b00000:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.s.w", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						c.SetRegisterFloatAsFloat32(rd, float32(int32(c.GetRegister(rs1))))
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fcvtsw(c, i)
 					case 0b00001:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.s.wu", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						c.SetRegisterFloatAsFloat32(rd, float32(uint32(c.GetRegister(rs1))))
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fcvtswu(c, i)
 					case 0b00010:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.s.l", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						c.SetRegisterFloatAsFloat32(rd, float32(int64(c.GetRegister(rs1))))
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fcvtsl(c, i)
 					case 0b00011:
-						Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fcvt.s.lu", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-						c.SetRegisterFloatAsFloat32(rd, float32(uint64(c.GetRegister(rs1))))
-						c.SetPC(c.GetPC() + 4)
-						return 1, nil
+						return aluF.fcvtslu(c, i)
 					}
 				case 0b11110:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "fmv.w.x", c.LogF(rd), c.LogF(rs1), c.LogF(rs2)))
-					c.SetRegisterFloat(rd, 0xffffffff00000000|uint64(uint32(c.GetRegister(rs1))))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluF.fmvwx(c, i)
 				}
 			case 0b01:
+				rd, rs1, rs2 := RType(i)
 				a := c.GetRegisterFloatAsFloat64(rs1)
 				b := c.GetRegisterFloatAsFloat64(rs2)
 				switch InstructionPart(i, 27, 31) {
