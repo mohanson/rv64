@@ -182,8 +182,7 @@ func (_ *isaI) ld(c *CPU, i uint64) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	v := b
-	c.SetRegister(rd, v)
+	c.SetRegister(rd, b)
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
 }
@@ -1267,8 +1266,44 @@ func (_ *isaC) fldsp(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
-func (_ *isaC) lwsp() {}
-func (_ *isaC) ldsp() {}
+func (_ *isaC) lwsp(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 11)
+		imm = InstructionPart(i, 2, 3)<<6 | InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 4, 6)<<2
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.lwsp", c.LogI(rd), imm))
+	if rd == Rzero {
+		return 0, ErrReservedInstruction
+	}
+	a := c.GetRegister(Rsp) + imm
+	b, err := c.GetMemory().GetUint32(a)
+	if err != nil {
+		return 0, err
+	}
+	v := SignExtend(uint64(b), 31)
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
+
+func (_ *isaC) ldsp(c *CPU, i uint64) (uint64, error) {
+	var (
+		rd  = InstructionPart(i, 7, 11)
+		imm = InstructionPart(i, 2, 4)<<6 | InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 5, 6)<<3
+	)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.ldsp", c.LogI(rd), imm))
+	if rd == Rzero {
+		return 0, ErrReservedInstruction
+	}
+	a := c.GetRegister(Rsp) + imm
+	b, err := c.GetMemory().GetUint64(a)
+	if err != nil {
+		return 0, err
+	}
+	c.SetRegister(rd, b)
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
+}
 
 func (_ *isaC) jr(c *CPU, i uint64) (uint64, error) {
 	var (

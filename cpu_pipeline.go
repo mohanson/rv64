@@ -111,9 +111,9 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b10_001:
 			return aluC.fldsp(c, i)
 		case 0b10_010:
-			Println("c.lwsp")
+			return aluC.lwsp(c, i)
 		case 0b10_011:
-			Println("c.ldsp")
+			return aluC.ldsp(c, i)
 		case 0b10_100:
 			// j[al]r/mv/add
 			switch InstructionPart(i, 12, 12) {
