@@ -1236,7 +1236,7 @@ func (_ *isaC) bnez(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaC) slli(c *CPU, i uint64) (uint64, error) {
 	var (
-		rd    = InstructionPart(i, 7, 9)
+		rd    = InstructionPart(i, 7, 11)
 		shamt = InstructionPart(i, 12, 12)<<5 | InstructionPart(i, 2, 6)
 	)
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.slli", c.LogI(rd), shamt))
