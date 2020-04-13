@@ -1017,16 +1017,16 @@ func (z *isaC) addi(c *CPU, i uint64) (uint64, error) {
 		rd  = InstructionPart(i, 7, 11)
 		imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 5)
 	)
-	if rd != Rzero && imm != 0 {
-		Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.addi", c.LogI(rd), imm))
-		c.SetRegister(rd, c.GetRegister(rd)+imm)
-		c.SetPC(c.GetPC() + 2)
-		return 1, nil
-	} else if rd == Rzero {
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.addi", c.LogI(rd), imm))
+	if rd == Rzero {
 		return z.nop(c, i)
-	} else {
+	}
+	if imm == 0x00 {
 		return 0, ErrHint
 	}
+	c.SetRegister(rd, c.GetRegister(rd)+imm)
+	c.SetPC(c.GetPC() + 2)
+	return 1, nil
 }
 
 func (_ *isaC) addiw(c *CPU, i uint64) (uint64, error) {
@@ -1034,10 +1034,10 @@ func (_ *isaC) addiw(c *CPU, i uint64) (uint64, error) {
 		rd  = InstructionPart(i, 7, 11)
 		imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 5)
 	)
-	if rd == 0x00 {
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.addiw", c.LogI(rd), imm))
+	if rd == Rzero {
 		return 0, ErrReservedInstruction
 	}
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.addiw", c.LogI(rd), imm))
 	c.SetRegister(rd, uint64(int32(c.GetRegister(rd))+int32(imm)))
 	c.SetPC(c.GetPC() + 2)
 	return 1, nil
@@ -1049,8 +1049,8 @@ func (_ *isaC) li(c *CPU, i uint64) (uint64, error) {
 		imm = SignExtend(InstructionPart(i, 12, 12)<<5|InstructionPart(i, 2, 6), 5)
 	)
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.li", c.LogI(rd), imm))
-	if rd == 0x00 {
-		return 0, ErrReservedInstruction
+	if rd == Rzero {
+		return 0, ErrHint
 	}
 	c.SetRegister(rd, imm)
 	c.SetPC(c.GetPC() + 2)
@@ -1059,14 +1059,13 @@ func (_ *isaC) li(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaC) addi16sp(c *CPU, i uint64) (uint64, error) {
 	var (
-		rd  = InstructionPart(i, 7, 11)
 		imm = SignExtend(InstructionPart(i, 12, 12)<<9|InstructionPart(i, 3, 4)<<7|InstructionPart(i, 5, 5)<<6|InstructionPart(i, 2, 2)<<5|InstructionPart(i, 6, 6)<<4, 9)
 	)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.addi16sp", c.LogI(rd), imm))
+	Debugln(fmt.Sprintf("%#08x % 10s imm: ____(%#016x)", c.GetPC(), "c.addi16sp", imm))
 	if imm == 0x00 {
 		return 0, ErrReservedInstruction
 	}
-	c.SetRegister(rd, c.GetRegister(Rsp)+imm)
+	c.SetRegister(Rsp, c.GetRegister(Rsp)+imm)
 	c.SetPC(c.GetPC() + 2)
 	return 1, nil
 }
@@ -1077,7 +1076,10 @@ func (_ *isaC) lui(c *CPU, i uint64) (uint64, error) {
 		imm = SignExtend(InstructionPart(i, 12, 12)<<17|InstructionPart(i, 2, 6)<<12, 17)
 	)
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ____(%#016x)", c.GetPC(), "c.lui", c.LogI(rd), imm))
-	if rd == 0x00 || rd == 0x02 || imm == 0x00 {
+	if imm == 0x00 {
+		return 0, ErrHint
+	}
+	if rd == Rzero {
 		return 0, ErrReservedInstruction
 	}
 	c.SetRegister(rd, imm)
