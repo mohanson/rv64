@@ -47,7 +47,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 00_000:
 			return aluC.addi4spn(c, i)
 		case 0b00_001:
-			Println("c.fld")
+			return aluC.fld(c, i)
 		case 0b00_010:
 			return aluC.lw(c, i)
 		case 0b00_011:
@@ -55,7 +55,7 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 		case 0b00_100:
 			return 0, ErrReservedInstruction
 		case 0b00_101:
-			Println("c.fsd")
+			return aluC.fsd(c, i)
 		case 0b00_110:
 			return aluC.sw(c, i)
 		case 0b00_111:
