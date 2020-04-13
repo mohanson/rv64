@@ -798,28 +798,363 @@ func (_ *isaM) remuw(c *CPU, i uint64) (uint64, error) {
 
 type isaA struct{}
 
-func (_ *isaA) lrw()      {}
-func (_ *isaA) scw()      {}
-func (_ *isaA) amoswapw() {}
-func (_ *isaA) amoaddw()  {}
-func (_ *isaA) amoxorw()  {}
-func (_ *isaA) amoandw()  {}
-func (_ *isaA) amoorw()   {}
-func (_ *isaA) amominw()  {}
-func (_ *isaA) amomaxw()  {}
-func (_ *isaA) amominuw() {}
-func (_ *isaA) amomaxuw() {}
-func (_ *isaA) lrd()      {}
-func (_ *isaA) scd()      {}
-func (_ *isaA) amoswapd() {}
-func (_ *isaA) amoaddd()  {}
-func (_ *isaA) amoxord()  {}
-func (_ *isaA) amoandd()  {}
-func (_ *isaA) amoord()   {}
-func (_ *isaA) amomind()  {}
-func (_ *isaA) amomaxd()  {}
-func (_ *isaA) amominud() {}
-func (_ *isaA) amomaxud() {}
+func (_ *isaA) lrw(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "lr.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := SignExtend(c.GetRegister(rs1), 31)
+	v, err := c.GetMemory().GetUint32(a)
+	if err != nil {
+		return 0, err
+	}
+	c.SetRegister(rd, SignExtend(uint64(v), 31))
+	c.SetLoadReservation(a)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) scw(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sc.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := SignExtend(c.GetRegister(rs1), 31)
+	if a == c.GetLoadReservation() {
+		c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2)))
+		c.SetRegister(rd, 0)
+	} else {
+		c.SetRegister(rd, 1)
+	}
+	c.SetLoadReservation(0)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amoswapw(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoswap.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := SignExtend(c.GetRegister(rs1), 31)
+	v, err := c.GetMemory().GetUint32(a)
+	if err != nil {
+		return 0, err
+	}
+	c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2)))
+	c.SetRegister(rd, SignExtend(uint64(v), 31))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amoaddw(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoadd.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := SignExtend(c.GetRegister(rs1), 31)
+	v, err := c.GetMemory().GetUint32(a)
+	if err != nil {
+		return 0, err
+	}
+	c.GetMemory().SetUint32(a, v+uint32(c.GetRegister(rs2)))
+	c.SetRegister(rd, SignExtend(uint64(v), 31))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amoxorw(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoxor.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := SignExtend(c.GetRegister(rs1), 31)
+	v, err := c.GetMemory().GetUint32(a)
+	if err != nil {
+		return 0, err
+	}
+	c.GetMemory().SetUint32(a, v^uint32(c.GetRegister(rs2)))
+	c.SetRegister(rd, SignExtend(uint64(v), 31))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amoandw(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoand.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := SignExtend(c.GetRegister(rs1), 31)
+	v, err := c.GetMemory().GetUint32(a)
+	if err != nil {
+		return 0, err
+	}
+	c.GetMemory().SetUint32(a, v&uint32(c.GetRegister(rs2)))
+	c.SetRegister(rd, SignExtend(uint64(v), 31))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amoorw(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoor.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := SignExtend(c.GetRegister(rs1), 31)
+	v, err := c.GetMemory().GetUint32(a)
+	if err != nil {
+		return 0, err
+	}
+	c.GetMemory().SetUint32(a, v|uint32(c.GetRegister(rs2)))
+	c.SetRegister(rd, SignExtend(uint64(v), 31))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amominw(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amomin.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := SignExtend(c.GetRegister(rs1), 31)
+	v, err := c.GetMemory().GetUint32(a)
+	if err != nil {
+		return 0, err
+	}
+	var r uint32
+	if int32(v) < int32(uint32(c.GetRegister(rs2))) {
+		r = v
+	} else {
+		r = uint32(c.GetRegister(rs2))
+	}
+	c.GetMemory().SetUint32(a, r)
+	c.SetRegister(rd, SignExtend(uint64(v), 31))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amomaxw(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amomax.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := SignExtend(c.GetRegister(rs1), 31)
+	v, err := c.GetMemory().GetUint32(a)
+	if err != nil {
+		return 0, err
+	}
+	var r uint32
+	if int32(v) > int32(uint32(c.GetRegister(rs2))) {
+		r = v
+	} else {
+		r = uint32(c.GetRegister(rs2))
+	}
+	c.GetMemory().SetUint32(a, r)
+	c.SetRegister(rd, SignExtend(uint64(v), 31))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amominuw(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amominu.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := SignExtend(c.GetRegister(rs1), 31)
+	v, err := c.GetMemory().GetUint32(a)
+	if err != nil {
+		return 0, err
+	}
+	var r uint32
+	if v < uint32(c.GetRegister(rs2)) {
+		r = v
+	} else {
+		r = uint32(c.GetRegister(rs2))
+	}
+	c.GetMemory().SetUint32(a, r)
+	c.SetRegister(rd, SignExtend(uint64(v), 31))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amomaxuw(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amomaxu.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := SignExtend(c.GetRegister(rs1), 31)
+	v, err := c.GetMemory().GetUint32(a)
+	if err != nil {
+		return 0, err
+	}
+	var r uint32
+	if v > uint32(c.GetRegister(rs2)) {
+		r = v
+	} else {
+		r = uint32(c.GetRegister(rs2))
+	}
+	c.GetMemory().SetUint32(a, r)
+	c.SetRegister(rd, SignExtend(uint64(v), 31))
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) lrd(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "lr.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := c.GetRegister(rs1)
+	v, err := c.GetMemory().GetUint64(a)
+	if err != nil {
+		return 0, err
+	}
+	c.SetRegister(rd, v)
+	c.SetLoadReservation(a)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) scd(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sc.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := c.GetRegister(rs1)
+	if a == c.GetLoadReservation() {
+		c.GetMemory().SetUint64(a, c.GetRegister(rs2))
+		c.SetRegister(rd, 0)
+	} else {
+		c.SetRegister(rd, 1)
+	}
+	c.SetLoadReservation(0)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amoswapd(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoswap.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := c.GetRegister(rs1)
+	v, err := c.GetMemory().GetUint64(a)
+	if err != nil {
+		return 0, err
+	}
+	c.GetMemory().SetUint64(a, c.GetRegister(rs2))
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amoaddd(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoadd.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := c.GetRegister(rs1)
+	v, err := c.GetMemory().GetUint64(a)
+	if err != nil {
+		return 0, err
+	}
+	c.GetMemory().SetUint64(a, v+c.GetRegister(rs2))
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amoxord(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoxor.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := c.GetRegister(rs1)
+	v, err := c.GetMemory().GetUint64(a)
+	if err != nil {
+		return 0, err
+	}
+	c.GetMemory().SetUint64(a, v^c.GetRegister(rs2))
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amoandd(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoand.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := c.GetRegister(rs1)
+	v, err := c.GetMemory().GetUint64(a)
+	if err != nil {
+		return 0, err
+	}
+	c.GetMemory().SetUint64(a, v&c.GetRegister(rs2))
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amoord(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoor.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := c.GetRegister(rs1)
+	v, err := c.GetMemory().GetUint64(a)
+	if err != nil {
+		return 0, err
+	}
+	c.GetMemory().SetUint64(a, v|c.GetRegister(rs2))
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amomind(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amomin.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := c.GetRegister(rs1)
+	v, err := c.GetMemory().GetUint64(a)
+	if err != nil {
+		return 0, err
+	}
+	var r uint64 = 0
+	if int64(v) < int64(c.GetRegister(rs2)) {
+		r = v
+	} else {
+		r = c.GetRegister(rs2)
+	}
+	c.GetMemory().SetUint64(a, r)
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amomaxd(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amomax.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := c.GetRegister(rs1)
+	v, err := c.GetMemory().GetUint64(a)
+	if err != nil {
+		return 0, err
+	}
+	var r uint64 = 0
+	if int64(v) > int64(c.GetRegister(rs2)) {
+		r = v
+	} else {
+		r = c.GetRegister(rs2)
+	}
+	c.GetMemory().SetUint64(a, r)
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amominud(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amominu.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := c.GetRegister(rs1)
+	v, err := c.GetMemory().GetUint64(a)
+	if err != nil {
+		return 0, err
+	}
+	var r uint64 = 0
+	if v < c.GetRegister(rs2) {
+		r = v
+	} else {
+		r = c.GetRegister(rs2)
+	}
+	c.GetMemory().SetUint64(a, r)
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaA) amomaxud(c *CPU, i uint64) (uint64, error) {
+	rd, rs1, rs2 := RType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amomaxu.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
+	a := c.GetRegister(rs1)
+	v, err := c.GetMemory().GetUint64(a)
+	if err != nil {
+		return 0, err
+	}
+	var r uint64 = 0
+	if v > c.GetRegister(rs2) {
+		r = v
+	} else {
+		r = c.GetRegister(rs2)
+	}
+	c.GetMemory().SetUint64(a, r)
+	c.SetRegister(rd, v)
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
 
 type isaF struct{}
 

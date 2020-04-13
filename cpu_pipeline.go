@@ -357,286 +357,56 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 				return aluM.remuw(c, i)
 			}
 		case 0b0101111:
-			rd, rs1, rs2 := RType(i)
-			switch InstructionPart(i, 12, 14) {
+			switch funct3 {
 			case 0b010:
-				a := SignExtend(c.GetRegister(rs1), 31)
 				switch InstructionPart(i, 27, 31) {
 				case 0b00010:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "lr.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint32(a)
-					if err != nil {
-						return 0, err
-					}
-					c.SetRegister(rd, SignExtend(uint64(v), 31))
-					c.SetLoadReservation(a)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.lrw(c, i)
 				case 0b00011:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sc.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					if a == c.GetLoadReservation() {
-						c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2)))
-						c.SetRegister(rd, 0)
-					} else {
-						c.SetRegister(rd, 1)
-					}
-					c.SetLoadReservation(0)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.scw(c, i)
 				case 0b00001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoswap.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint32(a)
-					if err != nil {
-						return 0, err
-					}
-					c.GetMemory().SetUint32(a, uint32(c.GetRegister(rs2)))
-					c.SetRegister(rd, SignExtend(uint64(v), 31))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amoswapw(c, i)
 				case 0b00000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoadd.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint32(a)
-					if err != nil {
-						return 0, err
-					}
-					c.GetMemory().SetUint32(a, v+uint32(c.GetRegister(rs2)))
-					c.SetRegister(rd, SignExtend(uint64(v), 31))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amoaddw(c, i)
 				case 0b00100:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoxor.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint32(a)
-					if err != nil {
-						return 0, err
-					}
-					c.GetMemory().SetUint32(a, v^uint32(c.GetRegister(rs2)))
-					c.SetRegister(rd, SignExtend(uint64(v), 31))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amoxorw(c, i)
 				case 0b01100:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoand.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint32(a)
-					if err != nil {
-						return 0, err
-					}
-					c.GetMemory().SetUint32(a, v&uint32(c.GetRegister(rs2)))
-					c.SetRegister(rd, SignExtend(uint64(v), 31))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amoandw(c, i)
 				case 0b01000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoor.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint32(a)
-					if err != nil {
-						return 0, err
-					}
-					c.GetMemory().SetUint32(a, v|uint32(c.GetRegister(rs2)))
-					c.SetRegister(rd, SignExtend(uint64(v), 31))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amoorw(c, i)
 				case 0b10000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amomin.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint32(a)
-					if err != nil {
-						return 0, err
-					}
-					var r uint32
-					if int32(v) < int32(uint32(c.GetRegister(rs2))) {
-						r = v
-					} else {
-						r = uint32(c.GetRegister(rs2))
-					}
-					c.GetMemory().SetUint32(a, r)
-					c.SetRegister(rd, SignExtend(uint64(v), 31))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amominw(c, i)
 				case 0b10100:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amomax.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint32(a)
-					if err != nil {
-						return 0, err
-					}
-					var r uint32
-					if int32(v) > int32(uint32(c.GetRegister(rs2))) {
-						r = v
-					} else {
-						r = uint32(c.GetRegister(rs2))
-					}
-					c.GetMemory().SetUint32(a, r)
-					c.SetRegister(rd, SignExtend(uint64(v), 31))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amomaxw(c, i)
 				case 0b11000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amominu.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint32(a)
-					if err != nil {
-						return 0, err
-					}
-					var r uint32
-					if v < uint32(c.GetRegister(rs2)) {
-						r = v
-					} else {
-						r = uint32(c.GetRegister(rs2))
-					}
-					c.GetMemory().SetUint32(a, r)
-					c.SetRegister(rd, SignExtend(uint64(v), 31))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amominuw(c, i)
 				case 0b11100:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amomaxu.w", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint32(a)
-					if err != nil {
-						return 0, err
-					}
-					var r uint32
-					if v > uint32(c.GetRegister(rs2)) {
-						r = v
-					} else {
-						r = uint32(c.GetRegister(rs2))
-					}
-					c.GetMemory().SetUint32(a, r)
-					c.SetRegister(rd, SignExtend(uint64(v), 31))
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amomaxuw(c, i)
 				}
 			case 0b011:
-				a := c.GetRegister(rs1)
 				switch InstructionPart(i, 27, 31) {
 				case 0b00010:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "lr.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint64(a)
-					if err != nil {
-						return 0, err
-					}
-					c.SetRegister(rd, v)
-					c.SetLoadReservation(a)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.lrd(c, i)
 				case 0b00011:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "sc.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					if a == c.GetLoadReservation() {
-						c.GetMemory().SetUint64(a, c.GetRegister(rs2))
-						c.SetRegister(rd, 0)
-					} else {
-						c.SetRegister(rd, 1)
-					}
-					c.SetLoadReservation(0)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.scd(c, i)
 				case 0b00001:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoswap.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint64(a)
-					if err != nil {
-						return 0, err
-					}
-					c.GetMemory().SetUint64(a, c.GetRegister(rs2))
-					c.SetRegister(rd, v)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amoswapd(c, i)
 				case 0b00000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoadd.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint64(a)
-					if err != nil {
-						return 0, err
-					}
-					c.GetMemory().SetUint64(a, v+c.GetRegister(rs2))
-					c.SetRegister(rd, v)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amoaddd(c, i)
 				case 0b00100:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoxor.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint64(a)
-					if err != nil {
-						return 0, err
-					}
-					c.GetMemory().SetUint64(a, v^c.GetRegister(rs2))
-					c.SetRegister(rd, v)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amoxord(c, i)
 				case 0b01100:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoand.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint64(a)
-					if err != nil {
-						return 0, err
-					}
-					c.GetMemory().SetUint64(a, v&c.GetRegister(rs2))
-					c.SetRegister(rd, v)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amoandd(c, i)
 				case 0b01000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amoor.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					a := c.GetRegister(rs1)
-					v, err := c.GetMemory().GetUint64(a)
-					if err != nil {
-						return 0, err
-					}
-					c.GetMemory().SetUint64(a, v|c.GetRegister(rs2))
-					c.SetRegister(rd, v)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amoord(c, i)
 				case 0b10000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amomin.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint64(a)
-					if err != nil {
-						return 0, err
-					}
-					var r uint64 = 0
-					if int64(v) < int64(c.GetRegister(rs2)) {
-						r = v
-					} else {
-						r = c.GetRegister(rs2)
-					}
-					c.GetMemory().SetUint64(a, r)
-					c.SetRegister(rd, v)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amomind(c, i)
 				case 0b10100:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amomax.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint64(a)
-					if err != nil {
-						return 0, err
-					}
-					var r uint64 = 0
-					if int64(v) > int64(c.GetRegister(rs2)) {
-						r = v
-					} else {
-						r = c.GetRegister(rs2)
-					}
-					c.GetMemory().SetUint64(a, r)
-					c.SetRegister(rd, v)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amomaxd(c, i)
 				case 0b11000:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amominu.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint64(a)
-					if err != nil {
-						return 0, err
-					}
-					var r uint64 = 0
-					if v < c.GetRegister(rs2) {
-						r = v
-					} else {
-						r = c.GetRegister(rs2)
-					}
-					c.GetMemory().SetUint64(a, r)
-					c.SetRegister(rd, v)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amominud(c, i)
 				case 0b11100:
-					Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s rs2: %s", c.GetPC(), "amomaxu.d", c.LogI(rd), c.LogI(rs1), c.LogI(rs2)))
-					v, err := c.GetMemory().GetUint64(a)
-					if err != nil {
-						return 0, err
-					}
-					var r uint64 = 0
-					if v > c.GetRegister(rs2) {
-						r = v
-					} else {
-						r = c.GetRegister(rs2)
-					}
-					c.GetMemory().SetUint64(a, r)
-					c.SetRegister(rd, v)
-					c.SetPC(c.GetPC() + 4)
-					return 1, nil
+					return aluA.amomaxud(c, i)
 				}
 			}
 		case 0b0000111:
