@@ -574,7 +574,7 @@ type isaZicsr struct{}
 
 func (_ *isaZicsr) csrrw(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, csr := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrw", c.LogI(rd), c.LogI(rs1), csr))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: ----(%#016x)", c.GetPC(), "csrrw", c.LogI(rd), c.LogI(rs1), csr))
 	if rd != Rzero {
 		c.SetRegister(rd, c.GetCSR().Get(csr))
 	}
@@ -585,7 +585,7 @@ func (_ *isaZicsr) csrrw(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaZicsr) csrrs(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, csr := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrs", c.LogI(rd), c.LogI(rs1), csr))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: ----(%#016x)", c.GetPC(), "csrrs", c.LogI(rd), c.LogI(rs1), csr))
 	c.SetRegister(rd, c.GetCSR().Get(csr))
 	if rs1 != Rzero {
 		c.GetCSR().Set(csr, c.GetCSR().Get(csr)|c.GetRegister(rs1))
@@ -596,7 +596,7 @@ func (_ *isaZicsr) csrrs(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaZicsr) csrrc(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, csr := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrc", c.LogI(rd), c.LogI(rs1), csr))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: ----(%#016x)", c.GetPC(), "csrrc", c.LogI(rd), c.LogI(rs1), csr))
 	c.SetRegister(rd, c.GetCSR().Get(csr))
 	if rs1 != Rzero {
 		c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-c.GetRegister(rs1)))
@@ -607,7 +607,7 @@ func (_ *isaZicsr) csrrc(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaZicsr) csrrwi(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, csr := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrwi", c.LogI(rd), c.LogI(rs1), csr))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: ----(%#016x)", c.GetPC(), "csrrwi", c.LogI(rd), c.LogI(rs1), csr))
 	if rd != Rzero {
 		c.SetRegister(rd, c.GetCSR().Get(csr))
 	}
@@ -618,7 +618,7 @@ func (_ *isaZicsr) csrrwi(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaZicsr) csrrsi(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, csr := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrsi", c.LogI(rd), c.LogI(rs1), csr))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: ----(%#016x)", c.GetPC(), "csrrsi", c.LogI(rd), c.LogI(rs1), csr))
 	c.SetRegister(rd, c.GetCSR().Get(csr))
 	if csr != 0x00 {
 		c.GetCSR().Set(csr, c.GetCSR().Get(csr)|rs1)
@@ -629,7 +629,7 @@ func (_ *isaZicsr) csrrsi(c *CPU, i uint64) (uint64, error) {
 
 func (_ *isaZicsr) csrrci(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, csr := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: %#016x", c.GetPC(), "csrrci", c.LogI(rd), c.LogI(rs1), csr))
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: ----(%#016x)", c.GetPC(), "csrrci", c.LogI(rd), c.LogI(rs1), csr))
 	c.SetRegister(rd, c.GetCSR().Get(csr))
 	if csr != 0x00 {
 		c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-rs1))
@@ -2779,31 +2779,37 @@ func (_ *isaC) sdsp(c *CPU, i uint64) (uint64, error) {
 type isaPrivileged struct{}
 
 func (_ *isaPrivileged) uret(c *CPU, _ uint64) (uint64, error) {
+	Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "uret"))
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
 }
 
 func (_ *isaPrivileged) sret(c *CPU, _ uint64) (uint64, error) {
+	Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "sret"))
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
 }
 
 func (_ *isaPrivileged) hret(c *CPU, _ uint64) (uint64, error) {
+	Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "hret"))
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
 }
 
 func (_ *isaPrivileged) mret(c *CPU, _ uint64) (uint64, error) {
+	Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "mret"))
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
 }
 
 func (_ *isaPrivileged) wfi(c *CPU, _ uint64) (uint64, error) {
+	Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "wfi"))
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
 }
 
 func (_ *isaPrivileged) sfencevm(c *CPU, _ uint64) (uint64, error) {
+	Debugln(fmt.Sprintf("%#08x % 10s", c.GetPC(), "sfencevm"))
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
 }
