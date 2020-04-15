@@ -575,10 +575,12 @@ type isaZicsr struct{}
 func (_ *isaZicsr) csrrw(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, csr := IType(i)
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: ----(%#016x)", c.GetPC(), "csrrw", c.LogI(rd), c.LogI(rs1), csr))
+	a := c.GetRegister(rs1)
+	b := c.GetCSR().Get(csr)
 	if rd != Rzero {
-		c.SetRegister(rd, c.GetCSR().Get(csr))
+		c.SetRegister(rd, b)
 	}
-	c.GetCSR().Set(csr, c.GetRegister(rs1))
+	c.GetCSR().Set(csr, a)
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
 }
@@ -586,9 +588,11 @@ func (_ *isaZicsr) csrrw(c *CPU, i uint64) (uint64, error) {
 func (_ *isaZicsr) csrrs(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, csr := IType(i)
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: ----(%#016x)", c.GetPC(), "csrrs", c.LogI(rd), c.LogI(rs1), csr))
-	c.SetRegister(rd, c.GetCSR().Get(csr))
+	a := c.GetRegister(rs1)
+	b := c.GetCSR().Get(csr)
+	c.SetRegister(rd, b)
 	if rs1 != Rzero {
-		c.GetCSR().Set(csr, c.GetCSR().Get(csr)|c.GetRegister(rs1))
+		c.GetCSR().Set(csr, b|a)
 	}
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
@@ -597,42 +601,47 @@ func (_ *isaZicsr) csrrs(c *CPU, i uint64) (uint64, error) {
 func (_ *isaZicsr) csrrc(c *CPU, i uint64) (uint64, error) {
 	rd, rs1, csr := IType(i)
 	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: ----(%#016x)", c.GetPC(), "csrrc", c.LogI(rd), c.LogI(rs1), csr))
-	c.SetRegister(rd, c.GetCSR().Get(csr))
+	a := c.GetRegister(rs1)
+	b := c.GetCSR().Get(csr)
+	c.SetRegister(rd, b)
 	if rs1 != Rzero {
-		c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-c.GetRegister(rs1)))
+		c.GetCSR().Set(csr, b&^a)
 	}
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
 }
 
 func (_ *isaZicsr) csrrwi(c *CPU, i uint64) (uint64, error) {
-	rd, rs1, csr := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: ----(%#016x)", c.GetPC(), "csrrwi", c.LogI(rd), c.LogI(rs1), csr))
+	rd, imm, csr := IType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x) csr: ----(%#016x)", c.GetPC(), "csrrwi", c.LogI(rd), imm, csr))
+	b := c.GetCSR().Get(csr)
 	if rd != Rzero {
-		c.SetRegister(rd, c.GetCSR().Get(csr))
+		c.SetRegister(rd, b)
 	}
-	c.GetCSR().Set(csr, rs1)
+	c.GetCSR().Set(csr, imm)
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
 }
 
 func (_ *isaZicsr) csrrsi(c *CPU, i uint64) (uint64, error) {
-	rd, rs1, csr := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: ----(%#016x)", c.GetPC(), "csrrsi", c.LogI(rd), c.LogI(rs1), csr))
-	c.SetRegister(rd, c.GetCSR().Get(csr))
+	rd, imm, csr := IType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x) csr: ----(%#016x)", c.GetPC(), "csrrsi", c.LogI(rd), imm, csr))
+	b := c.GetCSR().Get(csr)
+	c.SetRegister(rd, b)
 	if csr != 0x00 {
-		c.GetCSR().Set(csr, c.GetCSR().Get(csr)|rs1)
+		c.GetCSR().Set(csr, b|imm)
 	}
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
 }
 
 func (_ *isaZicsr) csrrci(c *CPU, i uint64) (uint64, error) {
-	rd, rs1, csr := IType(i)
-	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s rs1: %s csr: ----(%#016x)", c.GetPC(), "csrrci", c.LogI(rd), c.LogI(rs1), csr))
-	c.SetRegister(rd, c.GetCSR().Get(csr))
+	rd, imm, csr := IType(i)
+	Debugln(fmt.Sprintf("%#08x % 10s  rd: %s imm: ----(%#016x) csr: ----(%#016x)", c.GetPC(), "csrrci", c.LogI(rd), imm, csr))
+	b := c.GetCSR().Get(csr)
+	c.SetRegister(rd, b)
 	if csr != 0x00 {
-		c.GetCSR().Set(csr, c.GetCSR().Get(csr)&(math.MaxUint64-rs1))
+		c.GetCSR().Set(csr, b&^imm)
 	}
 	c.SetPC(c.GetPC() + 4)
 	return 1, nil
