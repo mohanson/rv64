@@ -15,6 +15,7 @@ func (s *SystemStandard) HandleCall(c *CPU) (uint64, error) {
 	case 0x005d:
 		s.ExitCode = uint8(c.GetRegister(Ra0))
 		c.SetStatus(1)
+		c.SetPC(c.GetPC() + 4)
 		return 1, nil
 	}
 	return 0, ErrAbnormalEcall

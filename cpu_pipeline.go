@@ -292,6 +292,18 @@ func (c *CPU) PipelineExecute(data []byte) (uint64, error) {
 					return aluI.ecall(c, i)
 				case 0b000000000001:
 					return aluI.ebreak(c, i)
+				case 0b000000000010:
+					return aluPrivileged.uret(c, i)
+				case 0b000100000010:
+					return aluPrivileged.sret(c, i)
+				case 0b001000000010:
+					return aluPrivileged.hret(c, i)
+				case 0b001100000010:
+					return aluPrivileged.mret(c, i)
+				case 0b000100000101:
+					return aluPrivileged.wfi(c, i)
+				case 0b000100000100:
+					return aluPrivileged.sfencevm(c, i)
 				}
 			case 0b001:
 				return aluZicsr.csrrw(c, i)

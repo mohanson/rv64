@@ -2776,6 +2776,38 @@ func (_ *isaC) sdsp(c *CPU, i uint64) (uint64, error) {
 	return 1, nil
 }
 
+type isaPrivileged struct{}
+
+func (_ *isaPrivileged) uret(c *CPU, _ uint64) (uint64, error) {
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaPrivileged) sret(c *CPU, _ uint64) (uint64, error) {
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaPrivileged) hret(c *CPU, _ uint64) (uint64, error) {
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaPrivileged) mret(c *CPU, _ uint64) (uint64, error) {
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaPrivileged) wfi(c *CPU, _ uint64) (uint64, error) {
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
+func (_ *isaPrivileged) sfencevm(c *CPU, _ uint64) (uint64, error) {
+	c.SetPC(c.GetPC() + 4)
+	return 1, nil
+}
+
 func IsQNaN32(f float32) bool {
 	return math.IsNaN(float64(f)) && math.Float32bits(f)&0x00400000 != 0x00
 }
@@ -2863,12 +2895,13 @@ func FClassD(f float64) uint64 {
 }
 
 var (
-	aluI        = &isaI{}
-	aluZifencei = &isaZifencei{}
-	aluZicsr    = &isaZicsr{}
-	aluM        = &isaM{}
-	aluA        = &isaA{}
-	aluF        = &isaF{}
-	aluD        = &isaD{}
-	aluC        = &isaC{}
+	aluI          = &isaI{}
+	aluZifencei   = &isaZifencei{}
+	aluZicsr      = &isaZicsr{}
+	aluM          = &isaM{}
+	aluA          = &isaA{}
+	aluF          = &isaF{}
+	aluD          = &isaD{}
+	aluC          = &isaC{}
+	aluPrivileged = &isaPrivileged{}
 )
