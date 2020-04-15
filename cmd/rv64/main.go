@@ -30,7 +30,7 @@ func main() {
 		rv64.LogLevel = 1
 	}
 	cpu := rv64.NewCPU()
-	cpu.SetFasten(rv64.NewLinear(4 * 1024 * 1024))
+	cpu.SetFasten(rv64.NewLinear(3 * 1024 * 1024 * 1024))
 	cpu.SetSystem(rv64.NewSystemStandard())
 	cpu.SetCSR(rv64.NewCSRStandard())
 

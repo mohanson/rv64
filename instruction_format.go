@@ -24,7 +24,7 @@ func RType(i uint64) (rd uint64, rs1 uint64, rs2 uint64) {
 func IType(i uint64) (rd uint64, rs1 uint64, imm uint64) {
 	rd = InstructionPart(i, 7, 11)
 	rs1 = InstructionPart(i, 15, 19)
-	imm = SignExtend(InstructionPart(i, 20, 31), 11)
+	imm = InstructionPart(i, 20, 31)
 	return
 }
 
