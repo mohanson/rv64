@@ -75,12 +75,6 @@ func (c *CPU) ClrFloatFlag() {
 
 func (c *CPU) PushString(s string) {
 	b := append([]byte(s), 0x00)
-	a := len(b) % 4
-	if a != 0 {
-		for i := 0; i < 4-a; i++ {
-			b = append(b, 0x00)
-		}
-	}
 	c.SetRegister(Rsp, c.GetRegister(Rsp)-uint64(len(b)))
 	c.GetMemory().SetByte(c.GetRegister(Rsp), b)
 }
