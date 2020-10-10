@@ -60,10 +60,10 @@ func main() {
 	// | envs[0]     |
 	// | argv[1]     |
 	// | argv[0]     |
-	// | \0          |
+	// | 0           |
 	// | envs[1].ptr |
 	// | envs[0].ptr |
-	// | \0          |
+	// | 0           |
 	// | argv[1].ptr |
 	// | argv[0].ptr |
 	// | argc        |
@@ -71,6 +71,28 @@ func main() {
 	envList := []string{}
 	envPtrs := []uint64{}
 	argPtrs := []uint64{}
+
+	// Stack pointer must be aligned to 16-byte boundary.
+	rLength := func() uint64 {
+		var r uint64 = 0
+		r += 8
+		r += 8 * uint64(len(argList))
+		r += 8
+		r += 8 * uint64(len(envList))
+		r += 8
+		for _, e := range argList {
+			r += uint64(len(e)) + 1
+		}
+		for _, e := range envList {
+			r += uint64(len(e)) + 1
+		}
+		return r
+	}()
+	spAddress := cpu.GetRegister(rv64.Rsp) - rLength
+	spAddressAligned := spAddress & (^uint64(15))
+	spAlignedByteNum := spAddress - spAddressAligned
+	cpu.SetRegister(rv64.Rsp, cpu.GetRegister(rv64.Rsp)-spAlignedByteNum)
+
 	for i := len(envList) - 1; i >= 0; i-- {
 		cpu.PushString(envList[i])
 		envPtrs = append(envPtrs, cpu.GetRegister(rv64.Rsp))
@@ -79,15 +101,19 @@ func main() {
 		cpu.PushString(argList[i])
 		argPtrs = append(argPtrs, cpu.GetRegister(rv64.Rsp))
 	}
-	cpu.PushUint8(0)
+	cpu.PushUint64(0)
 	for i := 0; i < len(envPtrs); i++ {
 		cpu.PushUint64(envPtrs[i])
 	}
-	cpu.PushUint8(0)
+	cpu.PushUint64(0)
 	for i := 0; i < len(argPtrs); i++ {
 		cpu.PushUint64(argPtrs[i])
 	}
 	cpu.PushUint64(uint64(len(argList)))
+
+	if cpu.GetRegister(rv64.Rsp)%16 != 0 {
+		rv64.Panicln("unreachable")
+	}
 
 	os.Exit(int(cpu.Run()))
 }
